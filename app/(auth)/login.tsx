@@ -3,6 +3,7 @@
 import { Formik } from "formik";
 import React, { useState } from "react";
 import {
+  KeyboardAvoidingView,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,21 +12,21 @@ import {
 } from "react-native";
 import * as Yup from "yup";
 
-import FormDividerText from "@/components/auth/FormDividerText";
-import HeaderBack from "@/components/auth/HeaderBack";
-import InstructionTextBlock from "@/components/auth/InstructionTextBlock";
-import PrimaryButton from "@/components/auth/PrimaryButton";
+import AuthTabSwitcher from "@/components/auth/AuthTabSwitcher";
+import HeaderBackground from "@/components/auth/HeaderBackground";
 import ScreenWrapper from "@/components/auth/ScreenWrapper";
 import SecondaryTextButton from "@/components/auth/SecondaryTextButton";
 import SocialLogins from "@/components/auth/SocialLogins";
-import AppText from "@/components/ui/AppText";
+import FormDividerText from "@/components/ui/FormDividerText";
 import InputField from "@/components/ui/InputField";
+import PrimaryButton from "@/components/ui/PrimaryButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { setAuthenticated, setHasOpenedApp } from "@/lib/storage";
-import { router } from "expo-router";
+import Feather from "@expo/vector-icons/Feather";
+import { router, Stack } from "expo-router";
 
-export default function LoginScreen() {
-  const { spacing } = useTheme();
+export default function AuthScreen() {
+  const { spacing, colors, radius, icons } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLoginComplete = async () => {
@@ -38,7 +39,7 @@ export default function LoginScreen() {
   };
 
   const window = useWindowDimensions();
-  const isSmallScreen = window.height < 750;
+  const isSmallScreen = window.height - 300 < 750;
   const Container = isSmallScreen ? ScrollView : View;
 
   // -------------------------
@@ -52,28 +53,56 @@ export default function LoginScreen() {
   });
 
   return (
-    <ScreenWrapper>
-      <HeaderBack onPress={() => router.back()} />
+    <KeyboardAvoidingView style={{ flex: 1 }}>
+      <ScreenWrapper
+        style={{
+          borderRadius: radius.xxl,
+          marginTop: -spacing.lg,
+          zIndex: 1000,
+        }}
+      >
+        <Stack.Screen
+          options={{
+            header: () => (
+              <HeaderBackground
+                title="Welcome back"
+                subtitle="Sign in to shop or sell your fullest"
+              />
+            ),
+          }}
+        />
+        <Container contentContainerStyle={isSmallScreen && { flexGrow: 1 }}>
+          <View
+            style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}
+          >
+            <AuthTabSwitcher
+              active={"login"}
+              onChange={() => {
+                router.replace("/signup");
+              }}
+            />
 
-      <Container contentContainerStyle={isSmallScreen && { flexGrow: 1 }}>
-        <View style={{ paddingHorizontal: spacing.lg }}>
-          <InstructionTextBlock
-            title="Login"
-            subtitle="Login to your account"
-          />
-
-          {/* -------------------------
+            {/* -------------------------
               FORM START (Formik)
              ------------------------- */}
-          <Formik
-            initialValues={{ email: "", password: "" }}
-            validationSchema={LoginSchema}
-            onSubmit={handleLoginComplete}
-          >
-            {({ values, handleChange, handleSubmit, errors, touched }) => (
-              <View style={styles.section}>
-                {/* EMAIL */}
-                <View style={{ marginTop: spacing.lg }}>
+            <Formik
+              initialValues={{ email: "", password: "" }}
+              validationSchema={LoginSchema}
+              onSubmit={handleLoginComplete}
+            >
+              {({ values, handleChange, handleSubmit, errors, touched }) => (
+                <View
+                  style={[
+                    styles.section,
+                    {
+                      backgroundColor: colors.background,
+                      gap: spacing.md,
+                      marginTop: spacing.lg,
+                    },
+                  ]}
+                >
+                  {/* EMAIL */}
+
                   <InputField
                     label="Email"
                     placeholder="Enter email"
@@ -83,11 +112,16 @@ export default function LoginScreen() {
                     error={
                       touched.email && errors.email ? errors.email : undefined
                     }
+                    leftIcon={
+                      <Feather
+                        name="mail"
+                        color={colors.primary}
+                        size={icons.md}
+                      />
+                    }
                   />
-                </View>
 
-                {/* PASSWORD */}
-                <View style={{ marginTop: spacing.lg }}>
+                  {/* PASSWORD */}
                   <InputField
                     label="Password"
                     placeholder="Enter password"
@@ -101,40 +135,52 @@ export default function LoginScreen() {
                     }
                     rightIcon={
                       <Pressable onPress={() => setShowPassword(!showPassword)}>
-                        <AppText>{showPassword ? "Hide" : "Show"}</AppText>
+                        {showPassword ? (
+                          <Feather
+                            name="eye"
+                            color={colors.primary}
+                            size={icons.md}
+                          />
+                        ) : (
+                          <Feather
+                            name="eye-off"
+                            color={colors.primary}
+                            size={icons.md}
+                          />
+                        )}
                       </Pressable>
                     }
+                    leftIcon={
+                      <Feather
+                        name="lock"
+                        color={colors.primary}
+                        size={icons.md}
+                      />
+                    }
                   />
-                </View>
-
-                {/* FORGOT PASSWORD */}
-                <View style={{ marginTop: spacing.sm }}>
+                  {/* FORGOT PASSWORD */}
                   <SecondaryTextButton
                     title="Forgot password?"
                     onPress={() => {}}
                   />
-                </View>
 
-                {/* LOGIN BUTTON */}
-                <View style={{ marginTop: spacing.lg }}>
-                  <PrimaryButton title="Login" onPress={handleSubmit} />
-                </View>
+                  <View style={{ marginTop: spacing.lg, gap: spacing.md }}>
+                    {/* LOGIN BUTTON */}
+                    <PrimaryButton title="Login" onPress={handleSubmit} />
 
-                {/* DIVIDER */}
-                <View style={{ marginTop: spacing.lg }}>
-                  <FormDividerText text="OR CONTINUE WITH" />
-                </View>
+                    {/* DIVIDER */}
+                    <FormDividerText text="OR CONTINUE WITH" />
 
-                {/* SOCIAL ROW */}
-                <View style={{ marginTop: spacing.md }}>
-                  <SocialLogins onGoogle={() => {}} onApple={() => {}} />
+                    {/* SOCIAL ROW */}
+                    <SocialLogins onGoogle={() => {}} onApple={() => {}} />
+                  </View>
                 </View>
-              </View>
-            )}
-          </Formik>
-        </View>
-      </Container>
-    </ScreenWrapper>
+              )}
+            </Formik>
+          </View>
+        </Container>
+      </ScreenWrapper>
+    </KeyboardAvoidingView>
   );
 }
 

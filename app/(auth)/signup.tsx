@@ -1,8 +1,11 @@
 // screens/RegisterScreen.tsx
 
+import Feather from "@expo/vector-icons/Feather";
 import { Formik } from "formik";
 import React, { useState } from "react";
 import {
+  KeyboardAvoidingView,
+  Pressable,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
@@ -10,23 +13,57 @@ import {
 } from "react-native";
 import * as Yup from "yup";
 
-import HeaderBack from "@/components/auth/HeaderBack";
-import InstructionTextBlock from "@/components/auth/InstructionTextBlock";
+import AuthTabSwitcher from "@/components/auth/AuthTabSwitcher";
+import HeaderBackground from "@/components/auth/HeaderBackground";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
-import PrimaryButton from "@/components/auth/PrimaryButton";
 import ScreenWrapper from "@/components/auth/ScreenWrapper";
 import SecondaryTextButton from "@/components/auth/SecondaryTextButton";
+import SocialLogins from "@/components/auth/SocialLogins";
+import ScreenSpacer from "@/components/ScreenSpacer";
 import CountryCodePicker from "@/components/ui/CountryCodePicker";
+import FormDividerText from "@/components/ui/FormDividerText";
 import InputField from "@/components/ui/InputField";
+import PrimaryButton from "@/components/ui/PrimaryButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { setAuthenticated, setHasOpenedApp } from "@/lib/storage";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
+
+// -------------------------
+// VALIDATION SCHEMAS
+// -------------------------
+const BasicInfoSchema = Yup.object().shape({
+  firstName: Yup.string().required("First name is required"),
+  lastName: Yup.string().required("Last name is required"),
+  phone: Yup.string().when("mode", (mode: any, schema) =>
+    mode === "phone"
+      ? schema
+          .matches(/^0[0-9]{9}$/, "Invalid Ghana phone number format")
+          .required("Phone number is required")
+      : schema
+  ),
+  mode: Yup.string(),
+  email: Yup.string().when("mode", (mode: any, schema) =>
+    mode === "email" ? schema.email().required("Email is required") : schema
+  ),
+});
+
+const PasswordSchema = Yup.object().shape({
+  password: Yup.string()
+    .min(8, "Password must be at least 8 characters")
+    .required("Password is required"),
+  confirmPassword: Yup.string()
+    .min(8, "Password must be at least 8 characters")
+    .required("Password is required"),
+});
 
 export default function RegisterScreen() {
-  const { spacing } = useTheme();
-  const [mode, setMode] = useState<"phone" | "email" | "password">("phone");
+  const { spacing, radius, icons, colors } = useTheme();
+  const [step, setStep] = useState<"step1" | "step2">("step1");
+  const [mode, setMode] = useState<"email" | "phone">("phone");
+  const [showPassword, setShowPassword] = useState(false);
+
   const window = useWindowDimensions();
-  const isSmallScreen = window.height < 750;
+  const isSmallScreen = window.height - 320 < 750;
   const Container = isSmallScreen ? ScrollView : View;
 
   const handleSignupComplete = async () => {
@@ -38,124 +75,121 @@ export default function RegisterScreen() {
     router.replace("/(tabs)");
   };
 
-  // -------------------------
-  // VALIDATION SCHEMAS
-  // -------------------------
-  const PhoneSchema = Yup.object().shape({
-    phone: Yup.string()
-      .matches(/^0[0-9]{9}$/, "Invalid Ghana phone number format")
-      .required("Phone number is required"),
-  });
-
-  const EmailSchema = Yup.object().shape({
-    email: Yup.string()
-      .email("Invalid email address")
-      .required("Email is required"),
-  });
-
-  const PasswordSchema = Yup.object().shape({
-    password: Yup.string()
-      .min(8, "Password must be at least 8 characters")
-      .required("Password is required"),
-  });
-
-  // ----------------------
-  // RENDER PHONE STEP
-  // ----------------------
-  const renderPhoneStep = () => (
-    <Formik
-      initialValues={{ phone: "" }}
-      validationSchema={PhoneSchema}
-      onSubmit={() => setMode("password")}
-    >
-      {({ values, handleChange, handleSubmit, errors, touched }) => (
-        <View style={styles.section}>
-          <InstructionTextBlock
-            title="Register"
-            subtitle="Register with your phone"
-          />
-
-          <View style={{ marginTop: spacing.lg }}>
+  const renderStep1 = () => (
+    <View style={styles.section}>
+      <Formik
+        onSubmit={() => setStep("step2")}
+        validationSchema={BasicInfoSchema}
+        initialValues={{
+          phone: "",
+          email: "",
+          firstName: "",
+          lastName: "",
+          mode: "phone",
+        }}
+      >
+        {({ values, handleChange, handleSubmit, touched, errors, isValid }) => (
+          <View style={{ marginTop: spacing.lg, gap: spacing.md }}>
             <InputField
-              label="Phone number"
-              placeholder="Enter phone number"
-              value={values.phone}
-              onChangeText={handleChange("phone")}
-              keyboardType="phone-pad"
-              error={touched.phone && errors.phone ? errors.phone : undefined}
+              placeholder="Enter firstname"
+              value={values.firstName}
+              onChangeText={handleChange("firstName")}
+              keyboardType="ascii-capable"
+              error={
+                touched.firstName && errors.firstName
+                  ? errors.firstName
+                  : undefined
+              }
               leftIcon={
-                <CountryCodePicker code="+233" flag="🇬🇭" onPress={() => {}} />
+                <Feather name="user" color={colors.primary} size={icons.md} />
               }
             />
-          </View>
 
-          <View style={{ marginTop: spacing.lg }}>
-            <PrimaryButton title="Continue" onPress={handleSubmit} />
-          </View>
-
-          <View style={{ marginTop: spacing.md }}>
-            <SecondaryTextButton
-              title="Use email instead"
-              onPress={() => setMode("email")}
-            />
-          </View>
-        </View>
-      )}
-    </Formik>
-  );
-
-  // ----------------------
-  // RENDER EMAIL STEP
-  // ----------------------
-  const renderEmailStep = () => (
-    <Formik
-      initialValues={{ email: "" }}
-      validationSchema={EmailSchema}
-      onSubmit={() => setMode("password")}
-    >
-      {({ values, handleChange, handleSubmit, errors, touched }) => (
-        <View style={styles.section}>
-          <InstructionTextBlock
-            title="Register"
-            subtitle="Register with your email"
-          />
-
-          <View style={{ marginTop: spacing.lg }}>
             <InputField
-              label="Email"
-              placeholder="Enter email"
-              value={values.email}
-              onChangeText={handleChange("email")}
-              keyboardType="email-address"
-              error={touched.email && errors.email ? errors.email : undefined}
+              placeholder="Enter lastname"
+              value={values.lastName}
+              onChangeText={handleChange("lastName")}
+              keyboardType="ascii-capable"
+              error={
+                touched.lastName && errors.lastName
+                  ? errors.lastName
+                  : undefined
+              }
+              leftIcon={
+                <Feather name="user" color={colors.primary} size={icons.md} />
+              }
             />
-          </View>
 
-          <View style={{ marginTop: spacing.lg }}>
-            <PrimaryButton title="Continue" onPress={handleSubmit} />
-          </View>
+            <View style={styles.switchInput}>
+              <ScreenSpacer size={1} />
+              <SecondaryTextButton
+                title={`Use ${
+                  values.mode === "email" ? "phone" : "email"
+                } instead`}
+                underline
+                onPress={() =>
+                  handleChange("mode")(
+                    values.mode === "email" ? "phone" : "email"
+                  )
+                }
+              />
+            </View>
 
-          <View style={{ marginTop: spacing.md }}>
-            <SecondaryTextButton
-              title="Use phone instead"
-              onPress={() => setMode("phone")}
-            />
+            {values.mode === "email" && (
+              <InputField
+                placeholder="Enter email"
+                value={values.email}
+                onChangeText={handleChange("email")}
+                keyboardType="email-address"
+                error={touched.email && errors.email ? errors.email : undefined}
+                leftIcon={
+                  <Feather name="mail" color={colors.primary} size={icons.md} />
+                }
+              />
+            )}
+
+            {values.mode === "phone" && (
+              <InputField
+                placeholder="Enter phone number"
+                value={values.phone}
+                onChangeText={handleChange("phone")}
+                keyboardType="phone-pad"
+                error={touched.phone && errors.phone ? errors.phone : undefined}
+                leftIcon={
+                  <CountryCodePicker code="+233" flag="🇬🇭" onPress={() => {}} />
+                }
+              />
+            )}
+            <View style={{ marginTop: spacing.lg, gap: spacing.md }}>
+              {/* LOGIN BUTTON */}
+              <PrimaryButton
+                disabled={isValid}
+                title="Next"
+                onPress={handleSubmit}
+              />
+
+              {/* DIVIDER */}
+              <FormDividerText text="or Create Account wuth" />
+
+              {/* SOCIAL ROW */}
+              <SocialLogins onGoogle={() => {}} onApple={() => {}} />
+            </View>
           </View>
-        </View>
-      )}
-    </Formik>
+        )}
+      </Formik>
+    </View>
   );
 
   // ----------------------
   // RENDER PASSWORD STEP
   // ----------------------
-  const renderPasswordStep = () => (
+  const renderStep2 = () => (
     <Formik
-      initialValues={{ password: "" }}
+      initialValues={{ password: "", confirmPassword: "" }}
       validationSchema={PasswordSchema}
       onSubmit={handleSignupComplete}
     >
-      {({ values, handleChange, handleSubmit, errors, touched }) => {
+      {({ handleChange, handleSubmit, values, errors, touched }) => {
         const strength =
           values.password.length >= 8
             ? 3
@@ -167,14 +201,8 @@ export default function RegisterScreen() {
 
         return (
           <View style={styles.section}>
-            <InstructionTextBlock
-              title="Create Password"
-              subtitle="Secure your account"
-            />
-
-            <View style={{ marginTop: spacing.lg }}>
+            <View style={{ marginTop: spacing.lg, gap: spacing.md }}>
               <InputField
-                label="Password"
                 placeholder="Enter password"
                 value={values.password}
                 onChangeText={handleChange("password")}
@@ -184,9 +212,61 @@ export default function RegisterScreen() {
                     ? errors.password
                     : undefined
                 }
+                rightIcon={
+                  <Pressable onPress={() => setShowPassword(!showPassword)}>
+                    {showPassword ? (
+                      <Feather
+                        name="eye"
+                        color={colors.primary}
+                        size={icons.md}
+                      />
+                    ) : (
+                      <Feather
+                        name="eye-off"
+                        color={colors.primary}
+                        size={icons.md}
+                      />
+                    )}
+                  </Pressable>
+                }
+                leftIcon={
+                  <Feather name="lock" color={colors.primary} size={icons.md} />
+                }
               />
 
               <PasswordStrengthMeter strength={strength} />
+
+              <InputField
+                placeholder="Confirm password"
+                value={values.confirmPassword}
+                onChangeText={handleChange("confirmPassword")}
+                secure
+                error={
+                  touched.confirmPassword && errors.confirmPassword
+                    ? errors.confirmPassword
+                    : undefined
+                }
+                rightIcon={
+                  <Pressable onPress={() => setShowPassword(!showPassword)}>
+                    {showPassword ? (
+                      <Feather
+                        name="eye"
+                        color={colors.primary}
+                        size={icons.md}
+                      />
+                    ) : (
+                      <Feather
+                        name="eye-off"
+                        color={colors.primary}
+                        size={icons.md}
+                      />
+                    )}
+                  </Pressable>
+                }
+                leftIcon={
+                  <Feather name="lock" color={colors.primary} size={icons.md} />
+                }
+              />
             </View>
 
             <View style={{ marginTop: spacing.lg }}>
@@ -202,22 +282,50 @@ export default function RegisterScreen() {
   // MAIN RETURN
   // ----------------------
   return (
-    <ScreenWrapper>
-      <HeaderBack onPress={() => router.back()} />
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+      <ScreenWrapper
+        style={{
+          borderRadius: radius.xxl,
+          marginTop: -spacing.lg,
+          zIndex: 1000,
+        }}
+      >
+        <Stack.Screen
+          options={{
+            header: () => (
+              <HeaderBackground
+                title="Go ahead and setup your Account"
+                subtitle="Sign up to enjoy the best experience"
+              />
+            ),
+          }}
+        />
+        <Container contentContainerStyle={isSmallScreen && { flexGrow: 1 }}>
+          <View
+            style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}
+          >
+            <AuthTabSwitcher
+              active={"register"}
+              onChange={() => {
+                router.replace("/login");
+              }}
+            />
 
-      <Container contentContainerStyle={isSmallScreen && { flexGrow: 1 }}>
-        <View style={{ paddingHorizontal: spacing.lg }}>
-          {mode === "phone" && renderPhoneStep()}
-          {mode === "email" && renderEmailStep()}
-          {mode === "password" && renderPasswordStep()}
-        </View>
-      </Container>
-    </ScreenWrapper>
+            {step === "step1" && renderStep1()}
+            {step === "step2" && renderStep2()}
+          </View>
+        </Container>
+      </ScreenWrapper>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   section: {
     width: "100%",
+  },
+  switchInput: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });

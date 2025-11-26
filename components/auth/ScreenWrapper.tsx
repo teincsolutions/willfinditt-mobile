@@ -1,12 +1,12 @@
 // AppScreenWrapper.tsx
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View, ViewStyle } from "react-native";
 
 type Props = {
   children: React.ReactNode;
   scroll?: boolean;
-  style?: any;
+  style?: ViewStyle;
 };
 
 export default function ScreenWrapper({ children, scroll, style }: Props) {
@@ -20,6 +20,7 @@ export default function ScreenWrapper({ children, scroll, style }: Props) {
           { backgroundColor: colors.background },
           style,
         ]}
+        showsVerticalScrollIndicator={false}
       >
         {children}
       </ScrollView>

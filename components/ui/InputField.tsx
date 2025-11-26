@@ -1,7 +1,7 @@
 // InputField.tsx
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import { KeyboardTypeOptions, StyleSheet, TextInput, View, ViewStyle } from "react-native";
 import AppText from "./AppText";
 
 type Props = {
@@ -10,10 +10,11 @@ type Props = {
   onChangeText: (t: string) => void;
   placeholder?: string;
   secure?: boolean;
-  keyboardType?: any;
+  keyboardType?: KeyboardTypeOptions;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   error?: string;
+  style?: ViewStyle;
 };
 
 export default function InputField({
@@ -26,11 +27,12 @@ export default function InputField({
   leftIcon,
   rightIcon,
   error,
+  style,
 }: Props) {
   const { colors, input, spacing } = useTheme();
 
   return (
-    <View style={{ marginBottom: spacing.md }}>
+    <View style={[style]}>
       {label && (
         <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
           {label}

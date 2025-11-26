@@ -1,7 +1,7 @@
 // SocialLoginRow.tsx
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Image, Pressable, StyleSheet, View } from "react-native";
 import AppText from "../ui/AppText";
 
 type Props = {
@@ -10,18 +10,28 @@ type Props = {
 };
 
 export default function SocialLogins({ onGoogle, onApple }: Props) {
-  const { colors, spacing, button } = useTheme();
+  const { colors, spacing, button, radius, icons } = useTheme();
 
   return (
     <View style={[styles.row, { gap: spacing.md }]}>
       <Pressable
         style={[
           styles.box,
-          { borderColor: colors.border, height: button.height },
+          {
+            borderColor: colors.border,
+            height: button.height,
+            borderRadius: radius.xxl,
+          },
         ]}
         onPress={onGoogle}
       >
-        <AppText>Google</AppText>
+        <Image
+          style={{ height: icons.sm, width: icons.sm }}
+          source={require("@/assets/icons/google-logo.png")}
+        />
+        <AppText style={{ color: colors.textGray, fontWeight: "500" }}>
+          Google
+        </AppText>
       </Pressable>
     </View>
   );
@@ -32,7 +42,8 @@ const styles = StyleSheet.create({
   box: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 10,
+    gap: 8,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },

@@ -5,13 +5,23 @@ import AppText from "../ui/AppText";
 
 type Props = {
   title: string;
+  underline?: boolean;
   onPress: () => void;
 };
 
-export default function SecondaryTextButton({ title, onPress }: Props) {
+export default function SecondaryTextButton({
+  title,
+  underline,
+  onPress,
+}: Props) {
   return (
     <Pressable onPress={onPress}>
-      <AppText variant="md">{title}</AppText>
+      <AppText
+        variant="md"
+        style={[underline && { textDecorationLine: "underline" }]}
+      >
+        {title}
+      </AppText>
     </Pressable>
   );
 }

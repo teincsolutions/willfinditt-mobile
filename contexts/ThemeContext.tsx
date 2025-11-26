@@ -1,6 +1,8 @@
-// ThemeContext.tsx
+
 import {
+  ButtonIconSizes,
   ButtonSizes,
+  ButtonTextSizes,
   Colors,
   Fonts,
   FontSizes,
@@ -22,6 +24,8 @@ type ThemeContextType = {
   fontSizes: typeof FontSizes;
   input: typeof InputSizes;
   button: typeof ButtonSizes;
+  iconButton: typeof ButtonIconSizes;
+  textButton: typeof ButtonTextSizes;
   icons: typeof IconSizes;
   shadows: typeof Shadows.light;
 };
@@ -42,6 +46,8 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
       fontSizes: FontSizes,
       input: InputSizes,
       button: ButtonSizes,
+      iconButton:ButtonIconSizes,
+       textButton: ButtonTextSizes,
       icons: IconSizes,
       shadows: Shadows[mode],
     };
