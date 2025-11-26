@@ -30,7 +30,7 @@ export default function AuthTabSwitcher({ active, onChange }: Props) {
       />
 
       {/* REGISTER TAB */}
-      <TabButton
+      <TabButton 
         title="Register"
         onPress={() => onChange("register")}
         active={active === "register"}
