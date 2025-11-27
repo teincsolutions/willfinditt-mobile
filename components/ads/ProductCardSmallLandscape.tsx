@@ -1,5 +1,5 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import { Ad } from "@/types/ads";
+import { Ad } from "@/types/ad";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
@@ -9,7 +9,7 @@ import AppView from "../ui/AppView";
 import IconButton from "../ui/IconButton";
 
 interface Props {
-  ad?: Ad;
+  ad: Ad;
   onPress?: () => void;
   onToggleWishlist?: () => void;
   isWishlisted?: boolean;
@@ -21,7 +21,7 @@ export function ProductCardSmallLandscape({
   onToggleWishlist,
   isWishlisted = false,
 }: Props) {
-  const { colors, spacing, radius, icons, card } = useTheme();
+  const { colors, spacing, radius, icons } = useTheme();
 
   return (
     <TouchableOpacity
@@ -37,7 +37,7 @@ export function ProductCardSmallLandscape({
       activeOpacity={0.9}
     >
       <Image
-        source={{ uri: ad.images[0] || "" }}
+        source={{ uri: ad.images?.[0] || "" }}
         style={[
           styles.image,
           {

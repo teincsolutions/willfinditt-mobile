@@ -6,7 +6,7 @@ import AppView from "../ui/AppView";
 import IconButton from "../ui/IconButton";
 
 export default function ChatInputBar() {
-  const { colors, spacing, radius, icons } = useTheme();
+  const { colors, spacing, icons } = useTheme();
 
   return (
     <AppView

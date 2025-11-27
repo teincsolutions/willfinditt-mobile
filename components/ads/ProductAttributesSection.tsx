@@ -1,4 +1,3 @@
-
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ad, CategoryField } from "@/types";

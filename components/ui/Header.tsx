@@ -20,7 +20,7 @@ type Props = {
 
 export const Header: React.FC<Props> = ({
   title,
-  backgroundColor = "#FFEBD6",
+  backgroundColor,
   left,
   right,
   children,
@@ -30,12 +30,15 @@ export const Header: React.FC<Props> = ({
   navRowStyle,
 }) => {
   const insets = useSafeAreaInsets();
-  const { spacing, iconButton } = useTheme();
+  const { spacing, iconButton, colors } = useTheme();
   return (
     <AppView
       style={[
         styles.wrapper,
-        { backgroundColor, paddingTop: insets.top + 10 },
+        {
+          backgroundColor: backgroundColor || colors.backgroundPrimary,
+          paddingTop: insets.top + 10,
+        },
         containerStyle,
       ]}
     >
@@ -44,7 +47,6 @@ export const Header: React.FC<Props> = ({
         style={[
           styles.navRow,
           {
-            paddingHorizontal: spacing.md,
             paddingBottom: spacing.xs,
           },
           navRowStyle,
@@ -53,7 +55,7 @@ export const Header: React.FC<Props> = ({
         <AppView
           style={[
             styles.side,
-            { width: iconButton.size, maxHeight: iconButton.size },
+            { minWidth: iconButton.size, maxHeight: iconButton.size },
             leftSideStyle,
           ]}
         >
@@ -61,7 +63,13 @@ export const Header: React.FC<Props> = ({
         </AppView>
 
         {typeof title === "string" ? (
-          <AppText numberOfLines={1}>{title}</AppText>
+          <AppText
+            variant="lg"
+            style={{ fontWeight: "bold" }}
+            numberOfLines={1}
+          >
+            {title}
+          </AppText>
         ) : title ? (
           title
         ) : (
@@ -71,7 +79,7 @@ export const Header: React.FC<Props> = ({
         <AppView
           style={[
             styles.side,
-            { width: iconButton.size, maxHeight: iconButton.size },
+            { minWidth: iconButton.size, maxHeight: iconButton.size },
             rightSideStyle,
           ]}
         >
@@ -103,8 +111,5 @@ const styles = StyleSheet.create({
 
   placeholder: {
     flex: 1,
-  },
-  childrenContainer: {
-    marginTop: 4,
   },
 });

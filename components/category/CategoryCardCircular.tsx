@@ -3,6 +3,7 @@ import { Category } from "@/types";
 import { Image, ImageStyle } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleProp, StyleSheet, ViewStyle } from "react-native";
+import AppText from "../ui/AppText";
 import AppView from "../ui/AppView";
 
 interface CategoryCardCircularProps {
@@ -16,9 +17,11 @@ export function CategoryCardCircular({
   styleContainer,
   category,
 }: CategoryCardCircularProps) {
-  const { colors, avatarSize } = useTheme();
+  const { colors, avatarSize, spacing } = useTheme();
   return (
-    <AppView style={[styles.avatarWrapper, styleContainer]}>
+    <AppView
+      style={[styles.avatarWrapper, { gap: spacing.sm }, styleContainer]}
+    >
       <LinearGradient
         colors={[colors.primary, colors.secondary]}
         start={{ x: 0, y: 0 }}
@@ -27,12 +30,12 @@ export function CategoryCardCircular({
           alignItems: "center",
           justifyContent: "center",
           padding: 2,
-          borderRadius: avatarSize.xl,
+          borderRadius: avatarSize.lg,
         }}
       >
         <AppView
           style={{
-            borderRadius: avatarSize.xl,
+            borderRadius: avatarSize.lg,
             padding: 2,
             overflow: "hidden",
             backgroundColor: colors.background,
@@ -42,58 +45,30 @@ export function CategoryCardCircular({
             source={{ uri: category?.icon }}
             style={[
               {
-                width: avatarSize.xl,
-                height: avatarSize.xl,
-                borderRadius: avatarSize.xl,
+                width: avatarSize.lg,
+                height: avatarSize.lg,
+                borderRadius: avatarSize.lg,
               },
               style,
             ]}
           />
         </AppView>
       </LinearGradient>
-    </AppView>
-  );
-}
 
-interface CategoryCardCircularSkeletonProps {
-  styleContainer?: StyleProp<ViewStyle>;
-}
-
-export function CategoryCardCircularSkeleton({
-  styleContainer,
-}: CategoryCardCircularSkeletonProps) {
-  const { colors, avatarSize } = useTheme();
-  return (
-    <AppView style={[styles.avatarWrapper, styleContainer]}>
-      <AppView
-        style={[
-          {
-            width: avatarSize.xl + 4,
-            height: avatarSize.xl + 4,
-            borderRadius: avatarSize.xl + 2,
-            padding: 2,
-            backgroundColor: colors.border,
-            alignItems: "center",
-            justifyContent: "center",
-          },
-        ]}
+      <AppText
+        variant="sm"
+        style={{ width: avatarSize.lg, textAlign: "center" }}
+        numberOfLines={2}
       >
-        <AppView
-          style={{
-            width: avatarSize.xl,
-            height: avatarSize.xl,
-            borderRadius: avatarSize.xl,
-            backgroundColor: colors.backgroundGray,
-          }}
-        />
-      </AppView>
+        {category?.name}
+      </AppText>
     </AppView>
   );
 }
-
 const styles = StyleSheet.create({
   avatarWrapper: {
     position: "relative",
+    alignItems: "center",
   },
   badge: {
     position: "absolute",

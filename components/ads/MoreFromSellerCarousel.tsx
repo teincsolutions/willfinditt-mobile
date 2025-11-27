@@ -1,9 +1,8 @@
-
-import { useTheme } from '@/contexts/ThemeContext';
-import { Ad } from '@/types';
-import React from 'react';
-import { FlatList, View } from 'react-native';
-import { ProductCardSmall } from './ProductCardSmall';
+import { useTheme } from "@/contexts/ThemeContext";
+import { Ad } from "@/types";
+import React from "react";
+import { FlatList, View } from "react-native";
+import { ProductCardSmall } from "./ProductCardSmall";
 
 export default function MoreFromSellerCarousel({ ads }: { ads: Ad[] }) {
   const { spacing } = useTheme();

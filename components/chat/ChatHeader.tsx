@@ -28,7 +28,13 @@ export default function ChatHeader({
       }
       left={
         <IconButton
-          icon={<Ionicons size={icons.md} color={colors.iconBlack} />}
+          icon={
+            <Ionicons
+              name="call-outline"
+              size={icons.md}
+              color={colors.iconBlack}
+            />
+          }
         />
       }
     />

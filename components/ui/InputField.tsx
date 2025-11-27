@@ -14,6 +14,7 @@ import AppText from "./AppText";
 type Props = {
   label?: string;
   value: string;
+  size?: "sm" | "md";
   onChangeText?: (t: string) => void;
   onSubmit?: () => void;
   placeholder?: string;
@@ -23,6 +24,7 @@ type Props = {
   rightIcon?: React.ReactNode;
   error?: string;
   style?: StyleProp<ViewStyle>;
+  inputStyle?: StyleProp<ViewStyle>;
   leftIconStyle?: StyleProp<ViewStyle>;
   rightIconStyle?: StyleProp<ViewStyle>;
 };
@@ -30,6 +32,7 @@ type Props = {
 export default function InputField({
   label,
   value,
+  size = "md",
   onChangeText,
   onSubmit,
   placeholder,
@@ -41,11 +44,13 @@ export default function InputField({
   leftIconStyle,
   error,
   style,
+  inputStyle,
 }: Props) {
-  const { colors, input, spacing } = useTheme();
+  const { colors, input, inputSmall, spacing } = useTheme();
 
+  const inputSizeStyle = size === "sm" ? inputSmall : input;
   return (
-    <View style={[style]}>
+    <View style={style}>
       {label && (
         <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
           {label}
@@ -58,10 +63,11 @@ export default function InputField({
           {
             backgroundColor: colors.inputBg,
             borderColor: colors.border,
-            height: input.height,
-            borderRadius: input.radius,
-            paddingHorizontal: input.paddingHorizontal,
+            height: inputSizeStyle.height,
+            borderRadius: inputSizeStyle.radius,
+            paddingHorizontal: inputSizeStyle.paddingHorizontal,
           },
+          inputStyle,
         ]}
       >
         {leftIcon && (

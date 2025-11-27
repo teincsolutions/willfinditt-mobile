@@ -1,12 +1,14 @@
 // AppText.tsx
+import { FontSizeKey, FontWeightKey, FontWeights } from "@/constants";
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
 import { StyleProp, Text, TextStyle } from "react-native";
 
 type Props = {
   children?: React.ReactNode;
-  variant?: "sm" | "md" | "lg" | "xl" | "xxl";
+  variant?: FontSizeKey;
   style?: StyleProp<TextStyle>;
+  fontWeight?: FontWeightKey;
   numberOfLines?: number;
 };
 
@@ -15,12 +17,20 @@ export default function AppText({
   variant = "md",
   style,
   numberOfLines,
+  fontWeight,
 }: Props) {
   const { colors, fontSizes } = useTheme();
 
   return (
     <Text
-      style={[{ color: colors.text, fontSize: fontSizes[variant] }, style]}
+      style={[
+        {
+          color: colors.text,
+          fontSize: fontSizes[variant],
+          fontWeight: FontWeights[fontWeight || "regular"],
+        },
+        style,
+      ]}
       numberOfLines={numberOfLines}
     >
       {children}

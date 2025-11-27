@@ -1,30 +1,47 @@
-import AppText from "@/components/AppText/AppText";
+import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 
-export default function SearchSuggestions({ suggestions, onSelect }) {
-  const { colors, spacing, radius } = useTheme();
+interface SearchSuggestionsProps {
+  suggestions: string[];
+  onSelect: (suggestion: string) => void;
+}
+
+export function SearchSuggestions({
+  suggestions,
+  onSelect,
+}: SearchSuggestionsProps) {
+  const { colors, spacing, radius, shadows } = useTheme();
 
   if (!suggestions.length) return null;
 
   return (
     <View
       style={[
-        styles.wrap,
         {
-          backgroundColor: colors.white,
+          backgroundColor: colors.background,
           marginHorizontal: spacing.lg,
           borderRadius: radius.md,
           marginTop: spacing.sm,
           paddingVertical: spacing.sm,
+          shadowColor: shadows.shadowColor,
+          shadowOpacity: shadows.shadowOpacity,
+          shadowRadius: shadows.shadowRadius,
+          elevation: shadows.elevation,
         },
       ]}
     >
       {suggestions.map((item, i) => (
         <TouchableOpacity
           key={i}
-          style={[styles.item, { padding: spacing.md }]}
+          style={[
+            {
+              borderBottomWidth: 1,
+              borderColor: colors.border,
+              padding: spacing.md,
+            },
+          ]}
           onPress={() => onSelect(item)}
         >
           <AppText>{item}</AppText>
@@ -33,16 +50,3 @@ export default function SearchSuggestions({ suggestions, onSelect }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: {
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  item: {
-    borderBottomWidth: 1,
-    borderColor: "rgba(0,0,0,0.05)",
-  },
-});

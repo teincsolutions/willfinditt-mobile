@@ -1,27 +1,50 @@
 // SecondaryTextButton.tsx
-import React from "react";
-import { Pressable } from "react-native";
+import { FontSizeKey } from "@/constants";
+import { useTheme } from "@/hooks/useTheme";
+import React, { ReactNode } from "react";
+import { Pressable, StyleProp, StyleSheet, TextStyle } from "react-native";
 import AppText from "./AppText";
 
 type Props = {
   title: string;
+  titleStyle?: StyleProp<TextStyle>;
+  variant?: FontSizeKey;
+  isLeft?: boolean;
+  icon?: ReactNode;
   underline?: boolean;
   onPress: () => void;
 };
 
 export default function SecondaryTextButton({
   title,
+  variant = "md",
   underline,
+  icon,
+  isLeft,
+  titleStyle,
   onPress,
 }: Props) {
+  const { spacing } = useTheme();
+
   return (
-    <Pressable onPress={onPress}>
+    <Pressable style={[styles.row, { gap: spacing.sm }]} onPress={onPress}>
+      {!!isLeft && icon}
       <AppText
-        variant="md"
-        style={[underline && { textDecorationLine: "underline" }]}
+        variant={variant}
+        style={[underline && { textDecorationLine: "underline" }, titleStyle]}
       >
         {title}
       </AppText>
+
+      {!isLeft && icon}
     </Pressable>
   );
 }
+const styles = StyleSheet.create({
+  row: {
+    flexShrink: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

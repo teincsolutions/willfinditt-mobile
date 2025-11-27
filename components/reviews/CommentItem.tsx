@@ -1,6 +1,7 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import AppText from "../ui/AppText";
 
 interface Props {
   avatar: string;
@@ -19,11 +20,15 @@ export default function CommentItem({
   repliesCount = 0,
   onPressReplies,
 }: Props) {
-  const { colors, spacing, typography } = useTheme();
+  const { colors, spacing } = useTheme();
 
   return (
-    <View style={[styles.row, { paddingHorizontal: spacing.lg, paddingVertical: spacing.md }]}>
-      
+    <View
+      style={[
+        styles.row,
+        { paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
+      ]}
+    >
       {/* Avatar + vertical line */}
       <View style={styles.leftColumn}>
         <Image source={{ uri: avatar }} style={styles.avatar} />
@@ -31,7 +36,7 @@ export default function CommentItem({
           style={[
             styles.line,
             {
-              backgroundColor: colors.gray300,
+              backgroundColor: colors.backgroundGray,
               marginLeft: 20, // aligned under center of avatar
             },
           ]}
@@ -41,22 +46,25 @@ export default function CommentItem({
       {/* Comment content */}
       <View style={styles.content}>
         <View style={styles.headerRow}>
-          <Text style={[typography.body, { color: colors.gray800, fontWeight: "600" }]}>
+          <AppText
+            variant="md"
+            style={[{ color: colors.text, fontWeight: "600" }]}
+          >
             {name}
-          </Text>
-          <Text style={[typography.small, { color: colors.gray500 }]}>{time}</Text>
+          </AppText>
+          <AppText style={[{ color: colors.textGray }]}>{time}</AppText>
         </View>
-
-        <Text style={[typography.body, { color: colors.gray800, marginTop: 4 }]}>
-          {text}
-        </Text>
+        <AppText style={[{ color: colors.text, marginTop: 4 }]}>{text}</AppText>
 
         {/* Replies count */}
         {repliesCount > 0 && (
-          <TouchableOpacity onPress={onPressReplies} style={{ marginTop: spacing.sm }}>
-            <Text style={[typography.small, { color: colors.gray600 }]}>
+          <TouchableOpacity
+            onPress={onPressReplies}
+            style={{ marginTop: spacing.sm }}
+          >
+            <AppText variant="sm" style={[{ color: colors.textGray }]}>
               {repliesCount} replies
-            </Text>
+            </AppText>
           </TouchableOpacity>
         )}
       </View>

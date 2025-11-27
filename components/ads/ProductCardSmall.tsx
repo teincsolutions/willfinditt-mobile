@@ -11,7 +11,7 @@ interface ProductCardSmallProps {
 }
 
 export function ProductCardSmall({ ad, onPress }: ProductCardSmallProps) {
-  const { radius, spacing, card } = useTheme();
+  const { radius, card } = useTheme();
   return (
     <Pressable
       onPress={onPress}
@@ -28,14 +28,15 @@ export function ProductCardSmall({ ad, onPress }: ProductCardSmallProps) {
         source={{ uri: ad.images?.[0] }}
         style={{ width: 120, height: 90, borderRadius: radius.md }}
       />
-      {ad.price > 0 && (
-        <AppText variant="sm" style={{ marginTop: 4 }}>
-          {ad.currency}
-          {ad.price}
-        </AppText>
-      )}
+      {ad.price ||
+        (0 > 0 && (
+          <AppText variant="sm" style={{ marginTop: 4 }}>
+            {ad.currency}
+            {ad.price}
+          </AppText>
+        ))}
 
-      {ad.price == 0 && (
+      {ad.price === 0 && (
         <AppText variant="sm" style={{ marginTop: 4 }}>
           Contact for price
         </AppText>

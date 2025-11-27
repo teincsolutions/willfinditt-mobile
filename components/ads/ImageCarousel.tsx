@@ -1,7 +1,7 @@
-import DotPagination from "@/components/ui/DotPagination";
 import { Image } from "expo-image";
 import React, { useRef, useState } from "react";
 import { Dimensions, FlatList } from "react-native";
+import { DotPagination } from "../sliders/DotPagination";
 import AppView from "../ui/AppView";
 
 const { width } = Dimensions.get("window");
@@ -9,7 +9,7 @@ const { width } = Dimensions.get("window");
 export function ImageCarousel({ images }: { images: string[] }) {
   const [index, setIndex] = useState(0);
   const ref = useRef<FlatList>(null);
-  
+
   return (
     <AppView>
       <FlatList

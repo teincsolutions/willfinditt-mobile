@@ -1,6 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { router } from "expo-router";
-import { ArrowLeft } from "iconsax-react-native";
+import { ArrowLeft } from "iconsax-react-nativejs";
 import React from "react";
 import { StyleSheet, TouchableOpacity, ViewStyle } from "react-native";
 import AppText from "./AppText";

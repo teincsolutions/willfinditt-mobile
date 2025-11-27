@@ -9,6 +9,7 @@ import {
   FontSizes,
   IconSizes,
   InputSizes,
+  InputSmSizes,
   PillSizes,
   Radius,
   Shadows,
@@ -25,6 +26,7 @@ type ThemeContextType = {
   fonts: typeof Fonts;
   fontSizes: typeof FontSizes;
   input: typeof InputSizes;
+  inputSmall: typeof InputSizes;
   button: typeof ButtonSizes;
   iconButton: typeof ButtonIconSizes;
   textButton: typeof ButtonTextSizes;
@@ -50,6 +52,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
       fonts: Fonts,
       fontSizes: FontSizes,
       input: InputSizes,
+      inputSmall: InputSmSizes,
       button: ButtonSizes,
       iconButton: ButtonIconSizes,
       textButton: ButtonTextSizes,

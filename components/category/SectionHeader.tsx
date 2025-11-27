@@ -1,23 +1,19 @@
 // components/home/HomeSectionHeader.tsx
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
-import { DirectDown, DirectUp } from "iconsax-react-nativejs";
 import React from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
-import { TextButton } from "../ui/TextButton";
 
 export default function SectionHeader({
   title,
   style,
-  showAll,
-  onPress,
+  left,
 }: {
   title: string;
   style?: StyleProp<ViewStyle>;
-  showAll?: boolean;
-  onPress: (showAll: boolean) => void;
+  left?: React.ReactNode;
 }) {
-  const { spacing, colors, icons } = useTheme();
+  const { spacing } = useTheme();
 
   return (
     <View
@@ -34,27 +30,7 @@ export default function SectionHeader({
       <AppText variant="lg" style={{ fontWeight: "bold" }}>
         {title}
       </AppText>
-      {showAll ? (
-        <TextButton
-          icon={
-            <DirectUp variant="Bold" color={colors.iconBlack} size={icons.sm} />
-          }
-          onPress={() => onPress(true)}
-          title="See fewer"
-        />
-      ) : (
-        <TextButton
-          icon={
-            <DirectDown
-              variant="Bold"
-              color={colors.iconBlack}
-              size={icons.sm}
-            />
-          }
-          onPress={() => onPress(false)}
-          title="See all"
-        />
-      )}
+      {left && left}
     </View>
   );
 }

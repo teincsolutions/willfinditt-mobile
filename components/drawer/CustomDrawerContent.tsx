@@ -3,6 +3,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import React from "react";
 
+import { router } from "expo-router";
 import DrawerMenuItem from "./DrawerMenuItem";
 import DrawerPromoCard from "./DrawerPromoCard";
 import DrawerUserHeader from "./DrawerUserHeader";
@@ -33,7 +34,9 @@ export default function CustomDrawerContent() {
       />
       <DrawerMenuItem
         label="Categories"
-        onPress={() => {}}
+        onPress={() => {
+          router.push("/categories");
+        }}
         icon={<Feather name="grid" size={icons.md} color={colors.text} />}
       />
       <DrawerMenuItem

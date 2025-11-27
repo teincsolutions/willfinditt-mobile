@@ -11,12 +11,20 @@ export const InputSizes = {
   radius: Radius.xxl,
 };
 
+export const InputSmSizes = {
+  height: 44,
+  paddingHorizontal: Spacing.sm,
+  gap: Spacing.sm,
+  borderWidth: 1,
+  radius: Radius.xl,
+};
+
 export const ButtonSizes = {
   height: 52,
   paddingHorizontal: Spacing.lg,
   radius: Radius.xxl,
   gap: Spacing.sm,
-  borderWidth: 2
+  borderWidth: 2,
 };
 
 export const ButtonIconSizes = {
@@ -27,7 +35,7 @@ export const ButtonIconSizes = {
 export const ButtonTextSizes = {
   height: 40,
   paddingHorizontal: Spacing.md,
-  borderRadius: Radius.xxl
+  borderRadius: Radius.xxl,
 };
 
 export const IconSizes = {

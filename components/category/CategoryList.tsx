@@ -2,21 +2,24 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Category } from "@/types";
 import { ReactElement } from "react";
 import { FlatList } from "react-native";
+import AppText from "../ui/AppText";
 import AppView from "../ui/AppView";
-import { CategoryCardCircularSkeleton } from "./CategoryCardCircular";
+import { CategoryCardCircularSkeleton } from "./CategoryCardCircularSkeleton";
 
 export function CategoryList({
   data,
   renderItem,
   isGrid = false,
   onEndReached,
+  isLoading,
 }: {
   data: Category[];
   renderItem: ({ item }: { item: Category }) => ReactElement;
   isGrid?: boolean;
   onEndReached?: () => void;
+  isLoading?: boolean;
 }) {
-  const { spacing } = useTheme();
+  const { spacing, colors } = useTheme();
 
   return (
     <FlatList
@@ -28,6 +31,7 @@ export function CategoryList({
       contentContainerStyle={{
         paddingHorizontal: isGrid ? spacing.md : spacing.lg,
         gap: spacing.md,
+        width: "100%",
       }}
       key={isGrid ? "grid" : "list"}
       horizontal={!isGrid}
@@ -35,25 +39,41 @@ export function CategoryList({
       onEndReached={onEndReached}
       onEndReachedThreshold={0.5}
       ListEmptyComponent={
-        <AppView
-          style={{
-            paddingHorizontal: isGrid ? spacing.md : spacing.lg,
-            gap: spacing.md,
-            ...(isGrid
-              ? { flexDirection: "row", flexWrap: "wrap" }
-              : { flexDirection: "row" }),
-          }}
-        >
-          {isGrid
-            ? Array(8)
-                .fill(null)
-                .map((_, index) => <CategoryCardCircularSkeleton key={index} />)
-            : Array(3)
-                .fill(null)
-                .map((_, index) => (
-                  <CategoryCardCircularSkeleton key={index} />
-                ))}
-        </AppView>
+        isLoading ? (
+          <AppView
+            style={{
+              paddingHorizontal: isGrid ? spacing.md : spacing.lg,
+              gap: spacing.md,
+              ...(isGrid
+                ? { flexDirection: "row", flexWrap: "wrap" }
+                : { flexDirection: "row" }),
+            }}
+          >
+            {isGrid
+              ? Array(8)
+                  .fill(null)
+                  .map((_, index) => (
+                    <CategoryCardCircularSkeleton key={index} />
+                  ))
+              : Array(4)
+                  .fill(null)
+                  .map((_, index) => (
+                    <CategoryCardCircularSkeleton key={index} />
+                  ))}
+          </AppView>
+        ) : (
+          <AppView
+            style={{
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            {/* You can add a "No Categories Found" message here if needed */}
+            <AppText style={{ textAlign: "center", color: colors.textGray }}>
+              No Categories Found
+            </AppText>
+          </AppView>
+        )
       }
     />
   );

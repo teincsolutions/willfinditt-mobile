@@ -10,18 +10,27 @@ import SectionHeader from "@/components/category/SectionHeader";
 import { PromoSlider } from "@/components/sliders/PromoSlider";
 import AppView from "@/components/ui/AppView";
 import FilterTabs from "@/components/ui/FilterTabs";
+import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
+import { ToggleAction } from "@/components/ui/ToggleAction";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ad, Category } from "@/types";
 
-export default function HomeScreen({
-  categories,
-  ads,
-}: {
-  categories: Category[];
-  ads: Ad[];
-}) {
+export default function HomeScreen() {
   const { spacing, colors } = useTheme();
   const [selectedTab, setSelectedTab] = useState("Trending");
+  const [showAllCategories, setShowAllCategories] = useState(false);
+
+  // Dummy data
+  const categories: Category[] = [
+    { id: "1", name: "Electronics", icon: "https://i.imgur.com/1.png" },
+    { id: "2", name: "Fashion", icon: "https://i.imgur.com/2.png" },
+    { id: "3", name: "Home", icon: "https://i.imgur.com/3.png" },
+    { id: "4", name: "Books", icon: "https://i.imgur.com/4.png" },
+    { id: "5", name: "Toys", icon: "https://i.imgur.com/5.png" },
+    { id: "6", name: "Sports", icon: "https://i.imgur.com/6.png" },
+  ];
+
+  const ads: Ad[] = [];
 
   const renderHeader = () => (
     <AppView
@@ -31,10 +40,18 @@ export default function HomeScreen({
       }}
     >
       {/* ALL CATEGORIES */}
-      <SectionHeader title="All Categories" onPress={() => {}} />
+      <SectionHeader
+        title="All Categories"
+        left={
+          <ToggleAction
+            toggle={showAllCategories}
+            onToggle={setShowAllCategories}
+          />
+        }
+      />
 
       <CategoryList
-        data={categories}
+        data={[]}
         renderItem={({ item }) => <CategoryCardCircular category={item} />}
       />
 
@@ -62,12 +79,23 @@ export default function HomeScreen({
       />
 
       {/* NEW ARRIVAL */}
-      <SectionHeader title="New Arrival" onPress={() => {}} />
+      <SectionHeader
+        title="New Arrival"
+        left={
+          <SecondaryTextButton
+            variant="lg"
+            onPress={() => {}}
+            title="See All"
+            titleStyle={{ color: colors.textGray }}
+          />
+        }
+      />
     </AppView>
   );
 
   return (
     <FlatList
+      style={{ backgroundColor: colors.backgroundPrimary }}
       data={ads}
       numColumns={2}
       keyExtractor={(item) => item.id}
@@ -82,7 +110,6 @@ export default function HomeScreen({
         </View>
       )}
       contentContainerStyle={{
-        backgroundColor: colors.background,
         paddingBottom: spacing.lg,
       }}
       showsVerticalScrollIndicator={false}

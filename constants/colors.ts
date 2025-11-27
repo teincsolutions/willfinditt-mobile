@@ -8,6 +8,7 @@ export const Colors = {
     text: "#1A1A1A",
     textWhite: "#FFFFFF",
     textGray: "#64748B",
+    textLightGray: "#A0A0A0",
     primary: "#EF702A",
     secondary: "#FFCB11",
     accent: "#FFCB11",
@@ -28,6 +29,7 @@ export const Colors = {
     black: "#333333",
     text: "#FFFFFF",
     textGray: "#FEFEFE",
+    textLightGray: "#D4D4D8",
     textWhite: "#ffffff",
     primary: "#FF823A", // Enhanced orange for dark mode
     secondary: "#FFD84A", // Enhanced yellow for dark mode

@@ -1,6 +1,8 @@
 import { useTheme } from "@/contexts/ThemeContext";
+import { Image } from "expo-image";
 import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import AppText from "../ui/AppText";
 
 interface ReplyProps {
   avatar: string;
@@ -9,15 +11,15 @@ interface ReplyProps {
   time: string;
 }
 
-export default function ReplyItem({ avatar, name, text, time }: ReplyProps) {
-  const { colors, spacing, typography } = useTheme();
+export function ReplyItem({ avatar, name, text, time }: ReplyProps) {
+  const { colors, spacing, avatarSize } = useTheme();
 
   return (
     <View
       style={[
         styles.row,
         {
-          marginLeft: 64, // indentation for reply
+          marginLeft: spacing.xxxl, // indentation for reply
           paddingVertical: spacing.sm,
           paddingRight: spacing.lg,
         },
@@ -27,9 +29,13 @@ export default function ReplyItem({ avatar, name, text, time }: ReplyProps) {
       <Image
         source={{ uri: avatar }}
         style={[
-          styles.avatar,
           {
             marginRight: spacing.sm,
+            height: avatarSize.sm,
+            width: avatarSize.sm,
+            borderRadius: avatarSize.sm,
+            borderWidth: 1,
+            borderColor: colors.border,
           },
         ]}
       />
@@ -37,27 +43,20 @@ export default function ReplyItem({ avatar, name, text, time }: ReplyProps) {
       {/* Text content */}
       <View style={styles.content}>
         <View style={styles.headerRow}>
-          <Text
-            style={[
-              typography.body,
-              { color: colors.gray800, fontWeight: "600" },
-            ]}
-          >
+          <AppText style={[{ color: colors.textGray, fontWeight: "600" }]}>
             {name}
-          </Text>
-          <Text style={[typography.small, { color: colors.gray500 }]}>
+          </AppText>
+          <AppText variant="sm" style={[{ color: colors.textLightGray }]}>
             {time}
-          </Text>
+          </AppText>
         </View>
 
-        <Text
-          style={[
-            typography.body,
-            { color: colors.gray800, marginTop: 4 },
-          ]}
+        <AppText
+          variant="sm"
+          style={[{ color: colors.text, marginTop: spacing.xs }]}
         >
           {text}
-        </Text>
+        </AppText>
       </View>
     </View>
   );
@@ -67,11 +66,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "flex-start",
-  },
-  avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
   },
   content: {
     flex: 1,
