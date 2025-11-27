@@ -1,7 +1,7 @@
 // screens/HomeScreen.tsx
 
 import React, { useState } from "react";
-import { FlatList, View } from "react-native";
+import { Dimensions, FlatList } from "react-native";
 
 import ProductCard from "@/components/ads/ProductCard";
 import { CategoryCardCircular } from "@/components/category/CategoryCardCircular";
@@ -14,6 +14,8 @@ import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { ToggleAction } from "@/components/ui/ToggleAction";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ad, Category } from "@/types";
+
+const { width: DEVICE_WIDTH } = Dimensions.get("window");
 
 export default function HomeScreen() {
   const { spacing, colors } = useTheme();
@@ -30,7 +32,77 @@ export default function HomeScreen() {
     { id: "6", name: "Sports", icon: "https://i.imgur.com/6.png" },
   ];
 
-  const ads: Ad[] = [];
+  const ads: Ad[] = [
+    {
+      id: "1",
+      title: "Smartphone",
+      price: 299.99,
+      images: [
+        "https://images-na.ssl-images-amazon.com/images/I/61zIwprkyhL._SX355_.jpg",
+      ],
+      description: "A great smartphone with awesome features.",
+      currency: "GHS",
+      views: 150,
+      isNegotiable: true,
+      userId: "user1",
+      categoryId: "1",
+    },
+    {
+      id: "2",
+      title: "Running Shoes",
+      price: 79.99,
+      images: ["http://img.wfrcdn.com/lf/50/hash/1888/3170512/1/1159583.jpg"],
+      description: "Comfortable and durable running shoes.",
+      currency: "GHS",
+      views: 85,
+      isNegotiable: false,
+      userId: "user2",
+      categoryId: "6",
+    },
+    {
+      id: "3",
+      title: "Coffee Maker",
+      price: 49.99,
+      images: [
+        "https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      ],
+      description: "Brew the perfect cup of coffee every morning.",
+      currency: "GHS",
+      views: 60,
+      isNegotiable: true,
+      userId: "user3",
+      categoryId: "3",
+    },
+
+    {
+      id: "4",
+      title: "Wireless Headphones",
+      price: 99.99,
+      images: [
+        "https://images.unsplash.com/photo-1704307068094-c2c88c467014?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      ],
+      description: "Experience high-quality sound without the wires.",
+      currency: "GHS",
+      views: 120,
+      isNegotiable: false,
+      userId: "user4",
+      categoryId: "1",
+    },
+    {
+      id: "5",
+      title: "Mountain Bike",
+      price: 499.99,
+      images: [
+        "https://images.unsplash.com/photo-1699528136769-d795893462c6?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      ],
+      description: "Conquer any terrain with this rugged mountain bike.",
+      currency: "GHS",
+      views: 45,
+      isNegotiable: true,
+      userId: "user5",
+      categoryId: "6",
+    },
+  ];
 
   const renderHeader = () => (
     <AppView
@@ -51,7 +123,7 @@ export default function HomeScreen() {
       />
 
       <CategoryList
-        data={[]}
+        data={categories}
         renderItem={({ item }) => <CategoryCardCircular category={item} />}
       />
 
@@ -59,13 +131,15 @@ export default function HomeScreen() {
       <PromoSlider
         data={[
           {
-            image: "https://i.imgur.com/kLOU0R8.png",
+            source: require("@/assets/images/woman-with-shopping-bags.png"),
             title: "40–50% OFF",
             subtitle: "Now in all categories in WILLFINDITT",
+            color: colors.text,
           },
           {
-            image: "https://i.imgur.com/EFltsW9.png",
+            source: require("@/assets/images/independence-square.png"),
             title: "Find products anywhere in Ghana",
+            positionRight: true,
             subtitle: "Choose your location to find items near you.",
           },
         ]}
@@ -102,15 +176,12 @@ export default function HomeScreen() {
       ListHeaderComponent={renderHeader}
       columnWrapperStyle={{
         justifyContent: "space-between",
-        paddingHorizontal: spacing.lg,
+        paddingHorizontal: spacing.md,
       }}
-      renderItem={({ item }) => (
-        <View style={{ width: "48%" }}>
-          <ProductCard ad={item} />
-        </View>
-      )}
+      renderItem={({ item }) => <ProductCard ad={item} />}
       contentContainerStyle={{
         paddingBottom: spacing.lg,
+        gap: spacing.xs,
       }}
       showsVerticalScrollIndicator={false}
     />

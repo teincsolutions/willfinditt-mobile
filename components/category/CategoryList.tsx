@@ -1,5 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { Category } from "@/types";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { ReactElement } from "react";
 import { FlatList } from "react-native";
 import AppText from "../ui/AppText";
@@ -19,7 +20,7 @@ export function CategoryList({
   onEndReached?: () => void;
   isLoading?: boolean;
 }) {
-  const { spacing, colors } = useTheme();
+  const { spacing, colors, icons } = useTheme();
 
   return (
     <FlatList
@@ -66,8 +67,14 @@ export function CategoryList({
             style={{
               alignItems: "center",
               flex: 1,
+              gap: spacing.md,
             }}
           >
+            <MaterialCommunityIcons
+              name="package-variant-closed-remove"
+              size={icons.xl}
+              color={colors.iconGray}
+            />
             {/* You can add a "No Categories Found" message here if needed */}
             <AppText style={{ textAlign: "center", color: colors.textGray }}>
               No Categories Found

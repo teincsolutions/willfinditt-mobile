@@ -12,9 +12,8 @@ export interface Ad {
   currency: string;
   condition?: AdCondition;
   images: string[];
-  videos: string[];
-  status: AdStatus;
-  isPromoted: boolean;
+  status?: AdStatus;
+  isPromoted?: boolean;
   promotionEnds?: string;
   views: number;
   userId: string;
@@ -27,8 +26,8 @@ export interface Ad {
   contactEmail?: string;
   isNegotiable: boolean;
   expiresAt?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   isSaved?: boolean;
   user?: User;
   category?: Category;
