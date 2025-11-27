@@ -1,12 +1,13 @@
 // HeaderBack.tsx
 import { useTheme } from "@/contexts/ThemeContext";
 import Entypo from "@expo/vector-icons/Entypo";
-import React from "react";
+import React, { ReactNode } from "react";
 import { Pressable, StyleSheet, ViewStyle } from "react-native";
 
 type Props = {
   onPress?: () => void;
   style?: ViewStyle;
+  icon?: ReactNode;
 };
 
 export default function IconButton({ onPress, style }: Props) {

@@ -1,31 +1,44 @@
 // InputField.tsx
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
-import { KeyboardTypeOptions, StyleSheet, TextInput, View, ViewStyle } from "react-native";
+import {
+  KeyboardTypeOptions,
+  StyleProp,
+  StyleSheet,
+  TextInput,
+  View,
+  ViewStyle,
+} from "react-native";
 import AppText from "./AppText";
 
 type Props = {
   label?: string;
   value: string;
-  onChangeText: (t: string) => void;
+  onChangeText?: (t: string) => void;
+  onSubmit?: () => void;
   placeholder?: string;
   secure?: boolean;
   keyboardType?: KeyboardTypeOptions;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   error?: string;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
+  leftIconStyle?: StyleProp<ViewStyle>;
+  rightIconStyle?: StyleProp<ViewStyle>;
 };
 
 export default function InputField({
   label,
   value,
   onChangeText,
+  onSubmit,
   placeholder,
   secure,
   keyboardType,
   leftIcon,
   rightIcon,
+  rightIconStyle,
+  leftIconStyle,
   error,
   style,
 }: Props) {
@@ -51,7 +64,11 @@ export default function InputField({
           },
         ]}
       >
-        {leftIcon && <View style={styles.icon}>{leftIcon}</View>}
+        {leftIcon && (
+          <View style={[{ marginRight: spacing.sm }, leftIconStyle]}>
+            {leftIcon}
+          </View>
+        )}
 
         <TextInput
           value={value}
@@ -61,9 +78,14 @@ export default function InputField({
           secureTextEntry={secure}
           keyboardType={keyboardType}
           style={[styles.input, { color: colors.text }]}
+          onSubmitEditing={onSubmit}
         />
 
-        {rightIcon && <View style={styles.icon}>{rightIcon}</View>}
+        {rightIcon && (
+          <View style={[{ marginLeft: spacing.sm }, rightIconStyle]}>
+            {rightIcon}
+          </View>
+        )}
       </View>
 
       {error && <AppText style={{ color: colors.error }}>{error}</AppText>}
@@ -78,5 +100,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   input: { flex: 1 },
-  icon: { marginRight: 8 },
 });

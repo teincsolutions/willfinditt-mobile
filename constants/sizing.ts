@@ -59,3 +59,11 @@ export const CardSizes = {
   gap: Spacing.md,
 };
 export type CardSizeKey = keyof typeof CardSizes;
+
+export const PillSizes = {
+  paddingHorizontal: Spacing.md,
+  paddingVertical: Spacing.sm,
+  borderRadius: Radius.xl,
+  borderWidth: 1,
+};
+export type PillSizeKey = keyof typeof PillSizes;

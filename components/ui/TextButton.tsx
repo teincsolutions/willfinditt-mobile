@@ -9,7 +9,7 @@ type Props = {
   underline?: boolean;
   isLeft?: boolean;
   icon?: ReactNode;
-  onPress: () => void;
+  onPress?: () => void;
 };
 
 export function TextButton({ title, underline, icon, isLeft, onPress }: Props) {

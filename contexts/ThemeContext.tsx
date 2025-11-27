@@ -1,13 +1,14 @@
-
 import {
   ButtonIconSizes,
   ButtonSizes,
   ButtonTextSizes,
+  CardSizes,
   Colors,
   Fonts,
   FontSizes,
   IconSizes,
   InputSizes,
+  PillSizes,
   Radius,
   Shadows,
   Spacing,
@@ -28,6 +29,8 @@ type ThemeContextType = {
   textButton: typeof ButtonTextSizes;
   icons: typeof IconSizes;
   shadows: typeof Shadows.light;
+  card: typeof CardSizes;
+  pill: typeof PillSizes;
 };
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
@@ -46,10 +49,12 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
       fontSizes: FontSizes,
       input: InputSizes,
       button: ButtonSizes,
-      iconButton:ButtonIconSizes,
-       textButton: ButtonTextSizes,
+      iconButton: ButtonIconSizes,
+      textButton: ButtonTextSizes,
       icons: IconSizes,
       shadows: Shadows[mode],
+      card: CardSizes,
+      pill: PillSizes,
     };
   }, [mode]);
 
