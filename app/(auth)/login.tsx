@@ -15,11 +15,11 @@ import * as Yup from "yup";
 import AuthTabSwitcher from "@/components/auth/AuthTabSwitcher";
 import HeaderBackground from "@/components/auth/HeaderBackground";
 import ScreenWrapper from "@/components/auth/ScreenWrapper";
-import SecondaryTextButton from "@/components/auth/SecondaryTextButton";
 import SocialLogins from "@/components/auth/SocialLogins";
 import FormDividerText from "@/components/ui/FormDividerText";
 import InputField from "@/components/ui/InputField";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { setAuthenticated, setHasOpenedApp } from "@/lib/storage";
 import Feather from "@expo/vector-icons/Feather";
@@ -35,7 +35,7 @@ export default function AuthScreen() {
     await setAuthenticated(true);
 
     // Navigate to the main tabs
-    router.replace("/(tabs)");
+    router.replace("/(drawers)");
   };
 
   const window = useWindowDimensions();
@@ -169,7 +169,7 @@ export default function AuthScreen() {
                     <PrimaryButton title="Login" onPress={handleSubmit} />
 
                     {/* DIVIDER */}
-                    <FormDividerText text="OR CONTINUE WITH" />
+                    <FormDividerText text="or Continue with" />
 
                     {/* SOCIAL ROW */}
                     <SocialLogins onGoogle={() => {}} onApple={() => {}} />

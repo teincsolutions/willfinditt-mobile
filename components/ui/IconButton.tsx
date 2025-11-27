@@ -1,16 +1,15 @@
-// HeaderBack.tsx
 import { useTheme } from "@/contexts/ThemeContext";
 import Entypo from "@expo/vector-icons/Entypo";
-import React, { ReactNode } from "react";
-import { Pressable, StyleSheet, ViewStyle } from "react-native";
+import React from "react";
+import { Pressable, StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 type Props = {
   onPress?: () => void;
-  style?: ViewStyle;
-  icon?: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  icon?: React.ReactNode;
 };
 
-export default function IconButton({ onPress, style }: Props) {
+export default function IconButton({ onPress, style, icon }: Props) {
   const { icons, iconButton, colors } = useTheme();
 
   return (
@@ -27,11 +26,15 @@ export default function IconButton({ onPress, style }: Props) {
         style,
       ]}
     >
-      <Entypo
-        name="chevron-with-circle-left"
-        color={colors.iconBlack}
-        size={icons.md}
-      />
+      {icon ? (
+        icon
+      ) : (
+        <Entypo
+          name="chevron-with-circle-left"
+          color={colors.iconBlack}
+          size={icons.md}
+        />
+      )}
     </Pressable>
   );
 }

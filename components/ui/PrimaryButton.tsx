@@ -22,8 +22,7 @@ export default function PrimaryButton({
 
   return (
     <LinearGradient
-
-      colors={[colors.primary, colors.acent]}
+      colors={[colors.primary, colors.accent]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={[
@@ -34,13 +33,8 @@ export default function PrimaryButton({
           opacity: disabled ? 0.6 : 1,
         },
       ]}
-
     >
-      <Pressable
-        onPress={onPress}
-        disabled={disabled}
-        style={styles.btn}
-      >
+      <Pressable onPress={onPress} disabled={disabled} style={styles.btn}>
         <AppText variant="lg" style={{ color: "#FFF" }}>
           {loading ? "..." : title}
         </AppText>

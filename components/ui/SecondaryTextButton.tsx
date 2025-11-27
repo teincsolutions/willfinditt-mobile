@@ -1,7 +1,7 @@
 // SecondaryTextButton.tsx
 import React from "react";
 import { Pressable } from "react-native";
-import AppText from "../ui/AppText";
+import AppText from "./AppText";
 
 type Props = {
   title: string;

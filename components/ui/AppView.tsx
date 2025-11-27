@@ -1,18 +1,11 @@
-import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
-import { View } from "react-native";
+import { StyleProp, View, ViewStyle } from "react-native";
 
 type Props = {
   children?: React.ReactNode;
-  style?: any;
+  style?: StyleProp<ViewStyle>;
 };
 
 export default function AppView({ children, style }: Props) {
-  const { colors } = useTheme();
-
-  return (
-    <View style={[{ backgroundColor: colors.background }, style]}>
-      {children}
-    </View>
-  );
+  return <View style={[style]}>{children}</View>;
 }

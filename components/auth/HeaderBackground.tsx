@@ -1,6 +1,7 @@
 // components/HeaderBackground/HeaderBackground.tsx
 
 import { useTheme } from "@/contexts/ThemeContext";
+import { setHasOpenedApp } from "@/lib/storage";
 import Entypo from "@expo/vector-icons/Entypo";
 import { router } from "expo-router";
 import React from "react";
@@ -43,7 +44,7 @@ export default function HeaderBackground({ title, subtitle }: Props) {
           {
             width: diameter * 0.75,
             height: diameter * 0.75,
-            backgroundColor: colors.acent, // mid orange
+            backgroundColor: colors.accent, // mid orange
             left: -diameter * 0.35,
             top: -diameter * 0.25,
             opacity: 0.5,
@@ -75,11 +76,14 @@ export default function HeaderBackground({ title, subtitle }: Props) {
             />
           }
           title="Skip"
-          onPress={() => router.back()}
+          onPress={() => {
+            setHasOpenedApp(true);
+            router.push("/(drawers)");
+          }}
         />
       </View>
       {/* TEXT CONTENT */}
-      <View style={[styles.textWrapper, {marginTop:spacing.lg}]}>
+      <View style={[styles.textWrapper, { marginTop: spacing.lg }]}>
         <AppText
           variant="xxl"
           style={{ color: colors.textWhite, fontWeight: "700" }}

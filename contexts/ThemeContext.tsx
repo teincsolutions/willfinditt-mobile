@@ -1,4 +1,5 @@
 import {
+  AvatarSizes,
   ButtonIconSizes,
   ButtonSizes,
   ButtonTextSizes,
@@ -27,6 +28,7 @@ type ThemeContextType = {
   button: typeof ButtonSizes;
   iconButton: typeof ButtonIconSizes;
   textButton: typeof ButtonTextSizes;
+  avatarSize: typeof AvatarSizes;
   icons: typeof IconSizes;
   shadows: typeof Shadows.light;
   card: typeof CardSizes;
@@ -51,6 +53,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
       button: ButtonSizes,
       iconButton: ButtonIconSizes,
       textButton: ButtonTextSizes,
+      avatarSize: AvatarSizes,
       icons: IconSizes,
       shadows: Shadows[mode],
       card: CardSizes,

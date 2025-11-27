@@ -17,13 +17,13 @@ import AuthTabSwitcher from "@/components/auth/AuthTabSwitcher";
 import HeaderBackground from "@/components/auth/HeaderBackground";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 import ScreenWrapper from "@/components/auth/ScreenWrapper";
-import SecondaryTextButton from "@/components/auth/SecondaryTextButton";
 import SocialLogins from "@/components/auth/SocialLogins";
 import ScreenSpacer from "@/components/ScreenSpacer";
 import CountryCodePicker from "@/components/ui/CountryCodePicker";
 import FormDividerText from "@/components/ui/FormDividerText";
 import InputField from "@/components/ui/InputField";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { setAuthenticated, setHasOpenedApp } from "@/lib/storage";
 import { router, Stack } from "expo-router";
@@ -53,13 +53,13 @@ const PasswordSchema = Yup.object().shape({
     .required("Password is required"),
   confirmPassword: Yup.string()
     .min(8, "Password must be at least 8 characters")
-    .required("Password is required"),
+    .required("Password is required")
+    .oneOf([Yup.ref("password")], "Passwords must match"),
 });
 
 export default function RegisterScreen() {
   const { spacing, radius, icons, colors } = useTheme();
   const [step, setStep] = useState<"step1" | "step2">("step1");
-  const [mode, setMode] = useState<"email" | "phone">("phone");
   const [showPassword, setShowPassword] = useState(false);
 
   const window = useWindowDimensions();
@@ -71,8 +71,8 @@ export default function RegisterScreen() {
     await setHasOpenedApp(true);
     await setAuthenticated(true);
 
-    // Navigate to the main tabs
-    router.replace("/(tabs)");
+    // Navigate to the main drawers
+    router.replace("/(drawers)");
   };
 
   const renderStep1 = () => (
@@ -163,7 +163,7 @@ export default function RegisterScreen() {
             <View style={{ marginTop: spacing.lg, gap: spacing.md }}>
               {/* LOGIN BUTTON */}
               <PrimaryButton
-                disabled={isValid}
+                disabled={!isValid}
                 title="Next"
                 onPress={handleSubmit}
               />
@@ -189,7 +189,7 @@ export default function RegisterScreen() {
       validationSchema={PasswordSchema}
       onSubmit={handleSignupComplete}
     >
-      {({ handleChange, handleSubmit, values, errors, touched }) => {
+      {({ handleChange, handleSubmit, values, errors, touched, isValid }) => {
         const strength =
           values.password.length >= 8
             ? 3
@@ -270,7 +270,11 @@ export default function RegisterScreen() {
             </View>
 
             <View style={{ marginTop: spacing.lg }}>
-              <PrimaryButton title="Sign Up" onPress={handleSubmit} />
+              <PrimaryButton
+                disabled={!isValid}
+                title="Create Account"
+                onPress={handleSubmit}
+              />
             </View>
           </View>
         );

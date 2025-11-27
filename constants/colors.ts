@@ -3,12 +3,16 @@ export const Colors = {
   light: {
     background: "#FFFFFF",
     backgroundGray: "#F2F2F7",
+    black: "#000000",
+    backgroundPrimary: "#f3efe3ff",
     text: "#1A1A1A",
     textWhite: "#FFFFFF",
     textGray: "#64748B",
     primary: "#EF702A",
     secondary: "#FFCB11",
-    acent: "#FFCB11",
+    accent: "#FFCB11",
+    accentRed: "#FF383C",
+    blue: "#3B82F6",
     inputBg: "#FFFFFF",
     iconBlack: "#1C1C28",
     iconGray: "#64748B",
@@ -18,14 +22,18 @@ export const Colors = {
   },
 
   dark: {
-    background: "#000000",
-    backgroundGray: "#000000",
+    background: "#0A0A0A",
+    backgroundGray: "#181818",
+    backgroundPrimary: "#212121",
+    black: "#333333",
     text: "#FFFFFF",
     textGray: "#FEFEFE",
     textWhite: "#ffffff",
     primary: "#FF823A", // Enhanced orange for dark mode
     secondary: "#FFD84A", // Enhanced yellow for dark mode
-    acent: "#FFD84A", // Added accent color for dark mode
+    accent: "#FFD84A", // Added accent color for dark mode
+    accentRed: "#FF6B6B",
+    blue: "#60A5FA",
     inputBg: "#1A1A1A",
     iconBlack: "#FCFCF8",
     iconWhite: "#FCFCF8",
