@@ -5,15 +5,17 @@ import { StyleSheet } from "react-native";
 import AppView from "../ui/AppView";
 import IconButton from "../ui/IconButton";
 
-export default function DrawerHeaderRight() {
+export default function DrawerHeaderRight({
+  onPressLocation,
+}: {
+  onPressLocation?: () => void;
+}) {
   const { colors, spacing, icons } = useTheme();
 
   return (
     <AppView style={[styles.row, { gap: spacing.sm, marginEnd: spacing.md }]}>
       <IconButton
-        icon={<Feather name="search" size={icons.md} color={colors.text} />}
-      />
-      <IconButton
+        onPress={onPressLocation}
         icon={<Feather name="map-pin" size={icons.md} color={colors.text} />}
       />
     </AppView>

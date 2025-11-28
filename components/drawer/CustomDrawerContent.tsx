@@ -33,7 +33,7 @@ export default function CustomDrawerContent(
         }}
         icon={({ active }) => (
           <MaterialCommunityIcons
-            name={active ? "account" : "account-outline"}
+            name={active ? "home" : "home-outline"}
             size={icons.md}
             color={active ? colors.iconWhite : colors.iconGray}
           />
@@ -41,7 +41,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Profile"
-         active={props.state.index === 1}
+        active={props.state.index === 1}
         onPress={() => {
           props.navigation.navigate("profile");
         }}
@@ -69,7 +69,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Favorites"
-         active={props.state.index === 3}
+        active={props.state.index === 3}
         onPress={() => {}}
         icon={({ active }) => (
           <MaterialCommunityIcons
@@ -81,7 +81,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Messages"
-         active={props.state.index === 4}
+        active={props.state.index === 4}
         count={2}
         onPress={() => {}}
         icon={({ active }) => (
@@ -94,7 +94,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Notifications"
-         active={props.state.index === 5}
+        active={props.state.index === 5}
         count={2}
         onPress={() => {}}
         icon={({ active }) => (
@@ -107,7 +107,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Settings & Security"
-         active={props.state.index === 6}
+        active={props.state.index === 6}
         onPress={() => {}}
         icon={({ active }) => (
           <Feather
@@ -119,7 +119,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Help & Support"
-         active={props.state.index === 7}
+        active={props.state.index === 7}
         onPress={() => {}}
         icon={({ active }) => (
           <Feather
@@ -131,7 +131,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="About Us"
-         active={props.state.index === 8}
+        active={props.state.index === 8}
         onPress={() => {}}
         icon={({ active }) => (
           <Feather
@@ -148,7 +148,7 @@ export default function CustomDrawerContent(
         label="Logout"
         onPress={() => {}}
         labelStyle={{ color: colors.accentRed }}
-        icon={({}) => (
+        icon={() => (
           <Feather name="log-out" size={icons.md} color={colors.accentRed} />
         )}
       />

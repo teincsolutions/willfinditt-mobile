@@ -17,6 +17,7 @@ type Props = {
   size?: "sm" | "md";
   onChangeText?: (t: string) => void;
   onSubmit?: () => void;
+  onBlur?: (e: any) => void;
   placeholder?: string;
   secure?: boolean;
   keyboardType?: KeyboardTypeOptions;
@@ -35,6 +36,7 @@ export default function InputField({
   size = "md",
   onChangeText,
   onSubmit,
+  onBlur,
   placeholder,
   secure,
   keyboardType,
@@ -85,6 +87,7 @@ export default function InputField({
           keyboardType={keyboardType}
           style={[styles.input, { color: colors.text }]}
           onSubmitEditing={onSubmit}
+          onBlur={onBlur}
         />
 
         {rightIcon && (

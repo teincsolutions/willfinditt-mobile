@@ -102,7 +102,6 @@ export default function AuthScreen() {
                   ]}
                 >
                   {/* EMAIL */}
-
                   <InputField
                     label="Email"
                     placeholder="Enter email"

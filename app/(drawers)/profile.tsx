@@ -1,3 +1,5 @@
+import { ChangeEmailSheet } from "@/components/bottom-sheet/ChangeEmailSheet";
+import { ChangePhoneNumberSheet } from "@/components/bottom-sheet/ChangePhoneNumber";
 import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
@@ -7,13 +9,17 @@ import PlaceholderField from "@/components/ui/PlaceholderField";
 import { TextButton } from "@/components/ui/TextButton";
 import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
+import BottomSheet from "@gorhom/bottom-sheet";
 import Drawer from "expo-router/drawer";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ScrollView } from "react-native";
 
 export default function ProfileScreen() {
   const { icons, spacing, colors, radius, fontSizes } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
+  const changeEmailSheetRef = useRef<BottomSheet>(null);
+  const changePhoneNumberSheetRef = useRef<BottomSheet>(null);
+
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
       <Drawer.Screen
@@ -26,7 +32,6 @@ export default function ProfileScreen() {
                   onPress={() => {
                     setIsEditing(!isEditing);
                   }}
-                 
                   title={isEditing ? "Save" : "Edit"}
                   titleStyle={{
                     color: colors.textWhite,
@@ -137,6 +142,10 @@ export default function ProfileScreen() {
               />
             </AppView>
           }
+          onPress={() => {
+            console.log("Change Email Pressed");
+            changeEmailSheetRef.current?.expand();
+          }}
         />
 
         <PlaceholderField
@@ -146,6 +155,7 @@ export default function ProfileScreen() {
           label="Phone number"
           inputStyle={{ borderRadius: radius.md }}
           value={"+2330246092155"}
+          onPress={() => changePhoneNumberSheetRef.current?.expand()}
           rightIcon={
             <AppView
               style={{
@@ -168,6 +178,8 @@ export default function ProfileScreen() {
           }
         />
       </ScrollView>
+      <ChangeEmailSheet ref={changeEmailSheetRef} />
+      <ChangePhoneNumberSheet ref={changePhoneNumberSheetRef} />
     </AppView>
   );
 }

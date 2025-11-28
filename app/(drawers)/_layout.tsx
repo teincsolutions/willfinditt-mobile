@@ -9,13 +9,13 @@ import { Drawer } from "expo-router/drawer";
 import React from "react";
 
 export default function TabLayout() {
-  const { colors, spacing } = useTheme();
+  const { spacing } = useTheme();
 
   return (
     <Drawer
       screenOptions={{
         drawerStyle: { width: "70%" },
-        header: ({route,options }:DrawerHeaderProps) => (
+        header: ({ route, options }: DrawerHeaderProps) => (
           <Header
             left={<DrawerHeaderToggle />}
             title={options.title}
@@ -33,7 +33,7 @@ export default function TabLayout() {
               left={<DrawerHeaderToggle />}
               right={<DrawerHeaderRight />}
               title={<DrawerHeaderTitle />}
-              containerStyle={{ paddingVertical: spacing.sm }}
+              containerStyle={{ paddingVertical: spacing.sm, zIndex: 1000 }}
             />
           ),
         }}

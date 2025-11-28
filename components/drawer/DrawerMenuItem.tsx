@@ -36,7 +36,7 @@ export default function DrawerMenuItem({
         {
           backgroundColor: active ? colors.primary : colors.inputBg,
           borderRadius: radius.xxl,
-          borderColor: colors.border,
+          borderColor: active ? colors.primary : colors.border,
           borderWidth: button.borderWidth,
           height: button.height,
           justifyContent: "center",

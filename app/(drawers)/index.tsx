@@ -1,11 +1,13 @@
 // screens/HomeScreen.tsx
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import { Animated } from "react-native";
 
 import ProductCard from "@/components/ads/ProductCard";
 import { CategoryCardCircular } from "@/components/category/CategoryCardCircular";
 import { CategoryList } from "@/components/category/CategoryList";
 import SectionHeader from "@/components/category/SectionHeader";
+import { SearchBarPlaceholder } from "@/components/search/SearchBarPlaceholder";
 import { PromoSlider } from "@/components/sliders/PromoSlider";
 import AppView from "@/components/ui/AppView";
 import FilterTabs from "@/components/ui/FilterTabs";
@@ -19,6 +21,36 @@ export default function HomeScreen() {
   const { spacing, colors } = useTheme();
   const [selectedTab, setSelectedTab] = useState("Trending");
   const [showAllCategories, setShowAllCategories] = useState(false);
+
+  // Animation values for search bar
+  const lastScrollY = useRef(0);
+  const searchBarOpacity = useRef(new Animated.Value(1)).current;
+
+  // Handle scroll events for search bar animation
+  const handleScroll = (event: any) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const diff = currentScrollY - lastScrollY.current;
+
+    // Detect scroll direction with minimal threshold
+    if (Math.abs(diff) > 1) {
+      if (diff > 0 && currentScrollY > 50) {
+        // Scrolling down - hide search bar
+        Animated.timing(searchBarOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      } else if (diff < 0) {
+        // Scrolling up - show search bar
+        Animated.timing(searchBarOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }
+      lastScrollY.current = currentScrollY;
+    }
+  };
 
   // Dummy data
   const categories: Category[] = [
@@ -107,12 +139,13 @@ export default function HomeScreen() {
       style={{
         gap: spacing.md,
         backgroundColor: colors.backgroundPrimary,
+        paddingTop: 70, // Space for fixed search bar
       }}
     >
       {/* ALL CATEGORIES */}
       <SectionHeader
         title="All Categories"
-        style={{alignItems:'center'}}
+        style={{ alignItems: "center" }}
         left={
           <ToggleAction
             toggle={showAllCategories}
@@ -147,7 +180,7 @@ export default function HomeScreen() {
         style={{
           backgroundColor: colors.background,
           paddingBottom: spacing.lg,
-          paddingTop:100
+          paddingTop: 100,
         }}
       >
         {/* FILTER TABS */}
@@ -173,20 +206,43 @@ export default function HomeScreen() {
   );
 
   return (
-    <MasonryList
-      containerStyle={{}}
-      style={{
-        gap: spacing.sm,
-        paddingHorizontal: spacing.md,
-        backgroundColor: colors.background,
-      }}
-      data={ads}
-      numColumns={2}
-      keyExtractor={(item) => item.id}
-      ListHeaderComponent={renderHeader()}
-      renderItem={({ item }) => <ProductCard ad={item as Ad} />}
-      contentContainerStyle={{}}
-      showsVerticalScrollIndicator={false}
-    />
+    <AppView style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Fixed Search Bar */}
+      <Animated.View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1,
+          paddingHorizontal: spacing.md,
+          paddingTop: spacing.md,
+          paddingBottom: spacing.sm,
+          backgroundColor: colors.backgroundPrimary,
+          opacity: searchBarOpacity,
+        }}
+      >
+        <SearchBarPlaceholder />
+      </Animated.View>
+
+      {/* Scrollable Content */}
+      <MasonryList
+        containerStyle={{}}
+        style={{
+          gap: spacing.sm,
+          paddingHorizontal: spacing.md,
+          backgroundColor: colors.background,
+        }}
+        data={ads}
+        numColumns={2}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader()}
+        renderItem={({ item }) => <ProductCard ad={item as Ad} />}
+        contentContainerStyle={{}}
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      />
+    </AppView>
   );
 }

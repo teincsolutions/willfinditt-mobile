@@ -1,19 +1,19 @@
-// PlaceholderField.tsx - Readonly version of InputField
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
 import {
-    KeyboardTypeOptions,
-    StyleProp,
-    StyleSheet,
-    TextInput,
-    View,
-    ViewStyle,
+  KeyboardTypeOptions,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  TextInput,
+  ViewStyle,
 } from "react-native";
 import AppText from "./AppText";
+import AppView from "./AppView";
 
 type Props = {
   label?: string;
-  value: string;
+  value?: string;
   size?: "sm" | "md";
   placeholder?: string;
   secure?: boolean;
@@ -25,6 +25,7 @@ type Props = {
   error?: string;
   style?: StyleProp<ViewStyle>;
   inputStyle?: StyleProp<ViewStyle>;
+  onPress?: () => void;
 };
 
 export default function PlaceholderField({
@@ -41,19 +42,21 @@ export default function PlaceholderField({
   error,
   style,
   inputStyle,
+  onPress,
 }: Props) {
   const { colors, input, inputSmall, spacing } = useTheme();
 
   const inputSizeStyle = size === "sm" ? inputSmall : input;
   return (
-    <View style={style}>
+    <AppView style={style}>
       {label && (
         <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
           {label}
         </AppText>
       )}
 
-      <View
+      <Pressable
+        onPress={onPress}
         style={[
           styles.container,
           {
@@ -67,9 +70,9 @@ export default function PlaceholderField({
         ]}
       >
         {leftIcon && (
-          <View style={[{ marginRight: spacing.sm }, leftIconStyle]}>
+          <AppView style={[{ marginRight: spacing.sm }, leftIconStyle]}>
             {leftIcon}
-          </View>
+          </AppView>
         )}
 
         <TextInput
@@ -83,14 +86,12 @@ export default function PlaceholderField({
         />
 
         {rightIcon && (
-          <View style={[{ marginLeft: spacing.sm }, rightIconStyle]}>
+          <AppView style={[{ marginLeft: spacing.sm }, rightIconStyle]}>
             {rightIcon}
-          </View>
+          </AppView>
         )}
-      </View>
-
-      {error && <AppText style={{ color: colors.error }}>{error}</AppText>}
-    </View>
+      </Pressable>
+    </AppView>
   );
 }
 
