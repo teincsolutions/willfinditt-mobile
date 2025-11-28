@@ -39,6 +39,7 @@ export const ButtonTextSizes = {
 };
 
 export const IconSizes = {
+  xs: 14,
   sm: 18,
   md: 24,
   lg: 32,
@@ -52,6 +53,7 @@ export const AvatarSizes = {
   md: 48,
   lg: 64,
   xl: 96,
+  xxl: 164
 };
 export type AvatarSizeKey = keyof typeof AvatarSizes;
 

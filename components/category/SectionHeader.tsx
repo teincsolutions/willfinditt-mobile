@@ -21,6 +21,7 @@ export default function SectionHeader({
         {
           flexDirection: "row",
           justifyContent: "space-between",
+          alignItems: "center",
           paddingHorizontal: spacing.lg,
           marginTop: spacing.lg,
         },

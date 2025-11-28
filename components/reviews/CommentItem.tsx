@@ -12,7 +12,7 @@ interface Props {
   onPressReplies?: () => void;
 }
 
-export default function CommentItem({
+export function CommentItem({
   avatar,
   name,
   text,

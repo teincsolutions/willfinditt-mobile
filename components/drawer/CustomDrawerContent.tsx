@@ -1,14 +1,18 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { DrawerContentScrollView } from "@react-navigation/drawer";
+import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  DrawerContentComponentProps,
+  DrawerContentScrollView,
+} from "@react-navigation/drawer";
 import React from "react";
 
-import { router } from "expo-router";
 import DrawerMenuItem from "./DrawerMenuItem";
 import DrawerPromoCard from "./DrawerPromoCard";
 import DrawerUserHeader from "./DrawerUserHeader";
 
-export default function CustomDrawerContent() {
+export default function CustomDrawerContent(
+  props: DrawerContentComponentProps
+) {
   const { colors, icons, spacing } = useTheme();
 
   return (
@@ -22,57 +26,120 @@ export default function CustomDrawerContent() {
       <DrawerUserHeader />
       {/* MENU ITEMS */}
       <DrawerMenuItem
-        label="Edit Profile"
-        onPress={() => {}}
-        icon={
+        label="Home"
+        active={props.state.index === 0}
+        onPress={() => {
+          props.navigation.navigate("index");
+        }}
+        icon={({ active }) => (
           <MaterialCommunityIcons
-            name="account-edit"
+            name={active ? "account" : "account-outline"}
             size={icons.md}
-            color={colors.text}
+            color={active ? colors.iconWhite : colors.iconGray}
           />
-        }
+        )}
+      />
+      <DrawerMenuItem
+        label="Profile"
+         active={props.state.index === 1}
+        onPress={() => {
+          props.navigation.navigate("profile");
+        }}
+        icon={({ active }) => (
+          <MaterialCommunityIcons
+            name={active ? "account" : "account-outline"}
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
       />
       <DrawerMenuItem
         label="Categories"
+        active={props.state.index === 2}
         onPress={() => {
-          router.push("/categories");
+          props.navigation.navigate("categories");
         }}
-        icon={<Feather name="grid" size={icons.md} color={colors.text} />}
+        icon={({ active }) => (
+          <Ionicons
+            name={active ? "grid" : "grid-outline"}
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
       />
       <DrawerMenuItem
         label="Favorites"
+         active={props.state.index === 3}
         onPress={() => {}}
-        icon={
+        icon={({ active }) => (
           <MaterialCommunityIcons
             name="heart-outline"
             size={icons.md}
-            color={colors.text}
+            color={active ? colors.iconWhite : colors.iconGray}
           />
-        }
+        )}
       />
       <DrawerMenuItem
         label="Messages"
+         active={props.state.index === 4}
         count={2}
         onPress={() => {}}
-        icon={
-          <Feather name="message-square" size={icons.md} color={colors.text} />
-        }
+        icon={({ active }) => (
+          <Feather
+            name="message-square"
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
       />
       <DrawerMenuItem
         label="Notifications"
+         active={props.state.index === 5}
         count={2}
         onPress={() => {}}
-        icon={<Feather name="bell" size={icons.md} color={colors.text} />}
+        icon={({ active }) => (
+          <Feather
+            name="bell"
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
       />
       <DrawerMenuItem
-        label="Security"
+        label="Settings & Security"
+         active={props.state.index === 6}
         onPress={() => {}}
-        icon={<Feather name="shield" size={icons.md} color={colors.text} />}
+        icon={({ active }) => (
+          <Feather
+            name="shield"
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
       />
       <DrawerMenuItem
-        label="Support"
+        label="Help & Support"
+         active={props.state.index === 7}
         onPress={() => {}}
-        icon={<Feather name="headphones" size={icons.md} color={colors.text} />}
+        icon={({ active }) => (
+          <Feather
+            name="headphones"
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
+      />
+      <DrawerMenuItem
+        label="About Us"
+         active={props.state.index === 8}
+        onPress={() => {}}
+        icon={({ active }) => (
+          <Feather
+            name="info"
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
       />
       {/* PROMO CARD */}
       <DrawerPromoCard />
@@ -81,9 +148,9 @@ export default function CustomDrawerContent() {
         label="Logout"
         onPress={() => {}}
         labelStyle={{ color: colors.accentRed }}
-        icon={
+        icon={({}) => (
           <Feather name="log-out" size={icons.md} color={colors.accentRed} />
-        }
+        )}
       />
     </DrawerContentScrollView>
   );

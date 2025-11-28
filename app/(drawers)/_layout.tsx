@@ -1,51 +1,45 @@
 import CustomDrawerContent from "@/components/drawer/CustomDrawerContent";
-import DrawerHeaderRight from "@/components/ui/DrawerHeaderRight";
-import DrawerHeaderTitle from "@/components/ui/DrawerHeaderTitle";
-import DrawerHeaderToggle from "@/components/ui/DrawerHeaderToggle";
+import DrawerHeaderRight from "@/components/drawer/DrawerHeaderRight";
+import DrawerHeaderTitle from "@/components/drawer/DrawerHeaderTitle";
+import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
+import { Header } from "@/components/ui/Header";
 import { useTheme } from "@/contexts/ThemeContext";
+import { DrawerHeaderProps } from "@react-navigation/drawer";
 import { Drawer } from "expo-router/drawer";
 import React from "react";
 
 export default function TabLayout() {
-  const { colors } = useTheme();
+  const { colors, spacing } = useTheme();
 
   return (
     <Drawer
       screenOptions={{
-        drawerStyle: { width: "60%" },
+        drawerStyle: { width: "70%" },
+        header: ({route,options }:DrawerHeaderProps) => (
+          <Header
+            left={<DrawerHeaderToggle />}
+            title={options.title}
+            containerStyle={{ paddingVertical: spacing.sm }}
+          />
+        ),
       }}
       drawerContent={CustomDrawerContent}
     >
       <Drawer.Screen
         name="index"
         options={{
-          title: "Home",
-          headerStyle: {
-            elevation: 0,
-            shadowOpacity: 0,
-            backgroundColor: colors.backgroundPrimary,
-            opacity: 1,
-          },
-          headerTitleAlign: "center",
-          headerLeft: () => <DrawerHeaderToggle />,
-          headerTitle: () => <DrawerHeaderTitle />,
-          headerRight: () => <DrawerHeaderRight />,
+          header: () => (
+            <Header
+              left={<DrawerHeaderToggle />}
+              right={<DrawerHeaderRight />}
+              title={<DrawerHeaderTitle />}
+              containerStyle={{ paddingVertical: spacing.sm }}
+            />
+          ),
         }}
       />
-      <Drawer.Screen
-        name="explore"
-        options={{
-          title: "Explore",
-          headerStyle: {
-            elevation: 0,
-            shadowOpacity: 0,
-            backgroundColor: colors.backgroundPrimary,
-          },
-          headerLeft: () => <DrawerHeaderToggle />,
-          headerTitle: () => <DrawerHeaderTitle />,
-          headerRight: () => <DrawerHeaderRight />,
-        }}
-      />
+      <Drawer.Screen name="profile" />
+      <Drawer.Screen name="categories" />
     </Drawer>
   );
 }

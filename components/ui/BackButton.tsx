@@ -32,9 +32,9 @@ export const BackButton: React.FC<BackButtonProps> = ({
       activeOpacity={0.7}
       hitSlop={8}
     >
-      <ArrowLeft size={icons.md} color={tintColor || colors.iconBlack} />
+      <ArrowLeft size={icons.lg} color={tintColor || colors.iconBlack} />
       <AppText
-        variant="md"
+        variant="lg"
         style={{ color: tintColor || colors.text, fontWeight: "500" }}
       >
         {label || "Back"}

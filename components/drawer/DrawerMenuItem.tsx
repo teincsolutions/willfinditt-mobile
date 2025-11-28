@@ -14,13 +14,15 @@ import Badge from "../ui/Badge";
 export default function DrawerMenuItem({
   icon,
   label,
+  active,
   onPress,
   count,
   labelStyle,
 }: {
-  icon: React.ReactNode;
+  icon?: ({ active }: { active?: boolean }) => React.ReactNode;
   label: string;
   onPress: () => void;
+  active?: boolean;
   count?: number;
   labelStyle?: StyleProp<TextStyle>;
 }) {
@@ -32,7 +34,7 @@ export default function DrawerMenuItem({
       style={[
         styles.item,
         {
-          backgroundColor: colors.inputBg,
+          backgroundColor: active ? colors.primary : colors.inputBg,
           borderRadius: radius.xxl,
           borderColor: colors.border,
           borderWidth: button.borderWidth,
@@ -44,8 +46,17 @@ export default function DrawerMenuItem({
       ]}
     >
       <View style={styles.row}>
-        {icon}
-        <AppText style={[{ marginLeft: spacing.md, flex: 1 }, labelStyle]}>
+        {icon && icon({ active })}
+        <AppText
+          style={[
+            {
+              marginLeft: spacing.md,
+              flex: 1,
+              color: active ? colors.textWhite : colors.text,
+            },
+            labelStyle,
+          ]}
+        >
           {label}
         </AppText>
         {count ? <Badge count={count} /> : null}

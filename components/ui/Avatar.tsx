@@ -1,9 +1,9 @@
 import { AvatarSizeKey } from "@/constants";
 import { useTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Image, ImageStyle } from "expo-image";
+import { ImageStyle } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { Image, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import AppView from "./AppView";
 
 interface AvatarProps {
@@ -12,6 +12,7 @@ interface AvatarProps {
   verified?: boolean;
   source?: { uri: string };
   size?: AvatarSizeKey;
+  borderSize?: 2 | 4;
 }
 
 export function Avatar({
@@ -19,9 +20,10 @@ export function Avatar({
   styleContainer,
   verified,
   source,
+  borderSize = 2,
   size,
 }: AvatarProps) {
-  const { colors, avatarSize, icons } = useTheme();
+  const { colors, avatarSize } = useTheme();
   return (
     <AppView style={[styles.avatarWrapper, styleContainer]}>
       <LinearGradient
@@ -31,14 +33,21 @@ export function Avatar({
         style={{
           alignItems: "center",
           justifyContent: "center",
-          padding: 2,
-          borderRadius: size ? avatarSize[size] : avatarSize.lg,
+          width: size
+            ? avatarSize[size] + 4 * borderSize
+            : avatarSize.lg + 4 * borderSize,
+          height: size
+            ? avatarSize[size] + 4 * borderSize
+            : avatarSize.lg + 4 * borderSize,
+
+          borderRadius: size
+            ? avatarSize[size] + 4 * borderSize
+            : avatarSize.lg + 4 * borderSize,
         }}
       >
         <AppView
           style={{
             borderRadius: size ? avatarSize[size] : avatarSize.lg,
-            padding: 2,
             overflow: "hidden",
             backgroundColor: colors.background,
           }}
@@ -62,12 +71,16 @@ export function Avatar({
           style={[
             styles.badge,
             {
-              top: (size ? avatarSize[size] : avatarSize.lg) / 4,
-              right: -(size ? avatarSize[size] : avatarSize.lg) / 3,
+              top: (size ? avatarSize[size] : avatarSize.lg) / 6,
+              right: -avatarSize[size || "lg"] / 18 / 2,
             },
           ]}
         >
-          <MaterialIcons name="verified" size={icons.sm} color={colors.blue} />
+          <MaterialIcons
+            name="verified"
+            size={avatarSize[size || "lg"] / 6}
+            color={colors.blue}
+          />
         </View>
       )}
     </AppView>
@@ -80,10 +93,6 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 22,
-    height: 22,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -1,7 +1,6 @@
 // screens/HomeScreen.tsx
 
 import React, { useState } from "react";
-import { Dimensions, FlatList } from "react-native";
 
 import ProductCard from "@/components/ads/ProductCard";
 import { CategoryCardCircular } from "@/components/category/CategoryCardCircular";
@@ -14,8 +13,7 @@ import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { ToggleAction } from "@/components/ui/ToggleAction";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ad, Category } from "@/types";
-
-const { width: DEVICE_WIDTH } = Dimensions.get("window");
+import MasonryList from "reanimated-masonry-list";
 
 export default function HomeScreen() {
   const { spacing, colors } = useTheme();
@@ -114,6 +112,7 @@ export default function HomeScreen() {
       {/* ALL CATEGORIES */}
       <SectionHeader
         title="All Categories"
+        style={{alignItems:'center'}}
         left={
           <ToggleAction
             toggle={showAllCategories}
@@ -124,9 +123,9 @@ export default function HomeScreen() {
 
       <CategoryList
         data={categories}
+        isGrid={showAllCategories}
         renderItem={({ item }) => <CategoryCardCircular category={item} />}
       />
-
       {/* SLIDER */}
       <PromoSlider
         data={[
@@ -144,45 +143,49 @@ export default function HomeScreen() {
           },
         ]}
       />
-
-      {/* FILTER TABS */}
-      <FilterTabs
-        selected={selectedTab}
-        onSelect={setSelectedTab}
-        tabs={["Trending", "Kumasi", "Cheapest", "New"]}
-      />
-
-      {/* NEW ARRIVAL */}
-      <SectionHeader
-        title="New Arrival"
-        left={
-          <SecondaryTextButton
-            variant="lg"
-            onPress={() => {}}
-            title="See All"
-            titleStyle={{ color: colors.textGray }}
-          />
-        }
-      />
+      <AppView
+        style={{
+          backgroundColor: colors.background,
+          paddingBottom: spacing.lg,
+          paddingTop:100
+        }}
+      >
+        {/* FILTER TABS */}
+        <FilterTabs
+          selected={selectedTab}
+          onSelect={setSelectedTab}
+          tabs={["Trending", "Kumasi", "Cheapest", "New"]}
+        />
+        {/* NEW ARRIVAL */}
+        <SectionHeader
+          title="New Arrival"
+          left={
+            <SecondaryTextButton
+              variant="lg"
+              onPress={() => {}}
+              title="See All"
+              titleStyle={{ color: colors.textGray }}
+            />
+          }
+        />
+      </AppView>
     </AppView>
   );
 
   return (
-    <FlatList
-      style={{ backgroundColor: colors.backgroundPrimary }}
+    <MasonryList
+      containerStyle={{}}
+      style={{
+        gap: spacing.sm,
+        paddingHorizontal: spacing.md,
+        backgroundColor: colors.background,
+      }}
       data={ads}
       numColumns={2}
       keyExtractor={(item) => item.id}
-      ListHeaderComponent={renderHeader}
-      columnWrapperStyle={{
-        justifyContent: "space-between",
-        paddingHorizontal: spacing.md,
-      }}
-      renderItem={({ item }) => <ProductCard ad={item} />}
-      contentContainerStyle={{
-        paddingBottom: spacing.lg,
-        gap: spacing.xs,
-      }}
+      ListHeaderComponent={renderHeader()}
+      renderItem={({ item }) => <ProductCard ad={item as Ad} />}
+      contentContainerStyle={{}}
       showsVerticalScrollIndicator={false}
     />
   );

@@ -2,7 +2,13 @@
 import { FontSizeKey } from "@/constants";
 import { useTheme } from "@/hooks/useTheme";
 import React, { ReactNode } from "react";
-import { Pressable, StyleProp, StyleSheet, TextStyle } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  TextStyle,
+  ViewStyle,
+} from "react-native";
 import AppText from "./AppText";
 
 type Props = {
@@ -12,6 +18,7 @@ type Props = {
   isLeft?: boolean;
   icon?: ReactNode;
   underline?: boolean;
+  style?: StyleProp<ViewStyle>;
   onPress: () => void;
 };
 
@@ -22,12 +29,20 @@ export default function SecondaryTextButton({
   icon,
   isLeft,
   titleStyle,
+  style,
   onPress,
 }: Props) {
   const { spacing } = useTheme();
 
   return (
-    <Pressable style={[styles.row, { gap: spacing.sm }]} onPress={onPress}>
+    <Pressable
+      style={[
+        styles.row,
+        { gap: spacing.sm, paddingVertical: spacing.sm },
+        style,
+      ]}
+      onPress={onPress}
+    >
       {!!isLeft && icon}
       <AppText
         variant={variant}

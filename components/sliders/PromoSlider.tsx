@@ -25,7 +25,7 @@ export function PromoSlider({ data }: { data: any[] }) {
   }, [index, data.length]);
 
   return (
-    <View style={{ marginTop: spacing.lg }}>
+    <View style={{ marginTop: spacing.lg, marginBottom:-100, zIndex:100 }}>
       <ScrollView
         ref={scrollRef}
         horizontal

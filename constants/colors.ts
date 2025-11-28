@@ -14,6 +14,7 @@ export const Colors = {
     accent: "#FFCB11",
     accentRed: "#FF383C",
     blue: "#3B82F6",
+    green: "#4BB543",
     inputBg: "#FFFFFF",
     iconBlack: "#1C1C28",
     iconGray: "#64748B",
@@ -36,6 +37,7 @@ export const Colors = {
     accent: "#FFD84A", // Added accent color for dark mode
     accentRed: "#FF6B6B",
     blue: "#60A5FA",
+    green: "#22946e",
     inputBg: "#1A1A1A",
     iconBlack: "#FCFCF8",
     iconWhite: "#FCFCF8",

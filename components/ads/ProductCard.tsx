@@ -1,7 +1,6 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ad } from "@/types";
-import { Feather } from "@expo/vector-icons";
 import { Image, useImage } from "expo-image";
 import React, { useEffect, useState } from "react";
 import {
@@ -13,6 +12,7 @@ import {
   ViewStyle,
 } from "react-native";
 import AppView from "../ui/AppView";
+import { FavouriteButton } from "../ui/FavouriteButton";
 
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
 
@@ -27,7 +27,7 @@ export default function ProductCard({
   const width = (DEVICE_WIDTH - spacing.md * 2 - spacing.xs) / 2;
 
   const image = ad.images?.[0] || "";
-  const isSaved = ad.isSaved === true;
+  const [isSaved, setSaved] = useState(ad.isSaved === true);
 
   // useImage hook returns image info once fetched and loaded
   const imageRef = useImage(image);
@@ -48,6 +48,10 @@ export default function ProductCard({
         {
           borderRadius: radius.lg,
           width: width,
+          marginBottom: spacing.sm,
+          backgroundColor:colors.background,
+          borderColor:colors.border,
+          overflow:'hidden',
         },
         style,
       ]}
@@ -59,9 +63,9 @@ export default function ProductCard({
         style={[
           styles.image,
           {
-            borderRadius: radius.lg,
             height: calculatedHeight,
-            width: width,
+            width: "100%",
+            backgroundColor:undefined
           },
         ]}
       />
@@ -92,13 +96,7 @@ export default function ProductCard({
             ) : null}
           </AppView>
           {/* SAVE HEART */}
-          <Pressable style={styles.heart}>
-            <Feather
-              name={isSaved ? "heart" : "heart"}
-              size={icons.md}
-              color={isSaved ? colors.primary : colors.text}
-            />
-          </Pressable>
+          <FavouriteButton active={isSaved} onToggle={setSaved} />
         </AppView>
       </View>
     </Pressable>
@@ -107,9 +105,7 @@ export default function ProductCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FFF",
     borderWidth: 1,
-    borderColor: "#EEE",
     position: "relative",
   },
   image: {},

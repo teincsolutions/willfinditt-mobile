@@ -2,6 +2,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Feather } from "@expo/vector-icons";
 import { DirectDown } from "iconsax-react-nativejs";
 import React from "react";
+import { StyleProp, ViewStyle } from "react-native";
 import InputField from "../ui/InputField";
 import { TextButton } from "../ui/TextButton";
 
@@ -12,6 +13,7 @@ interface SearchBarProps {
   onPressFilter?: () => void;
   filterValue?: string;
   placeholder?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function SearchBar({
@@ -21,11 +23,13 @@ export function SearchBar({
   onPressFilter,
   placeholder = "Search...",
   filterValue,
+  style,
 }: SearchBarProps) {
   const { colors, icons, spacing, textButton } = useTheme();
 
   return (
     <InputField
+      style={style}
       onChangeText={onChangeText}
       value={value}
       placeholder={placeholder}

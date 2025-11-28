@@ -10,7 +10,7 @@ export default function DrawerUserHeader() {
 
   return (
     <AppView style={{ alignItems: "center", paddingVertical: spacing.lg }}>
-      <Avatar styleContainer={{ marginBottom: spacing.md }} verified />
+      <Avatar size="xl" styleContainer={{ marginBottom: spacing.md }} verified />
       <AppText variant="lg" style={{ marginTop: spacing.md }}>
         Silvia Aful
       </AppText>

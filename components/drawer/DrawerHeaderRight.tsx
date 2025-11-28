@@ -2,8 +2,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import Feather from "@expo/vector-icons/Feather";
 import React from "react";
 import { StyleSheet } from "react-native";
-import AppView from "./AppView";
-import IconButton from "./IconButton";
+import AppView from "../ui/AppView";
+import IconButton from "../ui/IconButton";
 
 export default function DrawerHeaderRight() {
   const { colors, spacing, icons } = useTheme();

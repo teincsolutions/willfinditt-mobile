@@ -1,7 +1,7 @@
 import React from "react";
 import { FlatList, View } from "react-native";
-import CommentItem from "./CommentItem";
-import ReplyItem from "./ReplyItem";
+import { CommentItem } from "./CommentItem";
+import { ReplyItem } from "./ReplyItem";
 
 export default function CommentsList({
   comments,

@@ -28,13 +28,15 @@ export function CategoryList({
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
       showsHorizontalScrollIndicator={false}
-      numColumns={isGrid ? 4 : 1}
+      columnWrapperStyle={isGrid ? { gap: spacing.xs } : undefined}
+      numColumns={isGrid ? 5 : 1}
       contentContainerStyle={{
         paddingHorizontal: isGrid ? spacing.md : spacing.lg,
-        gap: spacing.md,
+        gap: spacing.xs,
         width: "100%",
       }}
       key={isGrid ? "grid" : "list"}
+      extraData={isGrid}
       horizontal={!isGrid}
       initialNumToRender={isGrid ? 8 : 4}
       onEndReached={onEndReached}

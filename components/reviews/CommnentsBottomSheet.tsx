@@ -4,7 +4,7 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import InputField from "../ui/InputField";
 import CommentsList from "./CommentsList";
 
-export default function CommentsBottomSheet({
+export function CommentsBottomSheet({
   comments,
   onAddComment,
   onAddReply,

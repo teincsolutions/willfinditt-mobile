@@ -1,7 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
 import { Image, StyleSheet } from "react-native";
-import AppText from "./AppText";
-import AppView from "./AppView";
+import AppText from "../ui/AppText";
+import AppView from "../ui/AppView";
 
 export default function DrawerHeaderTitle() {
   const { spacing } = useTheme();
@@ -12,13 +12,12 @@ export default function DrawerHeaderTitle() {
         style={{ width: 40, height: 40, resizeMode: "contain" }}
       />
       <AppText
-        variant="xl"
         style={{
           textTransform: "uppercase",
         }}
       >
-        <AppText style={{ fontWeight: "bold" }}>Will</AppText>
-        <AppText>finditt</AppText>
+        <AppText variant="xl" style={{ fontWeight: "bold" }}>Will</AppText>
+        <AppText variant="xl">finditt</AppText>
       </AppText>
     </AppView>
   );

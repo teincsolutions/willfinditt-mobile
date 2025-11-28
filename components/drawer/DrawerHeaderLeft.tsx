@@ -2,7 +2,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import Entypo from "@expo/vector-icons/Entypo";
 import React from "react";
 import { StyleProp, ViewStyle } from "react-native";
-import IconButton from "./IconButton";
+import IconButton from "../ui/IconButton";
 
 interface Props {
   onPress?(): void;

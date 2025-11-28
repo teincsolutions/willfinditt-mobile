@@ -40,7 +40,7 @@ export function ToggleAction({
               />
             ))
           }
-          onPress={() => onToggle && onToggle(true)}
+          onPress={() => onToggle && onToggle(!toggle)}
           title={showFewerText || "See fewer"}
           titleStyle={{ color: toggleColor || colors.text }}
         />
@@ -56,7 +56,7 @@ export function ToggleAction({
               />
             )
           }
-          onPress={() => onToggle && onToggle(false)}
+          onPress={() => onToggle && onToggle(!toggle)}
           titleStyle={{ color: toggleColor || colors.text }}
           title={showAllText || "See all"}
         />
