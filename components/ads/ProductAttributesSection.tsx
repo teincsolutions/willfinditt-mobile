@@ -74,7 +74,6 @@ export default function ProductAttributesSection({
           keyExtractor={(_, i) => `single-${i}`}
           numColumns={2}
           columnWrapperStyle={{
-            justifyContent: "space-between",
             marginBottom: spacing.md,
             gap: spacing.md,
           }}

@@ -34,7 +34,7 @@ export const ChangeUsernameSheet = forwardRef<
 >((props, ref) => {
   const { spacing, colors, icons } = useTheme();
 
-  const snapPoints = useMemo(() => ["50%"], []);
+  const snapPoints = useMemo(() => [ "75%"], []);
 
   const formik = useFormik({
     initialValues: { username: "" },

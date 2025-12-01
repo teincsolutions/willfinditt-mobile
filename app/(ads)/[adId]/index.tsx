@@ -1,17 +1,23 @@
 import { AdInfoBlock } from "@/components/ads/AdInfoBlock";
+import { AdSellerProfile } from "@/components/ads/AdSellerProfile";
 import DescriptionHTML from "@/components/ads/DescriptionHTML";
 import { ImageCarousel } from "@/components/ads/ImageCarousel";
+import MoreFromSellerCarousel from "@/components/ads/MoreFromSellerCarousel";
 import ProductAttributesSection from "@/components/ads/ProductAttributesSection";
 import { ProductCardSmallLandscape } from "@/components/ads/ProductCardSmallLandscape";
+import { WriteReviewSheet } from "@/components/bottom-sheet/WriteReviewSheet";
 import AppView from "@/components/ui/AppView";
 import BottomActionBar from "@/components/ui/ButtomActionBar";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
+import SellerRating from "@/components/ui/SellerRating";
 import { TextButton } from "@/components/ui/TextButton";
 import { useTheme } from "@/hooks/useTheme";
 import { CategoryFieldType } from "@/types";
 import { Ad } from "@/types/ad";
 import { Entypo } from "@expo/vector-icons";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { formatDistanceToNow } from "date-fns";
 import { router } from "expo-router";
 import { Eye } from "iconsax-react-nativejs";
 import React, { useRef } from "react";
@@ -181,6 +187,7 @@ const ads: Ad[] = [
     isNegotiable: true,
     userId: "user1",
     categoryId: "1",
+    createdAt: "2025-11-29T21:49:35.231Z",
   },
   {
     id: "2",
@@ -193,6 +200,7 @@ const ads: Ad[] = [
     isNegotiable: false,
     userId: "user2",
     categoryId: "6",
+    createdAt: "2025-11-29T21:49:35.231Z",
   },
   {
     id: "3",
@@ -207,6 +215,7 @@ const ads: Ad[] = [
     isNegotiable: true,
     userId: "user3",
     categoryId: "3",
+    createdAt: "2025-11-29T21:49:35.231Z",
   },
 
   {
@@ -222,6 +231,7 @@ const ads: Ad[] = [
     isNegotiable: false,
     userId: "user4",
     categoryId: "1",
+    createdAt: "2025-11-29T21:49:35.231Z",
   },
   {
     id: "5",
@@ -236,6 +246,7 @@ const ads: Ad[] = [
     isNegotiable: true,
     userId: "user5",
     categoryId: "6",
+    createdAt: "2025-11-29T21:49:35.231Z",
   },
 ];
 
@@ -272,6 +283,9 @@ export default function AdDetailsScreen() {
   const { spacing, colors, icons } = useTheme();
   const inserts = useSafeAreaInsets();
 
+  const reviewSheetRef = useRef<BottomSheet>(null);
+  const sellerProfile = { rating: 4.5, totalReviews: 128 };
+
   // Animation values for header
   const lastScrollY = useRef(0);
   const headerOpacity = useRef(new Animated.Value(1)).current;
@@ -304,19 +318,53 @@ export default function AdDetailsScreen() {
 
   const renderMainSection = () => {
     return (
-      <AppView
-        style={{
-          gap: spacing.lg,
-          paddingBottom: spacing.lg,
-          backgroundColor: colors.background,
-          marginBottom: spacing.md,
-        }}
-      >
-        <ImageCarousel images={ad.images} showPagination={false} />
-        <AdInfoBlock ad={ad} />
-        <ProductAttributesSection ad={ad} categoryFields={categoryFields} />
-        <DescriptionHTML html={ad.description || ""} />
-      </AppView>
+      <>
+        <AppView
+          style={{
+            gap: spacing.lg,
+            paddingBottom: spacing.lg,
+            backgroundColor: colors.background,
+            marginBottom: spacing.md,
+          }}
+        >
+          <ImageCarousel
+            renderFooter={
+              <AppView
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                  padding: spacing.md,
+                }}
+              >
+                <TextButton
+                  title={formatDistanceToNow(new Date(ad.createdAt))}
+                />
+              </AppView>
+            }
+            images={ad.images}
+            showPagination={false}
+          />
+          <AdInfoBlock ad={ad} />
+          <SellerRating
+            style={{ marginHorizontal: spacing.md }}
+            rating={sellerProfile.rating}
+            totalReviews={sellerProfile.totalReviews}
+            onReviewPress={() => reviewSheetRef.current?.expand()}
+          />
+          <ProductAttributesSection ad={ad} categoryFields={categoryFields} />
+          <DescriptionHTML html={ad.description || ""} />
+        </AppView>
+        {/* Seller Profile Section */}
+        <AppView
+          style={{
+            backgroundColor: colors.background,
+          }}
+        >
+          <AdSellerProfile ad={ad} />
+          <MoreFromSellerCarousel ads={ads} />
+        </AppView>
+      </>
     );
   };
 
@@ -392,6 +440,15 @@ export default function AdDetailsScreen() {
         }}
         onCall={function (): void {
           throw new Error("Function not implemented.");
+        }}
+      />
+      <WriteReviewSheet
+        ref={reviewSheetRef}
+        sellerId="seller-id-123"
+        onSubmit={(review) => {
+          // Handle review submission
+          console.log(review);
+          reviewSheetRef.current?.close();
         }}
       />
     </AppView>

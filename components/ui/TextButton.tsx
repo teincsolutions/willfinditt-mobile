@@ -3,6 +3,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { ReactNode } from "react";
 import {
+  ActivityIndicator,
   ColorValue,
   Pressable,
   StyleProp,
@@ -21,6 +22,8 @@ type Props = {
   icon?: ReactNode;
   backgroundColor?: string;
   style?: StyleProp<ViewStyle>;
+  loading?: boolean;
+  accentColor?: string;
   onPress?: () => void;
 };
 
@@ -33,9 +36,11 @@ export function TextButton({
   style,
   titleStyle,
   backgroundColor,
+  loading,
+  accentColor,
   onPress,
 }: Props) {
-  const { colors, textButton, spacing } = useTheme();
+  const { colors, textButton, spacing, icons } = useTheme();
   return (
     <LinearGradient
       colors={gradientColors || [colors.background, colors.background]}
@@ -72,7 +77,20 @@ export function TextButton({
           {title}
         </AppText>
 
-        {!isLeft && icon}
+        {!isLeft && loading ? (
+          <ActivityIndicator
+            size={icons.sm}
+            color={accentColor || colors.accent}
+          />
+        ) : (
+          icon
+        )}
+        {isLeft && loading && (
+          <ActivityIndicator
+            size={icons.sm}
+            color={accentColor || colors.accent}
+          />
+        )}
       </Pressable>
     </LinearGradient>
   );

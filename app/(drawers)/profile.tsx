@@ -2,18 +2,57 @@ import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Avatar } from "@/components/ui/Avatar";
+import DatePicker from "@/components/ui/DatePicker";
 import { Header } from "@/components/ui/Header";
+import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
 import { TextButton } from "@/components/ui/TextButton";
 import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
 import Drawer from "expo-router/drawer";
-import { useState } from "react";
-import { ScrollView } from "react-native";
+import { useFormik } from "formik";
+import { useRef, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TextInput,
+} from "react-native";
+import * as Yup from "yup";
+
+// -------------------------
+// VALIDATION SCHEMA
+// -------------------------
+const BasicInfoSchema = Yup.object().shape({
+  firstName: Yup.string().required("First name is required"),
+  lastName: Yup.string().required("Last name is required"),
+  dateOfBirth: Yup.date().nullable().notRequired(),
+});
 
 export default function ProfileScreen() {
   const { icons, spacing, colors, radius, fontSizes } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
+  const user = {
+    firstName: "Silvia",
+    lastName: "Aful",
+    dateOfBirth: null,
+  };
+
+  const { values, handleChange, setFieldValue, handleBlur, errors, touched } =
+    useFormik({
+      initialValues: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : null,
+      },
+      validationSchema: BasicInfoSchema,
+      onSubmit: (values) => {
+        // Handle profile update logic here
+        console.log("Profile updated:", values);
+      },
+    });
+
+  const lastNameRef = useRef<TextInput>(null);
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -44,64 +83,139 @@ export default function ProfileScreen() {
       <AppView
         style={{ height: 120, backgroundColor: colors.backgroundPrimary }}
       />
-
-      <ScrollView
-        style={{
-          position: "absolute",
-          top: 0,
-          width: "100%",
-        }}
-        contentContainerStyle={{
-          paddingHorizontal: spacing.md,
-          gap: spacing.md,
-        }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1, left: 0, right: 0, position: "absolute" }}
       >
-        <AppView
-          style={{
-            alignItems: "center",
-            paddingVertical: spacing.lg,
-            zIndex: 100,
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            paddingHorizontal: spacing.md,
           }}
         >
-          <Avatar
-            borderSize={4}
-            size="xxl"
-            styleContainer={{ marginBottom: spacing.md }}
-            verified
-          />
-          <AppText variant="lg" style={{ marginTop: spacing.md }}>
-            Silvia Aful
-          </AppText>
+          <AppView
+            style={{
+              alignItems: "center",
+              paddingVertical: spacing.lg,
+              zIndex: 100,
+            }}
+          >
+            <Avatar
+              borderSize={4}
+              size="xxl"
+              styleContainer={{ marginBottom: spacing.md }}
+              verified
+            />
+            <AppText variant="lg" style={{ marginTop: spacing.md }}>
+              Silvia Aful
+            </AppText>
 
-          <AppText variant="sm" style={{ marginTop: spacing.sm, opacity: 0.7 }}>
-            Joined Nov 12, 2025
-          </AppText>
-        </AppView>
+            <AppText
+              variant="sm"
+              style={{ marginTop: spacing.sm, opacity: 0.7 }}
+            >
+              Joined Nov 12, 2025
+            </AppText>
+          </AppView>
 
-        <PlaceholderField
-          leftIcon={
-            <Feather name="user" color={colors.iconGray} size={icons.md} />
-          }
-          label="Firstname"
-          value={"Silvia"}
-        />
+          {isEditing ? (
+            <AppView style={{ gap: spacing.md, marginBottom: spacing.xxl }}>
+              <InputField
+                leftIcon={
+                  <Feather
+                    name="user"
+                    color={colors.iconGray}
+                    size={icons.md}
+                  />
+                }
+                label="Firstname"
+                placeholder="Enter your first name"
+                value={values.firstName}
+                onChangeText={handleChange("firstName")}
+                onBlur={handleBlur("firstName")}
+                error={touched.firstName && errors.firstName}
+                returnKeyType="next"
+                blurOnSubmit={false}
+                onSubmit={() => lastNameRef.current?.focus()}
+              />
 
-        <PlaceholderField
-          leftIcon={
-            <Feather name="user" color={colors.iconGray} size={icons.md} />
-          }
-          label="Lastname"
-          value={"Aful"}
-        />
+              <InputField
+                ref={lastNameRef}
+                leftIcon={
+                  <Feather
+                    name="user"
+                    color={colors.iconGray}
+                    size={icons.md}
+                  />
+                }
+                label="Lastname"
+                placeholder="Enter your last name"
+                value={values.lastName}
+                onChangeText={handleChange("lastName")}
+                onBlur={handleBlur("lastName")}
+                error={touched.lastName && errors.lastName}
+              />
+              <DatePicker
+                leftIcon={
+                  <Feather
+                    name="calendar"
+                    color={colors.iconGray}
+                    size={icons.md}
+                  />
+                }
+                label="Date of Birth"
+                value={values.dateOfBirth || new Date("1900-01-01")}
+                placeholder="Select your date of birth"
+                error={touched.dateOfBirth && errors.dateOfBirth}
+                onChange={(date) => setFieldValue("dateOfBirth", date)}
+              />
+            </AppView>
+          ) : (
+            <AppView style={{ gap: spacing.md, marginBottom: spacing.xxl }}>
+              <PlaceholderField
+                leftIcon={
+                  <Feather
+                    name="user"
+                    color={colors.iconGray}
+                    size={icons.md}
+                  />
+                }
+                label="Firstname"
+                placeholder="Not set"
+                value={"Silvia"}
+              />
 
-        <PlaceholderField
-          leftIcon={
-            <Feather name="calendar" color={colors.iconGray} size={icons.md} />
-          }
-          label="Date of Birth"
-          value={"12th Dec 1998"}
-        />
-      </ScrollView>
+              <PlaceholderField
+                leftIcon={
+                  <Feather
+                    name="user"
+                    color={colors.iconGray}
+                    size={icons.md}
+                  />
+                }
+                label="Lastname"
+                placeholder="Not set"
+                value={"Aful"}
+              />
+
+              <PlaceholderField
+                leftIcon={
+                  <Feather
+                    name="calendar"
+                    color={colors.iconGray}
+                    size={icons.md}
+                  />
+                }
+                label="Date of Birth"
+                placeholder="Not set"
+                value={
+                  values.dateOfBirth ? values.dateOfBirth.toDateString() : ""
+                }
+              />
+            </AppView>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </AppView>
   );
 }

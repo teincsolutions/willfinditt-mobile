@@ -27,7 +27,7 @@ export interface Ad {
   contactEmail?: string;
   isNegotiable: boolean;
   expiresAt?: string;
-  createdAt?: string;
+  createdAt: string;
   updatedAt?: string;
   isSaved?: boolean;
   user?: User;

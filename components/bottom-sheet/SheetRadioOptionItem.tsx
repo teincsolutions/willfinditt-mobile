@@ -12,7 +12,7 @@ export type Option =
       subtitle?: string;
     };
 
-export default function BottomSheetOptionItem({
+export default function SheetRadioOptionItem({
   item,
   selected,
   onPress,

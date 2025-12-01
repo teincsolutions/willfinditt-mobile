@@ -69,7 +69,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Favorites"
-        active={props.state.index === 3}
+        active={props.state.index === 2}
         onPress={() => {
           props.navigation.navigate("favorites");
         }}
@@ -81,9 +81,23 @@ export default function CustomDrawerContent(
           />
         )}
       />
+
+       <DrawerMenuItem
+        label="Create Ad"
+        onPress={() => {
+          router.push("/create-ad");
+        }}
+        icon={({ active }) => (
+          <MaterialCommunityIcons
+            name="plus-box-outline"
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
+      />
       <DrawerMenuItem
         label="Messages"
-        active={props.state.index === 4}
+        active={props.state.index === 3}
         count={2}
         onPress={() => {
           props.navigation.navigate("messages");
@@ -98,7 +112,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Notifications"
-        active={props.state.index === 5}
+        active={props.state.index === 4}
         count={2}
         onPress={() => {
           props.navigation.navigate("notifications");
@@ -113,7 +127,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Settings & Security"
-        active={props.state.index === 6}
+        active={props.state.index === 5}
         onPress={() => {
           props.navigation.navigate("settings");
         }}
@@ -127,7 +141,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Help & Support"
-        active={props.state.index === 7}
+        active={props.state.index === 6}
         onPress={() => {
           props.navigation.navigate("support");
         }}
@@ -141,7 +155,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="About Us"
-        active={props.state.index === 8}
+        active={props.state.index === 7}
         onPress={() => {
           props.navigation.navigate("about");
         }}

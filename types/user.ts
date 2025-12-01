@@ -65,6 +65,12 @@ export interface SellerReview {
   reviewer?: User;
 }
 
+export interface CreateSellerReview {
+  sellerId: string;
+  rating: number;
+  comment?: string;
+}
+
 export interface SellerVerification {
   id: string;
   documentType: DocumentType;

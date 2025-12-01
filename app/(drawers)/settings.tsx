@@ -1,6 +1,6 @@
 import { ChangeEmailSheet } from "@/components/bottom-sheet/ChangeEmailSheet";
 import { ChangePasswordSheet } from "@/components/bottom-sheet/ChangePasswordSheet";
-import { ChangePhoneNumberSheet } from "@/components/bottom-sheet/ChangePhoneNumber";
+import { ChangePhoneNumberSheet } from "@/components/bottom-sheet/ChangePhoneNumberSheet";
 import { ChangeUsernameSheet } from "@/components/bottom-sheet/ChangeUsernameSheet";
 import { NotificationSettingsSheet } from "@/components/bottom-sheet/NotificationSettingsSheet";
 import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";

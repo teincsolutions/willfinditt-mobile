@@ -1,4 +1,4 @@
-// InputField.tsx
+// TextAreaField.tsx
 import { useTheme } from "@/contexts/ThemeContext";
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import {
@@ -6,6 +6,7 @@ import {
   StyleProp,
   StyleSheet,
   TextInput,
+  TextStyle,
   View,
   ViewStyle,
 } from "react-native";
@@ -26,6 +27,7 @@ type Props = {
   error?: string | boolean;
   style?: StyleProp<ViewStyle>;
   inputStyle?: StyleProp<ViewStyle>;
+  inputTextStyle?: StyleProp<TextStyle>;
   leftIconStyle?: StyleProp<ViewStyle>;
   rightIconStyle?: StyleProp<ViewStyle>;
   returnKeyLabel?: string;
@@ -34,28 +36,32 @@ type Props = {
   blurOnSubmit?: boolean;
 };
 
-const InputField = forwardRef<TextInput, Props>(function InputField({
-  label,
-  value,
-  size = "md",
-  onChangeText,
-  onSubmit,
-  onBlur,
-  placeholder,
-  secure,
-  keyboardType,
-  leftIcon,
-  rightIcon,
-  returnKeyLabel,
-  rightIconStyle,
-  leftIconStyle,
-  error,
-  style,
-  autoFocus,
-  inputStyle,
-  returnKeyType,
-  blurOnSubmit,
-}: Props, ref) {
+const TextAreaField = forwardRef<TextInput, Props>(function TextAreaField(
+  {
+    label,
+    value,
+    size = "md",
+    onChangeText,
+    onSubmit,
+    onBlur,
+    placeholder,
+    secure,
+    keyboardType,
+    leftIcon,
+    rightIcon,
+    returnKeyLabel,
+    rightIconStyle,
+    leftIconStyle,
+    error,
+    style,
+    autoFocus,
+    inputStyle,
+    inputTextStyle,
+    returnKeyType,
+    blurOnSubmit,
+  }: Props,
+  ref
+) {
   const { colors, input, inputSmall, spacing } = useTheme();
   const innerRef = useRef<TextInput>(null);
 
@@ -76,9 +82,9 @@ const InputField = forwardRef<TextInput, Props>(function InputField({
           {
             backgroundColor: colors.inputBg,
             borderColor: colors.border,
-            height: inputSizeStyle.height,
             borderRadius: inputSizeStyle.radius,
             paddingHorizontal: inputSizeStyle.paddingHorizontal,
+            alignItems:'flex-start'
           },
           inputStyle,
         ]}
@@ -99,8 +105,14 @@ const InputField = forwardRef<TextInput, Props>(function InputField({
           keyboardType={keyboardType}
           returnKeyLabel={returnKeyLabel}
           returnKeyType={returnKeyType}
+          multiline
+          numberOfLines={3}
           blurOnSubmit={blurOnSubmit}
-          style={[styles.input, { color: colors.text }]}
+          style={[
+            styles.input,
+            { color: colors.text, minHeight: 120 },
+            inputTextStyle,
+          ]}
           onSubmitEditing={onSubmit}
           onBlur={onBlur}
           autoFocus={autoFocus}
@@ -124,7 +136,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
   },
-  input: { flex: 1 },
+  input: { flex: 1, alignItems: "flex-start" },
 });
 
-export default InputField;
+export default TextAreaField;

@@ -30,7 +30,7 @@ export function AdInfoBlock({ ad }: { ad: Ad }) {
             maxWidth: titleWidth,
           }}
         >
-          <AppText variant="xxl" style={{ fontWeight: "700" }}>
+          <AppText numberOfLines={3} variant="xl" style={{ fontWeight: "700" }}>
             {ad.title}
           </AppText>
           <AppText variant="md" style={{ opacity: 0.7 }}>

@@ -1,8 +1,8 @@
-import BottomSheetOptionItem from "@/components/bottom-sheet/BottomSheetOptionItem";
 import { LocationBottomSheet } from "@/components/bottom-sheet/LocationBottomSheet";
 import { LocationSheetButton } from "@/components/bottom-sheet/LocationSheetButton";
 import { SelectableListSheet } from "@/components/bottom-sheet/SelectableBottomSheet";
 import { SelectBoxSheet } from "@/components/bottom-sheet/SelectBoxSheet";
+import SheetRadioOptionItem from "@/components/bottom-sheet/SheetRadioOptionItem";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import PlaceholderField from "@/components/ui/PlaceholderField";
@@ -101,7 +101,7 @@ export default function FiltersScreen() {
             sheetRef.current?.close();
           }}
           renderItem={({ item, index }) => (
-            <BottomSheetOptionItem
+            <SheetRadioOptionItem
               item={item}
               selected={selected === item.id}
               onPress={() => {
@@ -131,7 +131,7 @@ export default function FiltersScreen() {
           sheetRef.current?.close();
         }}
         renderItem={({ item, index }) => (
-          <BottomSheetOptionItem
+          <SheetRadioOptionItem
             item={item}
             selected={selected === item.id}
             onPress={() => {

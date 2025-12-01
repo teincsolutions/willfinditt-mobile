@@ -2,8 +2,8 @@ import { useTheme } from "@/hooks/useTheme";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { forwardRef, Ref, useRef, useState } from "react";
 import { SearchBar } from "../search/SearchBar";
-import BottomSheetOptionItem from "./BottomSheetOptionItem";
 import { SelectableListSheet } from "./SelectableBottomSheet";
+import SheetRadioOptionItem from "./SheetRadioOptionItem";
 
 interface LocationBottomSheetProps {
   onSelect: (cityId: string) => void;
@@ -79,7 +79,7 @@ export const LocationBottomSheet = forwardRef<
         data={regions}
         loading={regionLoading}
         renderItem={({ item }) => (
-          <BottomSheetOptionItem
+          <SheetRadioOptionItem
             item={item}
             selected={selectedRegion.id === item.id}
             onPress={() => {
@@ -107,7 +107,7 @@ export const LocationBottomSheet = forwardRef<
         data={cities}
         loading={cityLoading}
         renderItem={({ item }) => (
-          <BottomSheetOptionItem
+          <SheetRadioOptionItem
             item={item}
             selected={selectedCity.id === item.id}
             onPress={() => {

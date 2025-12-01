@@ -1,0 +1,139 @@
+import AppView from "@/components/ui/AppView";
+import { Header } from "@/components/ui/Header";
+import IconButton from "@/components/ui/IconButton";
+import InputField from "@/components/ui/InputField";
+import PlaceholderField from "@/components/ui/PlaceholderField";
+import RangeInput from "@/components/ui/RangeInput";
+import RichTextArea from "@/components/ui/RichTextArea";
+import { TextButton } from "@/components/ui/TextButton";
+import { useTheme } from "@/hooks/useTheme";
+import { Feather } from "@expo/vector-icons";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { router } from "expo-router";
+import React, { useRef, useState } from "react";
+import { Pressable, ScrollView } from "react-native";
+import { RichEditor } from "react-native-pell-rich-editor";
+
+export default function AdDetailsScreen() {
+  const { spacing, colors, radius, icons } = useTheme();
+    const [range, setRange] = useState({ low: 0, high: 100000 });
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const sheetRef = useRef<BottomSheet>(null);
+    const richEditorRef = useRef<RichEditor>(null);
+
+  return (
+    <AppView
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
+    >
+      <Header
+        right={
+          <TextButton
+            style={{ backgroundColor: colors.primary, borderRadius: radius.md }}
+            title={"Save"}
+            titleStyle={{ color: colors.textWhite }}
+            loading
+            accentColor={colors.iconWhite}
+            onPress={() => {}}
+          />
+        }
+        navRowStyle={{ marginHorizontal: spacing.md }}
+        containerStyle={{
+          backgroundColor: "transparent",
+        }}
+      />
+      <Pressable onPress={() => {
+        richEditorRef.current?.dismissKeyboard();
+      }}>
+        <ScrollView contentContainerStyle={{paddingHorizontal: spacing.md, gap: spacing.md}}>
+          <PlaceholderField
+          onPress={() => router.push("/categories")}
+          placeholder={"Select a category"}
+          label={"Category"}
+          inputStyle={[
+            {
+              backgroundColor: colors.selectBg,
+              paddingRight: spacing.sm,
+            },
+          ]}
+          value={""}
+          rightIcon={
+            <IconButton
+              onPress={() => router.push("/categories")}
+              style={{
+                backgroundColor: colors.iconLightGray,
+                borderRadius: radius.sm,
+              }}
+              icon={
+                <Feather
+                  name="chevron-down"
+                  size={icons.sm}
+                  color={colors.iconGray}
+                />
+              }
+            />
+          }
+        />
+
+       <PlaceholderField
+          onPress={() => router.push("/regions")}
+          placeholder={"Select a location"}
+          label={"Location"}
+          inputStyle={[
+            {
+              backgroundColor: colors.selectBg,
+              paddingRight: spacing.sm,
+            },
+          ]}
+          value={""}
+          rightIcon={
+            <IconButton
+              onPress={() => router.push("/regions")}
+              style={{
+                backgroundColor: colors.iconLightGray,
+                borderRadius: radius.sm,
+              }}
+              icon={
+                <Feather
+                  name="chevron-down"
+                  size={icons.sm}
+                  color={colors.iconGray}
+                />
+              }
+            />
+          }
+        />
+          <InputField
+          value={title}
+          label="Title"
+          placeholder="Enter title for the ad/product"
+          onChangeText={setTitle}
+          onBlur={() => {}}
+          error={undefined}
+          
+        />
+        <RichTextArea
+        ref={richEditorRef}
+        label="Description"
+        value={description}
+        onChange={setDescription}
+         />
+        <RangeInput
+          label="Price Range"
+          minValue={range.low.toString()}
+          maxValue={range.high.toString()}
+          onMinChange={(value) =>
+            setRange((prev) => ({ ...prev, low: Number(value) }))
+          }
+          onMaxChange={(value) =>
+            setRange((prev) => ({ ...prev, high: Number(value) }))
+          }
+        />
+        </ScrollView>
+      </Pressable>
+    </AppView>
+  );
+}
