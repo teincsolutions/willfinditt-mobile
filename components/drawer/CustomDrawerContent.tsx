@@ -56,9 +56,8 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Categories"
-        active={props.state.index === 2}
         onPress={() => {
-          props.navigation.navigate("categories");
+          router.push("/categories");
         }}
         icon={({ active }) => (
           <Ionicons

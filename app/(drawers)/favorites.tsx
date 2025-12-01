@@ -1,13 +1,9 @@
 import ProductCard from "@/components/ads/ProductCard";
-import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
-import InputField from "@/components/ui/InputField";
-import RangeSlider from "@/components/ui/RangeSlider";
 import { useTheme } from "@/hooks/useTheme";
 import { Ad } from "@/types/ad";
 import { useState } from "react";
-import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { FlatList } from "react-native";
 const ads: Ad[] = [
   {
     id: "1",
@@ -80,25 +76,9 @@ const ads: Ad[] = [
   },
 ];
 
-export default function CategoriesScreen() {
+export default function FavoritesScreen() {
   const { icons, spacing, colors } = useTheme();
   const [query, setQuery] = useState("");
-
-  const title = (
-    <AppText variant="xxl" style={{ fontWeight: "700" }}>
-      All Categories
-    </AppText>
-  );
-
-  const search = (
-    <View style={{ width: "100%" }}>
-      <InputField
-        placeholder="Search in all categories"
-        value={query}
-        onChangeText={setQuery}
-      />
-    </View>
-  );
 
   const renderProduct = ({ item }: { item: Ad }) => (
     <AppView style={{ width: "48%", paddingHorizontal: spacing.sm }}>
@@ -106,20 +86,21 @@ export default function CategoriesScreen() {
     </AppView>
   );
 
-  const [range, setRange] = useState({ low: 0, high: 1000 });
-
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <RangeSlider
-        min={0}
-        max={1000}
-        low={range.low}
-        high={range.high}
-        onChange={({ low, high }) => {
-          setRange({ low, high });
+    <AppView style={{ flex: 1, backgroundColor: colors.background }}>
+      <FlatList
+        data={ads}
+        keyExtractor={(item) => item.id}
+        renderItem={renderProduct}
+        numColumns={2}
+        contentContainerStyle={{
+          paddingHorizontal: spacing.md,
+          paddingTop: spacing.md,
+          paddingBottom: spacing.lg,
         }}
-        style={{ width: 300, marginHorizontal: "auto" }}
+        columnWrapperStyle={{ justifyContent: "space-between" }}
+        showsVerticalScrollIndicator={false}
       />
-    </SafeAreaView>
+    </AppView>
   );
 }

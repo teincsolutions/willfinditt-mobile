@@ -39,7 +39,6 @@ export default function TabLayout() {
         }}
       />
       <Drawer.Screen name="profile" />
-      <Drawer.Screen name="categories" options={{ headerShown: false }} />
       <Drawer.Screen name="favorites" options={{ headerShown: false }} />
       <Drawer.Screen name="messages" />
       <Drawer.Screen name="notifications" />

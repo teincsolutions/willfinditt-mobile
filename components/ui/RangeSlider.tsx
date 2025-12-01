@@ -121,7 +121,7 @@ export default function RangeSlider({
         onLayout={handleLayout}
         style={{
           height: spacing.md,
-          backgroundColor: colors.backgroundGray,
+          backgroundColor: colors.backgroundPrimary,
           borderRadius: radius.sm,
           marginTop: 40,
         }}

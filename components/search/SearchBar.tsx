@@ -16,6 +16,7 @@ interface SearchBarProps {
   style?: StyleProp<ViewStyle>;
   showFilter?: boolean;
   showSearchButton?: boolean;
+  autoFocus?: boolean;
 }
 
 export function SearchBar({
@@ -27,6 +28,7 @@ export function SearchBar({
   filterValue,
   showFilter = false,
   showSearchButton = true,
+  autoFocus = false,
   style,
 }: SearchBarProps) {
   const { colors, icons, spacing, textButton } = useTheme();
@@ -39,7 +41,7 @@ export function SearchBar({
       placeholder={placeholder}
       size="sm"
       onSubmit={onSubmit}
-      autoFocus={true}
+      autoFocus={autoFocus}
       leftIcon={
         value.length > 0 ? (
           <CloseCircle

@@ -69,6 +69,7 @@ export default function SearchScreen() {
                 onChangeText={handleChange}
                 onSubmit={handleSubmit}
                 onPressFilter={() => {}}
+                autoFocus
               />
             </Header>
           ),
