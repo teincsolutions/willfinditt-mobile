@@ -8,7 +8,7 @@ export const InputSizes = {
   paddingHorizontal: Spacing.md,
   gap: Spacing.sm,
   borderWidth: 1,
-  radius: Radius.xxl,
+  radius: Radius.lg,
 };
 
 export const InputSmSizes = {
@@ -53,7 +53,7 @@ export const AvatarSizes = {
   md: 48,
   lg: 64,
   xl: 96,
-  xxl: 164
+  xxl: 164,
 };
 export type AvatarSizeKey = keyof typeof AvatarSizes;
 

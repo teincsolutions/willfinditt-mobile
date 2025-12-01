@@ -1,89 +1,133 @@
-// components/sheets/SelectableListSheet.tsx
-
 import { useTheme } from "@/contexts/ThemeContext";
 import BottomSheet, {
-  BottomSheetFlatList,
+  BottomSheetBackdrop,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useMemo } from "react";
-import { View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleProp,
+  ViewStyle,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AppText from "../ui/AppText";
+import AppView from "../ui/AppView";
 import PrimaryButton from "../ui/PrimaryButton";
 
 export interface SelectableListSheetRef {
-  open: () => void;
+  expand: () => void;
   close: () => void;
 }
 
 interface Props<T> {
   title: string;
   data: T[];
-  selectedId?: string | number | null;
-  onSelect: (item: T) => void;
-  onDone?: (item: T | null) => void;
-  renderItem: (params: { item: T; selected: boolean }) => React.ReactNode;
+  loading?: boolean;
+  onDone?: () => void;
+  renderItem: (params: { item: T; index: number }) => React.ReactElement | null;
+  ListHeaderComponent?: React.ReactElement;
+  ListHeaderComponentStyle?: StyleProp<ViewStyle>;
 }
 
-function SelectableListSheetInner<T>(
-  { title, data, selectedId, onSelect, onDone, renderItem }: Props<T>,
-  ref: any
-) {
-  const { spacing, colors } = useTheme();
+export const SelectableListSheet = forwardRef<BottomSheet, Props<any>>(
+  (
+    {
+      title,
+      data,
+      loading,
+      ListHeaderComponent,
+      ListHeaderComponentStyle,
+      onDone,
+      renderItem,
+    },
+    ref
+  ) => {
+    const { spacing, colors } = useTheme();
+    const snapPoints = useMemo(() => ["70%"], []);
 
-  const snapPoints = useMemo(() => ["70%"], []);
+    const insets = useSafeAreaInsets();
 
-  const selectedItem = data.find((d: any) => d?.id === selectedId) || null;
-
-  return (
-    <BottomSheet
-      ref={ref}
-      index={-1}
-      enablePanDownToClose
-      snapPoints={snapPoints}
-      backgroundStyle={{
-        backgroundColor: colors.background,
-        borderTopLeftRadius: 32,
-        borderTopRightRadius: 32,
-      }}
-    >
-      <BottomSheetView style={{ paddingHorizontal: spacing.md }}>
-        {/* TITLE */}
-        <AppText
-          variant="xl"
+    return (
+      <BottomSheet
+        containerStyle={{ zIndex: 1100 }}
+        ref={ref}
+        index={-1}
+        enablePanDownToClose
+        snapPoints={snapPoints}
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop
+            {...props}
+            disappearsOnIndex={-1}
+            appearsOnIndex={0}
+            opacity={0.5}
+            style={{ zIndex: 1100 }}
+          />
+        )}
+        backgroundStyle={{
+          backgroundColor: colors.background,
+          borderTopLeftRadius: 32,
+          borderTopRightRadius: 32,
+        }}
+      >
+        <BottomSheetView
           style={{
-            textAlign: "center",
-            fontWeight: "700",
-            marginBottom: spacing.md,
+            paddingHorizontal: spacing.md,
+            paddingBottom: insets.bottom + spacing.lg,
           }}
         >
-          {title}
-        </AppText>
+          {/* TITLE */}
+          <AppText
+            variant="xl"
+            style={{
+              textAlign: "center",
+              fontWeight: "700",
+              marginBottom: spacing.md,
+            }}
+          >
+            {title}
+          </AppText>
 
-        {/* LIST — using BottomSheetFlatList */}
-        <BottomSheetFlatList
-          data={data}
-          keyExtractor={(item: T, index: number) => index.toString()}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: spacing.xl,
-          }}
-          renderItem={({ item }: { item: T }) =>
-            renderItem({
-              item,
-              selected: (item as any)?.id === selectedId,
-            })
-          }
-        />
+          {/* HEADER COMPONENT */}
+          {ListHeaderComponent && (
+            <AppView style={ListHeaderComponentStyle}>
+              {ListHeaderComponent}
+            </AppView>
+          )}
 
-        {/* DONE BUTTON */}
-        <View style={{ marginTop: spacing.md }}>
-          <PrimaryButton title="Done" onPress={() => onDone?.(selectedItem)} />
-        </View>
-      </BottomSheetView>
-    </BottomSheet>
-  );
-}
+          {/* LIST — using BottomSheetFlatList */}
+          <FlatList
+            data={data}
+            keyExtractor={(item: any, index: number) => index.toString()}
+            showsVerticalScrollIndicator={false}
+            renderItem={renderItem}
+            style={{ maxHeight: 600 }}
+            ListFooterComponent={
+              <>
+                {loading && (
+                  <AppView
+                    style={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      paddingVertical: spacing.md,
+                    }}
+                  >
+                    <ActivityIndicator size="large" color={colors.primary} />
+                  </AppView>
+                )}
+              </>
+            }
+          />
+          {/* DONE BUTTON */}
+          {onDone && (
+            <AppView style={{ marginTop: spacing.md }}>
+              <PrimaryButton title="Done" onPress={() => onDone()} />
+            </AppView>
+          )}
+        </BottomSheetView>
+      </BottomSheet>
+    );
+  }
+);
 
-export const SelectableListSheet = forwardRef(SelectableListSheetInner) as <T>(
-  p: Props<T> & { ref?: React.Ref<SelectableListSheetRef> }
-) => React.ReactElement;
+SelectableListSheet.displayName = "SelectableListSheet";

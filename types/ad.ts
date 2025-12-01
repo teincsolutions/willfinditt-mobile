@@ -8,10 +8,11 @@ export interface Ad {
   id: string;
   title: string;
   description: string;
-  price?: number;
+  price: number;
   currency: string;
   condition?: AdCondition;
   images: string[];
+  videos?: string[];
   status?: AdStatus;
   isPromoted?: boolean;
   promotionEnds?: string;
@@ -32,8 +33,13 @@ export interface Ad {
   user?: User;
   category?: Category;
   city?: City;
+  tagLinks?: string[];
   fieldValues?: AdFieldValue[];
   savedBy?: SavedAd[];
+  _count?: {
+    savedBy: number;
+    comments: number;
+  };
 }
 
 export interface AdFieldValue {
@@ -167,8 +173,8 @@ export type ProductSpec = {
 export type Suggestion = {
   id: string;
   keyword: string;
-  product_id: number;
-  category_id: number;
-  category_field_id: number;
+  product_id: string;
+  category_id: string;
+  category_field_id: string;
   is_recent?: boolean;
 };

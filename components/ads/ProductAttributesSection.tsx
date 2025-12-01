@@ -1,29 +1,50 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Ad, CategoryField } from "@/types";
+import { Ad, AdFieldValue, CategoryField } from "@/types";
 import React, { useMemo } from "react";
 import { FlatList, View } from "react-native";
 import AppView from "../ui/AppView";
 import { Pill } from "../ui/Pill";
 import { SignleAttributeCard } from "./SingleAttributeCard";
 
-type FieldValue = { fieldId: string; value: any };
-
-function mapAttributes(
-  fieldValues: FieldValue[],
-  categoryFields: CategoryField[]
-) {
-  const byId = new Map(categoryFields.map((f) => [f.id, f]));
+function mapAttributes(fieldValues: AdFieldValue[]) {
   const singles: { label: string; value: string }[] = [];
   const lists: { label: string; values: string[] }[] = [];
 
   for (const fv of fieldValues || []) {
-    const field = byId.get(fv.fieldId);
+    const field = fv.categoryField;
     if (!field) continue;
+
     const val = fv.value;
-    if (Array.isArray(val)) {
+
+    // Handle CHECKBOX fields - value is a stringified JSON array
+    if (field.type === "CHECKBOX") {
+      try {
+        const parsedValues = typeof val === "string" ? JSON.parse(val) : val;
+        if (Array.isArray(parsedValues)) {
+          lists.push({
+            label: field.label,
+            values:
+              field.options
+                ?.filter((opt) => parsedValues.includes(opt.value))
+                .map((opt) => opt.label) || [],
+          });
+        }
+      } catch (error) {
+        console.warn(
+          `Failed to parse CHECKBOX value for field ${field.name}:`,
+          error
+        );
+        // Fallback: treat as single value if parsing fails
+        singles.push({ label: field.label || field.name, value: String(val) });
+      }
+    }
+    // Handle regular arrays (if any exist in your data)
+    else if (Array.isArray(val)) {
       lists.push({ label: field.label || field.name, values: val });
-    } else {
+    }
+    // Handle all other field types (TEXT, NUMBER, SELECT, RADIO, DATE, BOOLEAN, TEXTAREA)
+    else {
       singles.push({ label: field.label || field.name, value: String(val) });
     }
   }
@@ -40,12 +61,12 @@ export default function ProductAttributesSection({
   const { spacing } = useTheme();
 
   const { singles, lists } = useMemo(
-    () => mapAttributes((ad.fieldValues as any) || [], categoryFields || []),
-    [ad, categoryFields]
+    () => mapAttributes((ad.fieldValues as any) || []),
+    [ad.fieldValues]
   );
 
   return (
-    <AppView style={{ paddingHorizontal: spacing.lg }}>
+    <AppView style={{ paddingHorizontal: spacing.md }}>
       {/* singles grid */}
       {singles.length > 0 && (
         <FlatList
@@ -55,6 +76,7 @@ export default function ProductAttributesSection({
           columnWrapperStyle={{
             justifyContent: "space-between",
             marginBottom: spacing.md,
+            gap: spacing.md,
           }}
           contentContainerStyle={{ gap: spacing.md }}
           renderItem={({ item }) => <SignleAttributeCard item={item} />}

@@ -8,6 +8,7 @@ import * as Yup from "yup";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Feather } from "@expo/vector-icons";
 import { useFormik } from "formik";
+import { Keyboard } from "react-native";
 import AppText from "../ui/AppText";
 import InputField from "../ui/InputField";
 import PrimaryButton from "../ui/PrimaryButton";
@@ -41,6 +42,7 @@ export const ChangeEmailSheet = forwardRef<BottomSheet, ChangeEmailSheetProps>(
         snapPoints={snapPoints}
         index={-1}
         enablePanDownToClose
+        onClose={() => Keyboard.dismiss()}
         backdropComponent={(props) => (
           <BottomSheetBackdrop
             {...props}

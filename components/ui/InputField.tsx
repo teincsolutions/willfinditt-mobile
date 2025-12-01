@@ -28,6 +28,7 @@ type Props = {
   inputStyle?: StyleProp<ViewStyle>;
   leftIconStyle?: StyleProp<ViewStyle>;
   rightIconStyle?: StyleProp<ViewStyle>;
+  autoFocus?: boolean;
 };
 
 export default function InputField({
@@ -46,6 +47,7 @@ export default function InputField({
   leftIconStyle,
   error,
   style,
+  autoFocus,
   inputStyle,
 }: Props) {
   const { colors, input, inputSmall, spacing } = useTheme();
@@ -82,12 +84,13 @@ export default function InputField({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           secureTextEntry={secure}
           keyboardType={keyboardType}
           style={[styles.input, { color: colors.text }]}
           onSubmitEditing={onSubmit}
           onBlur={onBlur}
+          autoFocus={autoFocus}
         />
 
         {rightIcon && (

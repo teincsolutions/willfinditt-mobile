@@ -38,7 +38,6 @@ export const Header: React.FC<Props> = ({
         {
           backgroundColor: backgroundColor || colors.backgroundPrimary,
           paddingTop: insets.top + 10,
-          zIndex: 1000,
         },
         containerStyle,
       ]}

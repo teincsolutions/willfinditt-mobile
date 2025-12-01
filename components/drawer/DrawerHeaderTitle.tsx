@@ -16,7 +16,9 @@ export default function DrawerHeaderTitle() {
           textTransform: "uppercase",
         }}
       >
-        <AppText variant="xl" style={{ fontWeight: "bold" }}>Will</AppText>
+        <AppText variant="xl" style={{ fontWeight: "bold" }}>
+          Will
+        </AppText>
         <AppText variant="xl">finditt</AppText>
       </AppText>
     </AppView>

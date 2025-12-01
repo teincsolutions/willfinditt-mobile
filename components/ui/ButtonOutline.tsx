@@ -16,7 +16,7 @@ export default function ButtonOutline({
   onPress?: () => void;
   icon?: (props: { color: string; size: number }) => ReactNode;
 }) {
-  const { colors, spacing, button, icons } = useTheme();
+  const { colors, spacing, button, radius, icons } = useTheme();
   return (
     <Pressable
       style={[
@@ -27,7 +27,7 @@ export default function ButtonOutline({
           height: button.height,
           borderWidth: button.borderWidth,
           paddingHorizontal: button.paddingHorizontal,
-          borderRadius: button.radius,
+          borderRadius: radius.md,
         },
         style,
       ]}

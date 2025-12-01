@@ -39,7 +39,7 @@ export function CategoryCardCircularSkeleton({
       style={[styles.avatarWrapper, styleContainer, { opacity: fadeAnim }]}
     >
       <LinearGradient
-        colors={[colors.primary, colors.secondary]}
+        colors={[colors.primary, colors.accent]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
@@ -56,7 +56,7 @@ export function CategoryCardCircularSkeleton({
               height: avatarSize.lg,
               borderRadius: avatarSize.lg,
               padding: 2,
-              backgroundColor: colors.backgroundGray,
+              backgroundColor: colors.border,
               alignItems: "center",
               justifyContent: "center",
             },

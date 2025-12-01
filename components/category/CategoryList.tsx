@@ -33,7 +33,7 @@ export function CategoryList({
       contentContainerStyle={{
         paddingHorizontal: isGrid ? spacing.md : spacing.lg,
         gap: spacing.xs,
-        width: "100%",
+        flexGrow: 1,
       }}
       key={isGrid ? "grid" : "list"}
       extraData={isGrid}

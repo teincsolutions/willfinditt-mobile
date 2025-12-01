@@ -1,33 +1,51 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { Ad } from "@/types";
 import { Image } from "expo-image";
 import React from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { Dimensions, FlatList, StyleSheet } from "react-native";
 import AppView from "../ui/AppView";
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export function AdInfoBlock({ ad }: { ad: Ad }) {
   const { spacing } = useTheme();
 
+  const titleWidth = SCREEN_WIDTH - spacing.md * 2 - 80 - spacing.md;
+
   return (
-    <AppView style={{ paddingHorizontal: spacing.lg, paddingTop: 12 }}>
-      <AppText variant="xxl" style={{ fontWeight: "700" }}>
-        {ad.title}
-      </AppText>
+    <AppView style={{ paddingHorizontal: spacing.md }}>
       <AppView
         style={{
           flexDirection: "row",
           justifyContent: "space-between",
-          marginTop: spacing.sm,
+          alignItems: "baseline",
+          gap: spacing.md,
         }}
       >
-        <AppText variant="sm" style={{ opacity: 0.7 }}>
-          {ad.city?.name || "Unknown"}
-        </AppText>
-        <AppText variant="lg" style={{ fontWeight: "700" }}>
-          {ad.currency}
-          {ad.price ?? ""}
-        </AppText>
+        <AppView
+          style={{
+            justifyContent: "space-between",
+            gap: spacing.xs,
+            maxWidth: titleWidth,
+          }}
+        >
+          <AppText variant="xxl" style={{ fontWeight: "700" }}>
+            {ad.title}
+          </AppText>
+          <AppText variant="md" style={{ opacity: 0.7 }}>
+            {ad.address || ad.city?.name || "Unknown"}
+          </AppText>
+        </AppView>
+
+        <AppView style={{ gap: spacing.xs, alignItems: "flex-start" }}>
+          <AppText variant="md" style={{ opacity: 0.7 }}>
+            Price
+          </AppText>
+          <AppText variant="lg" style={{ fontWeight: "500", lineHeight: 24 }}>
+            {formatCurrency(ad.price, "en-GH", ad.currency || "GHS")}
+          </AppText>
+        </AppView>
       </AppView>
 
       {/* thumbnails */}

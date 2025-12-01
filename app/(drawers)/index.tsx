@@ -15,9 +15,12 @@ import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { ToggleAction } from "@/components/ui/ToggleAction";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ad, Category } from "@/types";
+import { router } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MasonryList from "reanimated-masonry-list";
 
 export default function HomeScreen() {
+  const insert = useSafeAreaInsets();
   const { spacing, colors } = useTheme();
   const [selectedTab, setSelectedTab] = useState("Trending");
   const [showAllCategories, setShowAllCategories] = useState(false);
@@ -164,8 +167,8 @@ export default function HomeScreen() {
         data={[
           {
             source: require("@/assets/images/woman-with-shopping-bags.png"),
-            title: "40–50% OFF",
-            subtitle: "Now in all categories in WILLFINDITT",
+            title: "Independence Sale is Here!",
+            subtitle: "Get more for less from our sellers.",
             color: colors.text,
           },
           {
@@ -206,7 +209,13 @@ export default function HomeScreen() {
   );
 
   return (
-    <AppView style={{ flex: 1, backgroundColor: colors.background }}>
+    <AppView
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+        paddingBottom: insert.bottom,
+      }}
+    >
       {/* Fixed Search Bar */}
       <Animated.View
         style={{
@@ -222,7 +231,12 @@ export default function HomeScreen() {
           opacity: searchBarOpacity,
         }}
       >
-        <SearchBarPlaceholder />
+        <SearchBarPlaceholder
+          onPress={() => router.push({ pathname: "/(search)" })}
+          onPressFilter={() => {
+            router.push({ pathname: "/(search)/filters" });
+          }}
+        />
       </Animated.View>
 
       {/* Scrollable Content */}
@@ -237,7 +251,14 @@ export default function HomeScreen() {
         numColumns={2}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader()}
-        renderItem={({ item }) => <ProductCard ad={item as Ad} />}
+        renderItem={({ item, index }: { item: Ad; index: number }) => (
+          <ProductCard
+            onPress={() =>
+              router.push({ pathname: "/[adId]", params: { adId: item.id } })
+            }
+            ad={item}
+          />
+        )}
         contentContainerStyle={{}}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}

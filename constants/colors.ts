@@ -4,7 +4,7 @@ export const Colors = {
     background: "#FFFFFF",
     backgroundGray: "#F2F2F7",
     black: "#000000",
-    backgroundPrimary: "#f3efe3ff",
+    backgroundPrimary: "#FEFAEC",
     text: "#1A1A1A",
     textWhite: "#FFFFFF",
     textGray: "#64748B",
@@ -16,11 +16,14 @@ export const Colors = {
     blue: "#3B82F6",
     green: "#4BB543",
     inputBg: "#FFFFFF",
+    selectBg: "#FAFAFA",
     iconBlack: "#1C1C28",
     iconGray: "#64748B",
+    iconLightGray: "#EFEFEF",
     iconWhite: "#FFFFFF",
     border: "#E2E8F0",
     error: "#FF4D4D",
+    placeholder: "#999999",
   },
 
   dark: {
@@ -39,11 +42,14 @@ export const Colors = {
     blue: "#60A5FA",
     green: "#22946e",
     inputBg: "#1A1A1A",
+    selectBg: "#222222",
     iconBlack: "#FCFCF8",
     iconWhite: "#FCFCF8",
     iconGray: "#FEFEFE",
+    iconLightGray: "#A1A1A1",
     border: "#333333",
     error: "#FF6B6B",
+    placeholder: "#CCCCCC",
   },
 };
 

@@ -1,6 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { Feather } from "@expo/vector-icons";
-import { DirectDown } from "iconsax-react-nativejs";
+import { CloseCircle, DirectDown } from "iconsax-react-nativejs";
 import React from "react";
 import { StyleProp, ViewStyle } from "react-native";
 import InputField from "../ui/InputField";
@@ -14,6 +14,8 @@ interface SearchBarProps {
   filterValue?: string;
   placeholder?: string;
   style?: StyleProp<ViewStyle>;
+  showFilter?: boolean;
+  showSearchButton?: boolean;
 }
 
 export function SearchBar({
@@ -23,6 +25,8 @@ export function SearchBar({
   onPressFilter,
   placeholder = "Search...",
   filterValue,
+  showFilter = false,
+  showSearchButton = true,
   style,
 }: SearchBarProps) {
   const { colors, icons, spacing, textButton } = useTheme();
@@ -35,11 +39,20 @@ export function SearchBar({
       placeholder={placeholder}
       size="sm"
       onSubmit={onSubmit}
+      autoFocus={true}
       leftIcon={
-        <Feather name="search" size={icons.md} color={colors.iconBlack} />
+        value.length > 0 ? (
+          <CloseCircle
+            onPress={() => onChangeText && onChangeText("")}
+            size={icons.md}
+            color={colors.iconBlack}
+          />
+        ) : (
+          <Feather name="search" size={icons.md} color={colors.iconBlack} />
+        )
       }
       rightIcon={
-        value.length > 0 ? (
+        value.length > 0 && showSearchButton ? (
           <TextButton
             style={{ height: textButton.height - spacing.sm }}
             gradientColors={[colors.primary, colors.secondary]}
@@ -48,20 +61,22 @@ export function SearchBar({
             title="Search"
           />
         ) : (
-          <TextButton
-            style={{ height: textButton.height - spacing.sm }}
-            gradientColors={[colors.primary, colors.secondary]}
-            titleStyle={{ color: colors.textWhite }}
-            title={filterValue || "All"}
-            icon={
-              <DirectDown
-                variant="Bold"
-                size={icons.sm}
-                color={colors.iconWhite}
-              />
-            }
-            onPress={onPressFilter}
-          />
+          showFilter && (
+            <TextButton
+              style={{ height: textButton.height - spacing.sm }}
+              gradientColors={[colors.primary, colors.secondary]}
+              titleStyle={{ color: colors.textWhite }}
+              title={filterValue || "All"}
+              icon={
+                <DirectDown
+                  variant="Bold"
+                  size={icons.sm}
+                  color={colors.iconWhite}
+                />
+              }
+              onPress={onPressFilter}
+            />
+          )
         )
       }
     />

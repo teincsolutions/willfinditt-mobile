@@ -7,6 +7,7 @@ import * as Yup from "yup";
 
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFormik } from "formik";
+import { Keyboard } from "react-native";
 import AppText from "../ui/AppText";
 import CountryCodePicker from "../ui/CountryCodePicker";
 import InputField from "../ui/InputField";
@@ -43,6 +44,7 @@ export const ChangePhoneNumberSheet = forwardRef<
       snapPoints={snapPoints}
       index={-1}
       enablePanDownToClose
+      onClose={() => Keyboard.dismiss()}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
           {...props}

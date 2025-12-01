@@ -6,6 +6,7 @@ import {
 } from "@react-navigation/drawer";
 import React from "react";
 
+import { router } from "expo-router";
 import DrawerMenuItem from "./DrawerMenuItem";
 import DrawerPromoCard from "./DrawerPromoCard";
 import DrawerUserHeader from "./DrawerUserHeader";
@@ -70,7 +71,9 @@ export default function CustomDrawerContent(
       <DrawerMenuItem
         label="Favorites"
         active={props.state.index === 3}
-        onPress={() => {}}
+        onPress={() => {
+          props.navigation.navigate("favorites");
+        }}
         icon={({ active }) => (
           <MaterialCommunityIcons
             name="heart-outline"
@@ -83,7 +86,9 @@ export default function CustomDrawerContent(
         label="Messages"
         active={props.state.index === 4}
         count={2}
-        onPress={() => {}}
+        onPress={() => {
+          props.navigation.navigate("messages");
+        }}
         icon={({ active }) => (
           <Feather
             name="message-square"
@@ -96,7 +101,9 @@ export default function CustomDrawerContent(
         label="Notifications"
         active={props.state.index === 5}
         count={2}
-        onPress={() => {}}
+        onPress={() => {
+          props.navigation.navigate("notifications");
+        }}
         icon={({ active }) => (
           <Feather
             name="bell"
@@ -108,7 +115,9 @@ export default function CustomDrawerContent(
       <DrawerMenuItem
         label="Settings & Security"
         active={props.state.index === 6}
-        onPress={() => {}}
+        onPress={() => {
+          props.navigation.navigate("settings");
+        }}
         icon={({ active }) => (
           <Feather
             name="shield"
@@ -120,7 +129,9 @@ export default function CustomDrawerContent(
       <DrawerMenuItem
         label="Help & Support"
         active={props.state.index === 7}
-        onPress={() => {}}
+        onPress={() => {
+          props.navigation.navigate("support");
+        }}
         icon={({ active }) => (
           <Feather
             name="headphones"
@@ -132,7 +143,9 @@ export default function CustomDrawerContent(
       <DrawerMenuItem
         label="About Us"
         active={props.state.index === 8}
-        onPress={() => {}}
+        onPress={() => {
+          props.navigation.navigate("about");
+        }}
         icon={({ active }) => (
           <Feather
             name="info"
@@ -146,7 +159,9 @@ export default function CustomDrawerContent(
       {/* LOGOUT */}
       <DrawerMenuItem
         label="Logout"
-        onPress={() => {}}
+        onPress={() => {
+          router.push("/(auth)/login");
+        }}
         labelStyle={{ color: colors.accentRed }}
         icon={() => (
           <Feather name="log-out" size={icons.md} color={colors.accentRed} />

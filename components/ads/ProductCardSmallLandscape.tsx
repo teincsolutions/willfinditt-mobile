@@ -1,27 +1,27 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ad } from "@/types/ad";
-import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import React from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import {
+  StyleProp,
+  StyleSheet,
+  TouchableOpacity,
+  ViewStyle,
+} from "react-native";
 import AppText from "../ui/AppText";
 import AppView from "../ui/AppView";
-import IconButton from "../ui/IconButton";
+import { FavouriteButton } from "../ui/FavouriteButton";
 
 interface Props {
   ad: Ad;
   onPress?: () => void;
-  onToggleWishlist?: () => void;
-  isWishlisted?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function ProductCardSmallLandscape({
-  ad,
-  onPress,
-  onToggleWishlist,
-  isWishlisted = false,
-}: Props) {
-  const { colors, spacing, radius, icons } = useTheme();
+export function ProductCardSmallLandscape({ ad, onPress, style }: Props) {
+  const { colors, spacing, radius } = useTheme();
+
+  const [toggle, onToggleWishlist] = useState(false);
 
   return (
     <TouchableOpacity
@@ -33,6 +33,7 @@ export function ProductCardSmallLandscape({
           padding: spacing.md,
           borderRadius: radius.lg,
         },
+        style,
       ]}
       activeOpacity={0.9}
     >
@@ -58,16 +59,7 @@ export function ProductCardSmallLandscape({
         </AppText>
       </AppView>
 
-      <IconButton
-        icon={
-          <Feather
-            name="heart"
-            size={icons.md}
-            color={isWishlisted ? colors.primary : colors.iconBlack}
-          />
-        }
-        onPress={onToggleWishlist}
-      />
+      <FavouriteButton onToggle={onToggleWishlist} active={toggle} />
     </TouchableOpacity>
   );
 }

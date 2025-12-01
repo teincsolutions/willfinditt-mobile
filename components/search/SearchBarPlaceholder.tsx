@@ -11,6 +11,7 @@ interface SearchBarPlaceholderProps {
   filterValue?: string;
   placeholder?: string;
   style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
 }
 
 export function SearchBarPlaceholder({
@@ -18,11 +19,13 @@ export function SearchBarPlaceholder({
   placeholder = "Search...",
   filterValue,
   style,
+  onPress,
 }: SearchBarPlaceholderProps) {
   const { colors, icons, spacing, textButton } = useTheme();
 
   return (
     <PlaceholderField
+      onPress={onPress}
       style={style}
       placeholder={placeholder}
       size="sm"
@@ -34,7 +37,7 @@ export function SearchBarPlaceholder({
           style={{ height: textButton.height - spacing.sm }}
           gradientColors={[colors.primary, colors.secondary]}
           titleStyle={{ color: colors.textWhite }}
-          title={filterValue || "All"}
+          title={filterValue || "Ghana"}
           icon={
             <Location variant="Bold" size={icons.sm} color={colors.iconWhite} />
           }

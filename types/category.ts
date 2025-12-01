@@ -15,6 +15,14 @@ export interface Category {
   parent?: Category;
   children?: Category[];
   fields?: CategoryField[];
+  _count?: {
+    ads: number;
+  };
+}
+
+export interface Option {
+  label: string;
+  value: string;
 }
 
 export interface CategoryField {
@@ -24,11 +32,12 @@ export interface CategoryField {
   label: string;
   type: CategoryFieldType;
   isRequired: boolean;
-  options?: any; // JSON field from Prisma
+  options?: Option[]; // JSON field from Prisma
+  // JSON field from Prisma
   validation?: any; // JSON field from Prisma
   sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Legacy Types (for backward compatibility)

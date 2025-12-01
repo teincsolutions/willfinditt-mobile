@@ -20,8 +20,8 @@ export interface User {
   isVerified: boolean;
   emailVerified: boolean;
   phoneVerified: boolean;
-  role: UserRole;
-  provider: AuthProvider;
+  role?: UserRole;
+  provider?: AuthProvider;
   providerId?: string;
   createdAt: string;
   updatedAt: string;
@@ -47,9 +47,9 @@ export interface SellerProfile {
     linkedin?: string;
   } | null;
   website?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  user: User;
+  createdAt?: string;
+  updatedAt?: string;
+  user?: User;
   verification?: SellerVerification | null;
 }
 

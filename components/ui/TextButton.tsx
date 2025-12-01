@@ -41,7 +41,14 @@ export function TextButton({
       colors={gradientColors || [colors.background, colors.background]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={[{ borderRadius: textButton.borderRadius }, style]}
+      style={[
+        {
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: textButton.borderRadius,
+        },
+        style,
+      ]}
     >
       <Pressable
         onPress={onPress}

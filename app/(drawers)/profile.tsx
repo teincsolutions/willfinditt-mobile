@@ -1,5 +1,3 @@
-import { ChangeEmailSheet } from "@/components/bottom-sheet/ChangeEmailSheet";
-import { ChangePhoneNumberSheet } from "@/components/bottom-sheet/ChangePhoneNumber";
 import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
@@ -9,16 +7,13 @@ import PlaceholderField from "@/components/ui/PlaceholderField";
 import { TextButton } from "@/components/ui/TextButton";
 import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
-import BottomSheet from "@gorhom/bottom-sheet";
 import Drawer from "expo-router/drawer";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { ScrollView } from "react-native";
 
 export default function ProfileScreen() {
   const { icons, spacing, colors, radius, fontSizes } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
-  const changeEmailSheetRef = useRef<BottomSheet>(null);
-  const changePhoneNumberSheetRef = useRef<BottomSheet>(null);
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -88,15 +83,7 @@ export default function ProfileScreen() {
             <Feather name="user" color={colors.iconGray} size={icons.md} />
           }
           label="Firstname"
-          inputStyle={{ borderRadius: radius.md }}
           value={"Silvia"}
-          rightIcon={
-            <Feather
-              name="chevron-right"
-              color={colors.iconGray}
-              size={icons.md}
-            />
-          }
         />
 
         <PlaceholderField
@@ -104,82 +91,17 @@ export default function ProfileScreen() {
             <Feather name="user" color={colors.iconGray} size={icons.md} />
           }
           label="Lastname"
-          inputStyle={{ borderRadius: radius.md }}
           value={"Aful"}
-          rightIcon={
-            <Feather
-              name="chevron-right"
-              color={colors.iconGray}
-              size={icons.md}
-            />
-          }
         />
 
         <PlaceholderField
           leftIcon={
-            <Feather name="mail" color={colors.iconGray} size={icons.md} />
+            <Feather name="calendar" color={colors.iconGray} size={icons.md} />
           }
-          label="Email"
-          inputStyle={{ borderRadius: radius.md }}
-          value={"samplename@gmail.com"}
-          rightIcon={
-            <AppView
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacing.sm,
-              }}
-            >
-              <Feather
-                name="check-circle"
-                color={colors.green}
-                size={icons.sm}
-              />
-              <Feather
-                name="chevron-right"
-                color={colors.iconGray}
-                size={icons.md}
-              />
-            </AppView>
-          }
-          onPress={() => {
-            console.log("Change Email Pressed");
-            changeEmailSheetRef.current?.expand();
-          }}
-        />
-
-        <PlaceholderField
-          leftIcon={
-            <Feather name="phone" color={colors.iconGray} size={icons.md} />
-          }
-          label="Phone number"
-          inputStyle={{ borderRadius: radius.md }}
-          value={"+2330246092155"}
-          onPress={() => changePhoneNumberSheetRef.current?.expand()}
-          rightIcon={
-            <AppView
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacing.sm,
-              }}
-            >
-              <Feather
-                name="check-circle"
-                color={colors.green}
-                size={icons.sm}
-              />
-              <Feather
-                name="chevron-right"
-                color={colors.iconGray}
-                size={icons.md}
-              />
-            </AppView>
-          }
+          label="Date of Birth"
+          value={"12th Dec 1998"}
         />
       </ScrollView>
-      <ChangeEmailSheet ref={changeEmailSheetRef} />
-      <ChangePhoneNumberSheet ref={changePhoneNumberSheetRef} />
     </AppView>
   );
 }

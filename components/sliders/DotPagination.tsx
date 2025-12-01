@@ -28,7 +28,7 @@ export function DotPagination({
             height: 8,
             borderRadius: 8,
             marginHorizontal: 4,
-            backgroundColor: i === index ? colors.primary : colors.border,
+            backgroundColor: i === index ? colors.primary : colors.iconGray,
           }}
         />
       ))}

@@ -1,3 +1,3 @@
-export default function SubCategoriesScreen() {
+export default function NotificationsScreen() {
   return null;
 }

@@ -56,7 +56,7 @@ export function CategoryCardCircular({
       </LinearGradient>
 
       <AppText
-        variant="sm"
+        variant="xs"
         style={{ width: avatarSize.lg, textAlign: "center" }}
         numberOfLines={2}
       >

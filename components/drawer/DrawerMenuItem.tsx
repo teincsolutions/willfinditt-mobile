@@ -59,7 +59,13 @@ export default function DrawerMenuItem({
         >
           {label}
         </AppText>
-        {count ? <Badge count={count} /> : null}
+        {count ? (
+          <Badge
+            count={count}
+            textColor={active ? colors.primary : colors.textWhite}
+            color={active ? colors.background : colors.primary}
+          />
+        ) : null}
       </View>
     </Pressable>
   );

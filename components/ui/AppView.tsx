@@ -7,5 +7,5 @@ type Props = {
 };
 
 export default function AppView({ children, style }: Props) {
-  return <View style={[style]}>{children}</View>;
+  return <View style={style}>{children}</View>;
 }

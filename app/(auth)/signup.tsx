@@ -103,6 +103,7 @@ export default function RegisterScreen() {
               leftIcon={
                 <Feather name="user" color={colors.primary} size={icons.md} />
               }
+              inputStyle={{ borderRadius: radius.xxl }}
             />
 
             <InputField
@@ -118,6 +119,7 @@ export default function RegisterScreen() {
               leftIcon={
                 <Feather name="user" color={colors.primary} size={icons.md} />
               }
+              inputStyle={{ borderRadius: radius.xxl }}
             />
 
             <View style={styles.switchInput}>
@@ -145,6 +147,7 @@ export default function RegisterScreen() {
                 leftIcon={
                   <Feather name="mail" color={colors.primary} size={icons.md} />
                 }
+                inputStyle={{ borderRadius: radius.xxl }}
               />
             )}
 
@@ -158,6 +161,7 @@ export default function RegisterScreen() {
                 leftIcon={
                   <CountryCodePicker code="+233" flag="🇬🇭" onPress={() => {}} />
                 }
+                inputStyle={{ borderRadius: radius.xxl }}
               />
             )}
             <View style={{ marginTop: spacing.lg, gap: spacing.md }}>

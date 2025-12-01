@@ -118,6 +118,7 @@ export default function AuthScreen() {
                         size={icons.md}
                       />
                     }
+                    inputStyle={{ borderRadius: radius.xxl }}
                   />
 
                   {/* PASSWORD */}
@@ -156,6 +157,7 @@ export default function AuthScreen() {
                         size={icons.md}
                       />
                     }
+                    inputStyle={{ borderRadius: radius.xxl }}
                   />
                   {/* FORGOT PASSWORD */}
                   <SecondaryTextButton

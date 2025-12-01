@@ -19,11 +19,13 @@ const { width: DEVICE_WIDTH } = Dimensions.get("window");
 export default function ProductCard({
   ad,
   style,
+  onPress,
 }: {
   ad: Ad;
   style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
 }) {
-  const { spacing, radius, colors, icons } = useTheme();
+  const { spacing, radius, colors } = useTheme();
   const width = (DEVICE_WIDTH - spacing.md * 2 - spacing.xs) / 2;
 
   const image = ad.images?.[0] || "";
@@ -49,12 +51,13 @@ export default function ProductCard({
           borderRadius: radius.lg,
           width: width,
           marginBottom: spacing.sm,
-          backgroundColor:colors.background,
-          borderColor:colors.border,
-          overflow:'hidden',
+          backgroundColor: colors.background,
+          borderColor: colors.border,
+          overflow: "hidden",
         },
         style,
       ]}
+      onPress={onPress}
     >
       {/* IMAGE */}
       <Image
@@ -65,7 +68,7 @@ export default function ProductCard({
           {
             height: calculatedHeight,
             width: "100%",
-            backgroundColor:undefined
+            backgroundColor: undefined,
           },
         ]}
       />

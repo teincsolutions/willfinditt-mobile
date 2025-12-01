@@ -5,7 +5,6 @@ import {
   Pressable,
   StyleProp,
   StyleSheet,
-  TextInput,
   ViewStyle,
 } from "react-native";
 import AppText from "./AppText";
@@ -33,13 +32,10 @@ export default function PlaceholderField({
   value,
   size = "md",
   placeholder,
-  secure,
-  keyboardType,
   leftIcon,
   rightIcon,
   rightIconStyle,
   leftIconStyle,
-  error,
   style,
   inputStyle,
   onPress,
@@ -75,15 +71,15 @@ export default function PlaceholderField({
           </AppView>
         )}
 
-        <TextInput
-          value={value}
-          placeholder={placeholder}
-          placeholderTextColor="#999"
-          secureTextEntry={secure}
-          keyboardType={keyboardType}
-          style={[styles.input, { color: colors.text }]}
-          editable={false}
-        />
+        <AppText
+          variant="md"
+          style={[
+            styles.input,
+            { color: value ? colors.text : colors.placeholder },
+          ]}
+        >
+          {value || placeholder}
+        </AppText>
 
         {rightIcon && (
           <AppView style={[{ marginLeft: spacing.sm }, rightIconStyle]}>

@@ -1,7 +1,7 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Category } from "@/types";
-import { Feather } from "@expo/vector-icons";
+import { DirectRight } from "iconsax-react-nativejs";
 import React from "react";
 import { Pressable, StyleSheet } from "react-native";
 import AppView from "../ui/AppView";
@@ -10,16 +10,11 @@ import Badge from "../ui/Badge";
 
 interface Props {
   category: Category;
-  count?: number;
   onPress: () => void;
 }
 
-export default function CategoryCardLandscape({
-  category,
-  count,
-  onPress,
-}: Props) {
-  const { colors, spacing, radius } = useTheme();
+export default function CategoryCardLandscape({ category, onPress }: Props) {
+  const { colors, spacing, radius, icons } = useTheme();
 
   return (
     <Pressable
@@ -34,25 +29,44 @@ export default function CategoryCardLandscape({
       ]}
     >
       {/* LEFT ICON IMAGE */}
-      <Avatar source={{ uri: category.icon || "" }} size="lg" />
+      <Avatar source={{ uri: category.icon || "" }} size="md" borderSize={2} />
 
       {/* TEXT CONTENT */}
       <AppView style={{ flex: 1, marginLeft: spacing.md }}>
         {/* TITLE + COUNT BADGE */}
-        <Badge count={count || 0} />
+        <AppView
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          {/* TITLE */}
+          <AppText
+            variant="lg"
+            style={{ fontFamily: "Bold" }}
+            numberOfLines={1}
+          >
+            {category.name || "—"}
+          </AppText>
+
+          <Badge
+            style={{
+              marginStart: spacing.md,
+              backgroundColor: colors.backgroundPrimary,
+            }}
+            countStyle={{ color: colors.text }}
+            count={category._count?.ads || 0}
+          />
+        </AppView>
 
         {/* DESCRIPTION */}
-        <AppText
-          variant="sm"
-          style={{ marginTop: 4, opacity: 0.6 }}
-          numberOfLines={1}
-        >
-          {category.description || "—"}
+        <AppText variant="sm" numberOfLines={1}>
+          {category.description || ""}
         </AppText>
       </AppView>
 
       {/* RIGHT ARROW */}
-      <Feather name="chevron-right" size={20} color={colors.primary} />
+      <DirectRight size={icons.md} color={colors.accentRed} />
     </Pressable>
   );
 }
@@ -62,13 +76,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     width: "100%",
-    borderWidth: 1,
-    borderColor: "#EEE",
-  },
-
-  countBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 20,
   },
 });
