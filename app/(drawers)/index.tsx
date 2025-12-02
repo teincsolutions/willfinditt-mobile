@@ -234,14 +234,13 @@ export default function HomeScreen() {
         <SearchBarPlaceholder
           onPress={() => router.push({ pathname: "/(search)" })}
           onPressFilter={() => {
-            router.push({ pathname: "/(search)/filters" });
+            router.push({ pathname: "/(search)/locations" });
           }}
         />
       </Animated.View>
 
       {/* Scrollable Content */}
       <MasonryList
-        containerStyle={{}}
         style={{
           gap: spacing.sm,
           paddingHorizontal: spacing.md,

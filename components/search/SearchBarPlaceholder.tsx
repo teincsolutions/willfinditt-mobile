@@ -34,9 +34,10 @@ export function SearchBarPlaceholder({
       }
       rightIcon={
         <TextButton
-          style={{ height: textButton.height - spacing.sm }}
+          style={{ height: textButton.height - spacing.sm, maxWidth: 120 }}
           gradientColors={[colors.primary, colors.secondary]}
           titleStyle={{ color: colors.textWhite }}
+          numberOfLines={1}
           title={filterValue || "Ghana"}
           icon={
             <Location variant="Bold" size={icons.sm} color={colors.iconWhite} />

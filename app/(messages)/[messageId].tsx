@@ -1,3 +1,5 @@
+import { ProductCardSmallLandscape } from "@/components/ads/ProductCardSmallLandscape";
+import ChatBubble from "@/components/chat/ChatBubble";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
@@ -165,23 +167,59 @@ export default function CategoriesScreen() {
           header: () => (
             <Header
               right={
-                <IconButton icon={<Feather name="search" size={icons.md} />} />
+                <IconButton
+                  icon={<Feather name="search" size={icons.md} />}
+                />
               }
               title={"Messages"}
               containerStyle={{
                 paddingHorizontal: spacing.md,
                 paddingBottom: spacing.lg,
               }}
-            ></Header>
+            >
+            </Header>
           ),
         }}
       />
       <FlatList
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: spacing.lg }}
+        ListHeaderComponent={<ProductCardSmallLandscape  ad={ad} />}
         stickyHeaderIndices={[0]}
-        data={[]}
-        renderItem={null}
+        data={[
+          { id: "1", text: "Hello!", time: "10:00 AM", isSender: false },
+          { id: "2", text: "Hi there!", time: "10:01 AM", isSender: true },
+          { id: "3", text: "How are you?", time: "10:02 AM", isSender: false },
+          {
+            id: "4",
+            text: "I'm good, thanks! And you?",
+            time: "10:03 AM",
+            isSender: true,
+          },
+          {
+            id: "5",
+            text: "I'm doing well.",
+            time: "10:04 AM",
+            isSender: false,
+          },
+          { id: "6", text: "Great to hear!", time: "10:05 AM", isSender: true },
+          { id: "7", text: "What are you up to?", time: "10:06 AM", isSender: false },
+          {
+            id: "8",
+            text: "Just working on a project.",
+            time: "10:07 AM",
+            isSender: true,
+          },
+          { id: "9", text: "Sounds interesting.", time: "10:08 AM", isSender: false },
+          { id: "10", text: "Yeah, it's quite fun!", time: "10:09 AM", isSender: true },
+        ]}
+        renderItem={({ item }) => (
+          <ChatBubble
+            text={item.text}
+            time={item.time}
+            isSender={item.isSender}
+          />
+        )}
       />
     </AppView>
   );

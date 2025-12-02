@@ -24,6 +24,7 @@ type Props = {
   style?: StyleProp<ViewStyle>;
   loading?: boolean;
   accentColor?: string;
+  numberOfLines?: number;
   onPress?: () => void;
 };
 
@@ -38,6 +39,7 @@ export function TextButton({
   backgroundColor,
   loading,
   accentColor,
+  numberOfLines,
   onPress,
 }: Props) {
   const { colors, textButton, spacing, icons } = useTheme();
@@ -72,6 +74,7 @@ export function TextButton({
         {!!isLeft && icon}
         <AppText
           variant="md"
+          numberOfLines={numberOfLines}
           style={[{textAlign:"center"},underline && { textDecorationLine: "underline" }, titleStyle]}
         >
           {title}
