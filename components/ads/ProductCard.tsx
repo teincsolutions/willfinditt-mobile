@@ -13,16 +13,19 @@ import {
 } from "react-native";
 import AppView from "../ui/AppView";
 import { FavouriteButton } from "../ui/FavouriteButton";
+import { SelectButton } from "../ui/SelectButton";
 
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
 
 export default function ProductCard({
   ad,
   style,
+  selectMode,
   onPress,
 }: {
   ad: Ad;
   style?: StyleProp<ViewStyle>;
+  selectMode?: boolean;
   onPress?: () => void;
 }) {
   const { spacing, radius, colors } = useTheme();
@@ -30,6 +33,7 @@ export default function ProductCard({
 
   const image = ad.images?.[0] || "";
   const [isSaved, setSaved] = useState(ad.isSaved === true);
+  const [isSelected, setSelected] = useState(false);
 
   // useImage hook returns image info once fetched and loaded
   const imageRef = useImage(image);
@@ -57,7 +61,7 @@ export default function ProductCard({
         },
         style,
       ]}
-      onPress={onPress}
+      onPress={selectMode ? () => setSelected(!isSelected) : onPress}
     >
       {/* IMAGE */}
       <Image
@@ -72,6 +76,9 @@ export default function ProductCard({
           },
         ]}
       />
+      {selectMode && (
+        <SelectButton active={isSelected} onToggle={setSelected} />
+      )}
 
       {/* CONTENT */}
       <View style={{ padding: spacing.md, gap: spacing.xs }}>

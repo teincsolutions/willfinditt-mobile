@@ -72,7 +72,7 @@ export function TextButton({
         {!!isLeft && icon}
         <AppText
           variant="md"
-          style={[underline && { textDecorationLine: "underline" }, titleStyle]}
+          style={[{textAlign:"center"},underline && { textDecorationLine: "underline" }, titleStyle]}
         >
           {title}
         </AppText>
@@ -83,7 +83,7 @@ export function TextButton({
             color={accentColor || colors.accent}
           />
         ) : (
-          icon
+          !isLeft && icon
         )}
         {isLeft && loading && (
           <ActivityIndicator

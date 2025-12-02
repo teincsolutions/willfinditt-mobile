@@ -1,9 +1,18 @@
 import ProductCard from "@/components/ads/ProductCard";
+import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
+import { SearchBar } from "@/components/search/SearchBar";
 import AppView from "@/components/ui/AppView";
+import { Header } from "@/components/ui/Header";
+import PopupMenu, { PopupMenuItem } from "@/components/ui/PopupMenu";
+import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { useTheme } from "@/hooks/useTheme";
 import { Ad } from "@/types/ad";
+import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
+import Drawer from "expo-router/drawer";
 import { useState } from "react";
-import { FlatList } from "react-native";
+import MasonryList from "reanimated-masonry-list";
+
 const ads: Ad[] = [
   {
     id: "1",
@@ -79,27 +88,85 @@ const ads: Ad[] = [
 export default function FavoritesScreen() {
   const { icons, spacing, colors } = useTheme();
   const [query, setQuery] = useState("");
+  const [selection, setSelection] = useState(false);
 
-  const renderProduct = ({ item }: { item: Ad }) => (
-    <AppView style={{ width: "48%", paddingHorizontal: spacing.sm }}>
-      <ProductCard ad={item} />
-    </AppView>
-  );
+  const menuItems: PopupMenuItem[] = [
+    {
+      id: "select",
+      label: "Select",
+      onPress: () => setSelection(true),
+    },
+  ];
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
-      <FlatList
-        data={ads}
-        keyExtractor={(item) => item.id}
-        renderItem={renderProduct}
-        numColumns={2}
-        contentContainerStyle={{
-          paddingHorizontal: spacing.md,
-          paddingTop: spacing.md,
-          paddingBottom: spacing.lg,
+      <Drawer.Screen
+        options={{
+          header: () => (
+            <Header
+              backgroundColor={colors.backgroundPrimary}
+              left={
+                selection ? (
+                  <SecondaryTextButton
+                  variant="lg"
+                    title="Cancel"
+                    onPress={() => setSelection(false)}
+                  />
+                ) : (
+                  <DrawerHeaderToggle />
+                )
+              }
+              leftSideStyle={{ marginLeft: spacing.md }}
+              right={
+                <PopupMenu
+                  trigger={
+                    <Feather
+                      color={colors.iconBlack}
+                      name="more-vertical"
+                      size={icons.md}
+                    />
+                  }
+                  items={menuItems}
+                  placement="bottom-left"
+                />
+              }
+              title="Favorites"
+              containerStyle={{
+                paddingVertical: spacing.sm,
+              }}
+            >
+              <SearchBar
+                style={{ marginHorizontal: spacing.md }}
+                value={query}
+                onChangeText={setQuery}
+              />
+            </Header>
+          ),
         }}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
+      />
+      <MasonryList
+        style={{
+          gap: spacing.sm,
+          paddingHorizontal: spacing.md,
+          backgroundColor: colors.backgroundPrimary,
+          paddingTop: spacing.md,
+        }}
+        data={ads}
+        numColumns={2}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item, index }: { item: Ad; index: number }) => (
+          <ProductCard
+            selectMode={selection}
+            onPress={() =>
+              router.push({ pathname: "/[adId]", params: { adId: item.id } })
+            }
+            ad={item}
+          />
+        )}
+        extraData={selection}
+        contentContainerStyle={{}}
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
       />
     </AppView>
   );

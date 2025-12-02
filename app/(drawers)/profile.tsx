@@ -83,139 +83,154 @@ export default function ProfileScreen() {
       <AppView
         style={{ height: 120, backgroundColor: colors.backgroundPrimary }}
       />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1, left: 0, right: 0, position: "absolute" }}
+      <AppView
+        style={{
+          flex: 1,
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          position: "absolute",
+        }}
       >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{
-            paddingHorizontal: spacing.md,
-          }}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={100}
         >
-          <AppView
-            style={{
-              alignItems: "center",
-              paddingVertical: spacing.lg,
-              zIndex: 100,
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              paddingHorizontal: spacing.md,
             }}
+            showsVerticalScrollIndicator={false}
           >
-            <Avatar
-              borderSize={4}
-              size="xxl"
-              styleContainer={{ marginBottom: spacing.md }}
-              verified
-            />
-            <AppText variant="lg" style={{ marginTop: spacing.md }}>
-              Silvia Aful
-            </AppText>
-
-            <AppText
-              variant="sm"
-              style={{ marginTop: spacing.sm, opacity: 0.7 }}
+            <AppView
+              style={{
+                alignItems: "center",
+                paddingVertical: spacing.lg,
+                zIndex: 100,
+              }}
             >
-              Joined Nov 12, 2025
-            </AppText>
-          </AppView>
+              <Avatar
+                borderSize={4}
+                size="xxl"
+                styleContainer={{ marginBottom: spacing.md }}
+                verified
+              />
+              <AppText variant="lg" style={{ marginTop: spacing.md }}>
+                Silvia Aful
+              </AppText>
 
-          {isEditing ? (
-            <AppView style={{ gap: spacing.md, marginBottom: spacing.xxl }}>
-              <InputField
-                leftIcon={
-                  <Feather
-                    name="user"
-                    color={colors.iconGray}
-                    size={icons.md}
-                  />
-                }
-                label="Firstname"
-                placeholder="Enter your first name"
-                value={values.firstName}
-                onChangeText={handleChange("firstName")}
-                onBlur={handleBlur("firstName")}
-                error={touched.firstName && errors.firstName}
-                returnKeyType="next"
-                blurOnSubmit={false}
-                onSubmit={() => lastNameRef.current?.focus()}
-              />
-
-              <InputField
-                ref={lastNameRef}
-                leftIcon={
-                  <Feather
-                    name="user"
-                    color={colors.iconGray}
-                    size={icons.md}
-                  />
-                }
-                label="Lastname"
-                placeholder="Enter your last name"
-                value={values.lastName}
-                onChangeText={handleChange("lastName")}
-                onBlur={handleBlur("lastName")}
-                error={touched.lastName && errors.lastName}
-              />
-              <DatePicker
-                leftIcon={
-                  <Feather
-                    name="calendar"
-                    color={colors.iconGray}
-                    size={icons.md}
-                  />
-                }
-                label="Date of Birth"
-                value={values.dateOfBirth || new Date("1900-01-01")}
-                placeholder="Select your date of birth"
-                error={touched.dateOfBirth && errors.dateOfBirth}
-                onChange={(date) => setFieldValue("dateOfBirth", date)}
-              />
+              <AppText
+                variant="sm"
+                style={{ marginTop: spacing.sm, opacity: 0.7 }}
+              >
+                Joined Nov 12, 2025
+              </AppText>
             </AppView>
-          ) : (
-            <AppView style={{ gap: spacing.md, marginBottom: spacing.xxl }}>
-              <PlaceholderField
-                leftIcon={
-                  <Feather
-                    name="user"
-                    color={colors.iconGray}
-                    size={icons.md}
-                  />
-                }
-                label="Firstname"
-                placeholder="Not set"
-                value={"Silvia"}
-              />
 
-              <PlaceholderField
-                leftIcon={
-                  <Feather
-                    name="user"
-                    color={colors.iconGray}
-                    size={icons.md}
-                  />
-                }
-                label="Lastname"
-                placeholder="Not set"
-                value={"Aful"}
-              />
+            {isEditing ? (
+              <AppView style={{ gap: spacing.md, marginBottom: spacing.xxl }}>
+                <InputField
+                  inputStyle={{ backgroundColor: colors.iconLightGray }}
+                  leftIcon={
+                    <Feather
+                      name="user"
+                      color={colors.iconGray}
+                      size={icons.md}
+                    />
+                  }
+                  label="Firstname"
+                  placeholder="Enter your first name"
+                  value={values.firstName}
+                  onChangeText={handleChange("firstName")}
+                  onBlur={handleBlur("firstName")}
+                  error={touched.firstName && errors.firstName}
+                  returnKeyType="next"
+                  blurOnSubmit={false}
+                  onSubmit={() => lastNameRef.current?.focus()}
+                />
 
-              <PlaceholderField
-                leftIcon={
-                  <Feather
-                    name="calendar"
-                    color={colors.iconGray}
-                    size={icons.md}
-                  />
-                }
-                label="Date of Birth"
-                placeholder="Not set"
-                value={
-                  values.dateOfBirth ? values.dateOfBirth.toDateString() : ""
-                }
-              />
-            </AppView>
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
+                <InputField
+                  ref={lastNameRef}
+                  inputStyle={{ backgroundColor: colors.iconLightGray }}
+                  leftIcon={
+                    <Feather
+                      name="user"
+                      color={colors.iconGray}
+                      size={icons.md}
+                    />
+                  }
+                  label="Lastname"
+                  placeholder="Enter your last name"
+                  value={values.lastName}
+                  onChangeText={handleChange("lastName")}
+                  onBlur={handleBlur("lastName")}
+                  error={touched.lastName && errors.lastName}
+                />
+                <DatePicker
+                  inputStyle={{ backgroundColor: colors.iconLightGray }}
+                  leftIcon={
+                    <Feather
+                      name="calendar"
+                      color={colors.iconGray}
+                      size={icons.md}
+                    />
+                  }
+                  label="Date of Birth"
+                  value={values.dateOfBirth || new Date("1900-01-01")}
+                  placeholder="Select your date of birth"
+                  error={touched.dateOfBirth && errors.dateOfBirth}
+                  onChange={(date) => setFieldValue("dateOfBirth", date)}
+                />
+              </AppView>
+            ) : (
+              <AppView style={{ gap: spacing.md, marginBottom: spacing.xxl }}>
+                <PlaceholderField
+                  leftIcon={
+                    <Feather
+                      name="user"
+                      color={colors.iconGray}
+                      size={icons.md}
+                    />
+                  }
+                  label="Firstname"
+                  placeholder="Not set"
+                  value={"Silvia"}
+                />
+
+                <PlaceholderField
+                  leftIcon={
+                    <Feather
+                      name="user"
+                      color={colors.iconGray}
+                      size={icons.md}
+                    />
+                  }
+                  label="Lastname"
+                  placeholder="Not set"
+                  value={"Aful"}
+                />
+
+                <PlaceholderField
+                  leftIcon={
+                    <Feather
+                      name="calendar"
+                      color={colors.iconGray}
+                      size={icons.md}
+                    />
+                  }
+                  label="Date of Birth"
+                  placeholder="Not set"
+                  value={
+                    values.dateOfBirth ? values.dateOfBirth.toDateString() : ""
+                  }
+                />
+              </AppView>
+            )}
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </AppView>
     </AppView>
   );
 }

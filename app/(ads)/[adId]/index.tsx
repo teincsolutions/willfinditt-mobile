@@ -4,7 +4,6 @@ import DescriptionHTML from "@/components/ads/DescriptionHTML";
 import { ImageCarousel } from "@/components/ads/ImageCarousel";
 import MoreFromSellerCarousel from "@/components/ads/MoreFromSellerCarousel";
 import ProductAttributesSection from "@/components/ads/ProductAttributesSection";
-import { ProductCardSmallLandscape } from "@/components/ads/ProductCardSmallLandscape";
 import { WriteReviewSheet } from "@/components/bottom-sheet/WriteReviewSheet";
 import AppView from "@/components/ui/AppView";
 import BottomActionBar from "@/components/ui/ButtomActionBar";
@@ -21,7 +20,7 @@ import { formatDistanceToNow } from "date-fns";
 import { router } from "expo-router";
 import { Eye } from "iconsax-react-nativejs";
 import React, { useRef } from "react";
-import { Animated, FlatList } from "react-native";
+import { Animated, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ad: Ad = {
@@ -416,23 +415,14 @@ export default function AdDetailsScreen() {
         />
       </Animated.View>
 
-      <FlatList
-        style={{
-          backgroundColor: colors.backgroundGray,
-        }}
+      <ScrollView
+        style={{ backgroundColor: colors.backgroundGray }}
         contentContainerStyle={{ paddingBottom: spacing.md, gap: spacing.sm }}
-        keyExtractor={(item) => item.id}
-        data={ads}
-        renderItem={() => (
-          <ProductCardSmallLandscape
-            style={{ marginHorizontal: spacing.md }}
-            ad={ad}
-          />
-        )}
-        ListHeaderComponent={renderMainSection}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-      />
+      >
+        {renderMainSection()}
+      </ScrollView>
       <BottomActionBar
         style={{ paddingBottom: inserts.bottom }}
         onMessage={function (): void {
