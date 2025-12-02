@@ -13,6 +13,7 @@ export const Colors = {
     secondary: "#FFCB11",
     accent: "#FFCB11",
     accentRed: "#FF383C",
+    accentBlue: "#1B1A57",
     blue: "#3B82F6",
     green: "#4BB543",
     inputBg: "#FFFFFF",
@@ -39,6 +40,7 @@ export const Colors = {
     secondary: "#FFD84A", // Enhanced yellow for dark mode
     accent: "#FFD84A", // Added accent color for dark mode
     accentRed: "#FF6B6B",
+    accentBlue: "#1B1A57",
     blue: "#60A5FA",
     green: "#22946e",
     inputBg: "#1A1A1A",

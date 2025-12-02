@@ -1,7 +1,9 @@
+import ChatListItem from "@/components/chat/ChatListItem";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { useTheme } from "@/hooks/useTheme";
+import { Chat } from "@/types";
 import { Feather } from "@expo/vector-icons";
 import Drawer from "expo-router/drawer";
 import { useState } from "react";
@@ -155,6 +157,60 @@ const ad: Ad = {
   isSaved: false,
 };
 
+// mock chat data
+const chats: Chat[] = [
+  {
+    id: "1",
+    lastMessage: "Hello!",
+    lastMessageAt: "2025-11-29T21:49:35.231Z",
+    senderId: "cmeg6qvzz0000mpa4cqbd56wd",
+    receiverId: "someReceiverId",
+    receiver: {
+      id: "someReceiverId",
+      username: "receiverUsername",
+      firstName: "Receiver",
+      lastName: "User",
+      avatar: "",
+    },
+    sender: {
+      id: "cmeg6qvzz0000mpa4cqbd56wd",
+      username: "admin",
+      firstName: "System",
+      lastName: "Administrator",
+      avatar: "",
+    },
+    unreadCount: 3,
+    isActive: false,
+    createdAt: "2025-11-29T21:49:35.231Z",
+    updatedAt: "2025-11-29T21:49:35.231Z"
+  },
+  {
+    id: "2",
+    lastMessage: "Hi there!",
+    lastMessageAt: "2025-11-29T21:49:35.231Z",
+    senderId: "cmeg6qvzz0000mpa4cqbd56wd",
+    receiverId: "someReceiverId",
+    receiver: {
+      id: "someReceiverId",
+      username: "receiverUsername",
+      firstName: "Receiver",
+      lastName: "User",
+      avatar: "",
+    },
+    sender: {
+      id: "cmeg6qvzz0000mpa4cqbd56wd",
+      username: "admin",
+      firstName: "System",
+      lastName: "Administrator",
+      avatar: "",
+    },
+    unreadCount: 0,
+    isActive: false,
+    createdAt: "2025-11-29T21:49:35.231Z",
+    updatedAt: "2025-11-29T21:49:35.231Z"
+  }
+]
+
 export default function CategoriesScreen() {
   const { icons, spacing, colors } = useTheme();
   const [query, setQuery] = useState("");
@@ -180,8 +236,8 @@ export default function CategoriesScreen() {
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: spacing.lg }}
         stickyHeaderIndices={[0]}
-        data={[]}
-        renderItem={null}
+        data={chats}
+        renderItem={({item})=><ChatListItem chat={item} currentUserId={"cmeg6qvzz0000mpa4cqbd56wd"} />}
       />
     </AppView>
   );
