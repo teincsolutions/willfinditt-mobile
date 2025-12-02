@@ -1,10 +1,8 @@
 import { ProductCardSmallLandscape } from "@/components/ads/ProductCardSmallLandscape";
 import ChatBubble from "@/components/chat/ChatBubble";
+import ChatHeader from "@/components/chat/ChatHeader";
 import AppView from "@/components/ui/AppView";
-import { Header } from "@/components/ui/Header";
-import IconButton from "@/components/ui/IconButton";
 import { useTheme } from "@/hooks/useTheme";
-import { Feather } from "@expo/vector-icons";
 import Drawer from "expo-router/drawer";
 import { useState } from "react";
 import { FlatList } from "react-native";
@@ -164,27 +162,13 @@ export default function CategoriesScreen() {
     <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <Drawer.Screen
         options={{
-          header: () => (
-            <Header
-              right={
-                <IconButton
-                  icon={<Feather name="search" size={icons.md} />}
-                />
-              }
-              title={"Messages"}
-              containerStyle={{
-                paddingHorizontal: spacing.md,
-                paddingBottom: spacing.lg,
-              }}
-            >
-            </Header>
-          ),
+          header: () => <ChatHeader name="Darlene" />,
         }}
       />
       <FlatList
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: spacing.lg }}
-        ListHeaderComponent={<ProductCardSmallLandscape  ad={ad} />}
+        ListHeaderComponent={<ProductCardSmallLandscape ad={ad} />}
         stickyHeaderIndices={[0]}
         data={[
           { id: "1", text: "Hello!", time: "10:00 AM", isSender: false },
@@ -203,15 +187,30 @@ export default function CategoriesScreen() {
             isSender: false,
           },
           { id: "6", text: "Great to hear!", time: "10:05 AM", isSender: true },
-          { id: "7", text: "What are you up to?", time: "10:06 AM", isSender: false },
+          {
+            id: "7",
+            text: "What are you up to?",
+            time: "10:06 AM",
+            isSender: false,
+          },
           {
             id: "8",
             text: "Just working on a project.",
             time: "10:07 AM",
             isSender: true,
           },
-          { id: "9", text: "Sounds interesting.", time: "10:08 AM", isSender: false },
-          { id: "10", text: "Yeah, it's quite fun!", time: "10:09 AM", isSender: true },
+          {
+            id: "9",
+            text: "Sounds interesting.",
+            time: "10:08 AM",
+            isSender: false,
+          },
+          {
+            id: "10",
+            text: "Yeah, it's quite fun!",
+            time: "10:09 AM",
+            isSender: true,
+          },
         ]}
         renderItem={({ item }) => (
           <ChatBubble

@@ -1,4 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
+import { formatTime } from "@/lib/formatTime";
 import { Chat } from "@/types/chat";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
@@ -24,24 +25,6 @@ export default function ChatListItem({
   // Determine the other participant (not current user)
   const otherUser =
     chat.senderId === currentUserId ? chat.receiver : chat.sender;
-
-  // Format time
-  const formatTime = (dateString?: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "Now";
-    if (diffMins < 60) return `${diffMins}m`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays < 7) return `${diffDays}d`;
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  };
-
   const displayName = [otherUser.firstName, otherUser.lastName]
     .filter(Boolean)
     .join(" ") || otherUser.username;

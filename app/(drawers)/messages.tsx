@@ -5,6 +5,7 @@ import IconButton from "@/components/ui/IconButton";
 import { useTheme } from "@/hooks/useTheme";
 import { Chat } from "@/types";
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import Drawer from "expo-router/drawer";
 import { useState } from "react";
 import { FlatList } from "react-native";
@@ -182,7 +183,7 @@ const chats: Chat[] = [
     unreadCount: 3,
     isActive: false,
     createdAt: "2025-11-29T21:49:35.231Z",
-    updatedAt: "2025-11-29T21:49:35.231Z"
+    updatedAt: "2025-11-29T21:49:35.231Z",
   },
   {
     id: "2",
@@ -207,9 +208,9 @@ const chats: Chat[] = [
     unreadCount: 0,
     isActive: false,
     createdAt: "2025-11-29T21:49:35.231Z",
-    updatedAt: "2025-11-29T21:49:35.231Z"
-  }
-]
+    updatedAt: "2025-11-29T21:49:35.231Z",
+  },
+];
 
 export default function CategoriesScreen() {
   const { icons, spacing, colors } = useTheme();
@@ -237,7 +238,18 @@ export default function CategoriesScreen() {
         contentContainerStyle={{ flexGrow: 1, paddingBottom: spacing.lg }}
         stickyHeaderIndices={[0]}
         data={chats}
-        renderItem={({item})=><ChatListItem chat={item} currentUserId={"cmeg6qvzz0000mpa4cqbd56wd"} />}
+        renderItem={({ item }) => (
+          <ChatListItem
+            onPress={() =>
+              router.push({
+                pathname: "/(chats)/[chatId]",
+                params: { chatId: item.id },
+              })
+            }
+            chat={item}
+            currentUserId={"cmeg6qvzz0000mpa4cqbd56wd"}
+          />
+        )}
       />
     </AppView>
   );
