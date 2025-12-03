@@ -234,7 +234,7 @@ export default function HomeScreen() {
         <SearchBarPlaceholder
           onPress={() => router.push({ pathname: "/(search)" })}
           onPressFilter={() => {
-            router.push({ pathname: "/(search)/locations" });
+            router.push({ pathname: "/regions" });
           }}
         />
       </Animated.View>

@@ -18,7 +18,7 @@ export default function SheetRadioOptionItem({
   onPress,
 }: {
   item: Option;
-  selected: boolean;
+  selected?: boolean;
   onPress: () => void;
 }) {
   const { colors, spacing, icons } = useTheme();
