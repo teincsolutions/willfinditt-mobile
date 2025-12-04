@@ -1,7 +1,8 @@
 import { useTheme } from "@/contexts/ThemeContext";
+import { useImageUpload } from "@/hooks/useImageUpload";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -13,33 +14,60 @@ import {
 } from "react-native";
 import AppText from "./AppText";
 
-export interface ImageUploadItem {
-  id: string;
-  uri: string;
-  progress: number; // 0-100
-  isUploading: boolean;
-  isError?: boolean;
-}
-
 type Props = {
-  images: ImageUploadItem[];
   maxImages?: number;
-  onImagesChange: (images: ImageUploadItem[]) => void;
-  onUpload?: (imageUri: string) => Promise<void>;
   label?: string;
   aspectRatio?: number;
+  autoUpload?: boolean; // Automatically upload images after selection
+  onImagesUploaded?: (uploadedUrls: string[]) => void; // Callback with uploaded URLs
 };
 
 export default function ImageUploader({
-  images,
   maxImages = 5,
-  onImagesChange,
-  onUpload,
   label,
   aspectRatio = 1,
+  autoUpload = true,
+  onImagesUploaded,
 }: Props) {
   const { colors, spacing, radius, icons } = useTheme();
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+
+  // Use the custom hook for image upload management
+  const {
+    images,
+    addImages,
+    removeImage: removeImageFromHook,
+    uploadAllImages,
+    uploadImage,
+  } = useImageUpload(maxImages);
+
+  // Auto-upload images when autoUpload is enabled
+  useEffect(() => {
+    if (autoUpload && images.length > 0) {
+      const newImages = images.filter(
+        (img) => !img.isUploading && !img.uploadedData && !img.isError
+      );
+
+      if (newImages.length > 0) {
+        uploadAllImages();
+      }
+    }
+  }, [images, autoUpload, uploadAllImages]);
+
+  // Notify parent component when all images are uploaded
+  useEffect(() => {
+    const uploadedImages = images.filter((img) => img.uploadedData);
+
+    if (uploadedImages.length > 0 && onImagesUploaded) {
+      const urls = uploadedImages
+        .map((img) => img.uploadedData?.url || img.uploadedData?.urls?.[0])
+        .filter(Boolean) as string[];
+
+      if (urls.length > 0) {
+        onImagesUploaded(urls);
+      }
+    }
+  }, [images, onImagesUploaded]);
 
   const pickImages = async () => {
     const remainingSlots = maxImages - images.length;
@@ -53,63 +81,17 @@ export default function ImageUploader({
     });
 
     if (!result.canceled) {
-      const newImages: ImageUploadItem[] = result.assets.map(
-        (asset: any, index: number) => ({
-          id: `${Date.now()}_${index}`,
-          uri: asset.uri,
-          progress: 0,
-          isUploading: true,
-        })
-      );
-
-      const updatedImages = [...images, ...newImages];
-      onImagesChange(updatedImages);
-
-      // Start uploading each image
-      newImages.forEach((image) => {
-        // simulateUpload(image.id, image.uri);
-      });
+      const imageUris = result.assets.map((asset: any) => asset.uri);
+      addImages(imageUris);
     }
   };
 
-  const simulateUpload = async (imageId: string, imageUri: string) => {
-    // Simulate upload progress
-    for (let progress = 0; progress <= 100; progress += 10) {
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      updateImageProgress(imageId, progress);
-    }
-
-    // Call actual upload function if provided
-    if (onUpload) {
-      try {
-        await onUpload(imageUri);
-        finishUpload(imageId, false);
-      } catch {
-        finishUpload(imageId, true);
-      }
-    } else {
-      finishUpload(imageId, false);
-    }
+  const handleRemoveImage = (imageId: string) => {
+    removeImageFromHook(imageId);
   };
 
-  const updateImageProgress = (imageId: string, progress: number) => {
-    onImagesChange(
-      images.map((img) => (img.id === imageId ? { ...img, progress } : img))
-    );
-  };
-
-  const finishUpload = (imageId: string, isError: boolean) => {
-    onImagesChange(
-      images.map((img) =>
-        img.id === imageId
-          ? { ...img, isUploading: false, progress: 100, isError }
-          : img
-      )
-    );
-  };
-
-  const removeImage = (imageId: string) => {
-    onImagesChange(images.filter((img) => img.id !== imageId));
+  const handleRetryUpload = (imageId: string) => {
+    uploadImage(imageId);
   };
 
   const openFullscreen = (uri: string) => {
@@ -201,9 +183,10 @@ export default function ImageUploader({
                 </View>
               )}
 
-              {/* Error Indicator */}
+              {/* Error Indicator with Retry */}
               {image.isError && (
-                <View
+                <Pressable
+                  onPress={() => handleRetryUpload(image.id)}
                   style={[
                     styles.errorBadge,
                     {
@@ -212,14 +195,33 @@ export default function ImageUploader({
                     },
                   ]}
                 >
-                  <Feather name="x" size={16} color={colors.textWhite} />
+                  <Feather
+                    name="rotate-cw"
+                    size={16}
+                    color={colors.textWhite}
+                  />
+                </Pressable>
+              )}
+
+              {/* Success Indicator */}
+              {!image.isUploading && !image.isError && image.uploadedData && (
+                <View
+                  style={[
+                    styles.successBadge,
+                    {
+                      backgroundColor: colors.green,
+                      borderRadius: 999,
+                    },
+                  ]}
+                >
+                  <Feather name="check" size={16} color={colors.textWhite} />
                 </View>
               )}
 
               {/* Remove Button */}
               {!image.isUploading && (
                 <Pressable
-                  onPress={() => removeImage(image.id)}
+                  onPress={() => handleRemoveImage(image.id)}
                   style={[
                     styles.removeButton,
                     {
@@ -369,6 +371,15 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   errorBadge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    width: 28,
+    height: 28,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  successBadge: {
     position: "absolute",
     top: 8,
     left: 8,
