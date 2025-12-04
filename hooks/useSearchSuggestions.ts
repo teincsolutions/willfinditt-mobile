@@ -1,8 +1,7 @@
 // hooks/useSearchSuggestions.ts
-import { Suggestion, Ad } from '@/types';
-import api from '@/services/api';
-import { useQuery } from '@tanstack/react-query';
 import { adService } from '@/services/adService';
+import { Ad, Suggestion } from '@/types';
+import { useQuery } from '@tanstack/react-query';
 
 export function useSearchSuggestions(query: string) {
   return useQuery({
@@ -26,10 +25,10 @@ async function fetchSuggestions(query: string): Promise<Suggestion[]> {
     const suggestions: Suggestion[] = response.data.map((ad: Ad) => ({
       id: ad.id, // Keep as string
       keyword: ad.title,
-      product_id: parseInt(ad.id),
-      category_id: ad.categoryId ? parseInt(ad.categoryId) : 0,
-      category_field_id: 0,
-      is_recent: false,
+      productId: ad.id,
+      categoryId: ad.categoryId,
+      categoryFieldId: ad.categoryFieldId,
+      isRecent: false,
     }));
 
     return suggestions;

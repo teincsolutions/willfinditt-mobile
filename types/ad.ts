@@ -138,7 +138,9 @@ export interface AdSearchParams {
   latitude?: number;
   longitude?: number;
   radius?: number;
-  promotionFilter?: "promoted_only" | "exclude_promoted";
+  promotionFilter?: "all" | "promoted_only" | "non_promoted_only";
+  statuses?: AdStatus[];
+  minimal?: boolean; // For lightweight responses
 }
 
 export interface AdFacetsParams {
@@ -154,27 +156,46 @@ export interface AdSearchRequest {
   facets?: AdFacetsParams;
 }
 
-// Legacy Types (for backward compatibility)
-export type Picture = {
-  thumbnail: string;
-  full: string;
-};
+// Search Suggestions Types
+export interface AdSearchSuggestionsParams {
+  query?: string;
+  page?: number;
+  limit?: number;
+  categoryIds?: string[];
+  cityIds?: string[];
+  priceMin?: number;
+  priceMax?: number;
+  conditions?: AdCondition[];
+  promotionFilter?: "all" | "promoted_only" | "non_promoted_only";
+  sortBy?: "promotionPriority" | "createdAt" | "price" | "views";
+  sortOrder?: "asc" | "desc";
+  statuses?: AdStatus[];
+}
+
+export interface AdSuggestion {
+  id: string;
+  title: string;
+  price: number;
+  currency: string;
+  thumbnail: string | null;
+  cityName: string | null;
+  categoryName: string;
+  categoryId: string;
+  status: AdStatus;
+  isPromoted: boolean;
+  createdAt: string;
+}
 
 export type Product = Ad;
+export type RecentSearchAd = Ad;
 export type Comment = AdComment;
-
-export type ProductSpec = {
-  id: number;
-  name: string;
-  field: import("./enums").CategoryFieldType;
-  value: string | string[] | number;
-};
 
 export type Suggestion = {
   id: string;
   keyword: string;
-  product_id: string;
-  category_id: string;
-  category_field_id: string;
-  is_recent?: boolean;
+  productId: string;
+  categoryId: string;
+  categoryFieldId: string;
+  isRecent?: boolean;
 };
+

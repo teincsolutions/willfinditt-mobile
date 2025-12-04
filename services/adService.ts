@@ -1,14 +1,26 @@
+import {
+  Ad,
+  AdCondition,
+  AdSearchRequest,
+  AdSearchSuggestionsParams,
+  AdStatus,
+  AdSuggestion,
+  CreateAdRequest,
+  PaginatedResponse,
+  UpdateAdRequest
+} from '@/types';
 import api from './api';
-import { Ad, CreateAdRequest, UpdateAdRequest, PaginatedResponse, AdStatus, AdCondition, AdSearchRequest, AdSearchParams, AdFacetsParams } from '@/types';
+
+const baseUrl = '/api/v1/ads';
 
 export const adService = {
   // Create a new ad
   create: async (data: CreateAdRequest): Promise<Ad> => {
-    const response = await api.post<Ad>('/api/v1/ads', data);
+    const response = await api.post<Ad>(`${baseUrl}/`, data);
     return response.data;
   },
 
-  // Get all ads with filtering and pagination
+  // Get all ads with filtering and pagination (basic endpoint)
   getAll: async (params?: {
     page?: number;
     limit?: number;
@@ -22,8 +34,7 @@ export const adService = {
     sortOrder?: 'asc' | 'desc';
   }): Promise<PaginatedResponse<Ad>> => {
     try {
-      const response = await api.get<PaginatedResponse<Ad>>('/api/v1/ads', { params });
-      // Ensure we have a valid response structure
+      const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}`, { params });
       if (!response.data) {
         return {
           data: [],
@@ -37,7 +48,6 @@ export const adService = {
       }
       return response.data;
     } catch (error) {
-      // Return empty result on error to prevent crashes
       return {
         data: [],
         meta: {
@@ -50,13 +60,33 @@ export const adService = {
     }
   },
 
-  // Search ads with advanced filtering and facets
+  // Search ads with advanced filtering and facets (graph-like request)
   search: async (params: AdSearchRequest): Promise<PaginatedResponse<Ad>> => {
     try {
-      const response = await api.post<PaginatedResponse<Ad>>('/api/v1/ads/search', params);
+      const response = await api.post<PaginatedResponse<Ad>>(`${baseUrl}/search`, params);
       return response.data;
     } catch (error) {
-      // Return empty result on error to prevent crashes
+      return {
+        data: [],
+        meta: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 0
+        }
+      };
+    }
+  },
+
+  // Search suggestions - lightweight endpoint for autocomplete and quick previews
+  searchSuggestions: async (params: AdSearchSuggestionsParams): Promise<PaginatedResponse<AdSuggestion>> => {
+    try {
+      const response = await api.post<PaginatedResponse<AdSuggestion>>(
+        `${baseUrl}/search/suggestions`, 
+        params
+      );
+      return response.data;
+    } catch (error) {
       return {
         data: [],
         meta: {
@@ -71,13 +101,13 @@ export const adService = {
 
   // Get ad by ID
   getById: async (id: string): Promise<Ad> => {
-    const response = await api.get<Ad>(`/api/v1/ads/${id}`);
+    const response = await api.get<Ad>(`${baseUrl}/${id}`);
     return response.data;
   },
 
   // Update an existing ad
   update: async (id: string, data: UpdateAdRequest): Promise<Ad> => {
-    const response = await api.patch<Ad>(`/api/v1/ads/${id}`, data);
+    const response = await api.patch<Ad>(`${baseUrl}/${id}`, data);
     return response.data;
   },
 
@@ -92,7 +122,7 @@ export const adService = {
     limit?: number;
     status?: AdStatus;
   }): Promise<PaginatedResponse<Ad>> => {
-    const response = await api.get<PaginatedResponse<Ad>>('/api/v1/ads/my-ads', { params });
+    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}/my-ads`, { params });
     return response.data;
   },
 
@@ -101,18 +131,18 @@ export const adService = {
     page?: number;
     limit?: number;
   }): Promise<PaginatedResponse<Ad>> => {
-    const response = await api.get<PaginatedResponse<Ad>>('/api/v1/ads/saved', { params });
+    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}/saved`, { params });
     return response.data;
   },
 
   // Save ad to favorites
   saveAd: async (adId: string): Promise<void> => {
-    await api.post(`/api/v1/ads/${adId}/save`);
+    await api.post(`${baseUrl}/${adId}/save`);
   },
 
   // Remove ad from favorites
   unsaveAd: async (adId: string): Promise<void> => {
-    await api.delete(`/api/v1/ads/${adId}/save`);
+    await api.delete(`${baseUrl}/${adId}/save`);
   },
 
   // Get trending ads
@@ -120,11 +150,35 @@ export const adService = {
     limit?: number;
   }): Promise<Ad[]> => {
     try {
-      const response = await api.get<Ad[]>('/api/v1/ads/trending', { params });
+      const response = await api.get<Ad[]>(`${baseUrl}/trending`, { params });
       return response.data || [];
     } catch (error) {
-      // Return empty result on error to prevent crashes
       return [];
+    }
+  },
+
+  // Get ads by seller/user
+  getAdsBySeller: async (userId: string, params?: {
+    page?: number;
+    limit?: number;
+    status?: AdStatus;
+  }): Promise<PaginatedResponse<Ad>> => {
+    try {
+      const response = await api.get<PaginatedResponse<Ad>>(
+        `${baseUrl}/seller/${userId}`,
+        { params }
+      );
+      return response.data;
+    } catch (error) {
+      return {
+        data: [],
+        meta: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 0
+        }
+      };
     }
   },
 };

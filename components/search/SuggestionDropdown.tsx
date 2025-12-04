@@ -1,19 +1,21 @@
-import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
-import { RecentSearchAd } from "@/types/ad";
+import { Suggestion } from "@/types/ad";
 import React from "react";
 import { View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
-import { ProductCardSmall } from "../ads/ProductCardSmall";
 import AppView from "../ui/AppView";
+import { SuggestionItem } from "./SuggestionItem";
 
-interface RecentSearchesProps {
-  data: RecentSearchAd[];
+interface SuggestionDropdownProps {
+  data: Suggestion[];
   query: string;
+  onSelect?: (item: Suggestion) => void;
 }
-export default function RecentSearches({
+export default function SuggestionDropdown({
   data,
-}: RecentSearchesProps) {
+  query,
+  onSelect,
+}: SuggestionDropdownProps) {
   const { colors, spacing } = useTheme();
 
   if (!data.length) return null;
@@ -25,25 +27,16 @@ export default function RecentSearches({
         marginTop: spacing.xs,
       }}
     >
-      <AppText
-        style={[
-          {
-            marginVertical: spacing.md,
-            fontWeight: "bold",
-            marginHorizontal: spacing.md,
-          },
-        ]}
-      >
-        Recent Searches
-      </AppText>
       <FlatList
         data={data}
         keyboardShouldPersistTaps="handled"
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ProductCardSmall
-          ad={item}
-            onPress={() =>{}}
+          <SuggestionItem
+            suggestion={item}
+            query={query}
+            isRecent
+            onPress={() => onSelect && onSelect(item)}
           />
         )}
         ItemSeparatorComponent={() => (
