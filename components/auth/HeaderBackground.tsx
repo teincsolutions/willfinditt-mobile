@@ -1,7 +1,6 @@
 // components/HeaderBackground/HeaderBackground.tsx
 
 import { useTheme } from "@/contexts/ThemeContext";
-import { setHasOpenedApp } from "@/lib/storage";
 import Entypo from "@expo/vector-icons/Entypo";
 import { router } from "expo-router";
 import React from "react";
@@ -77,7 +76,6 @@ export default function HeaderBackground({ title, subtitle }: Props) {
           }
           title="Skip"
           onPress={() => {
-            setHasOpenedApp(true);
             router.push("/(drawers)");
           }}
         />

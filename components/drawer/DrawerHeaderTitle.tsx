@@ -8,7 +8,7 @@ export default function DrawerHeaderTitle() {
   return (
     <AppView style={[styles.container, { gap: spacing.md }]}>
       <Image
-        source={require("../../assets/images/icon.png")}
+        source={require("../../assets/images/logo.png")}
         style={{ width: 40, height: 40, resizeMode: "contain" }}
       />
       <AppText

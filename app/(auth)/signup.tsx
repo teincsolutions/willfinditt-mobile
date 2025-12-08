@@ -25,7 +25,6 @@ import InputField from "@/components/ui/InputField";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { useTheme } from "@/contexts/ThemeContext";
-import { setAuthenticated, setHasOpenedApp } from "@/lib/storage";
 import { router, Stack } from "expo-router";
 
 // -------------------------
@@ -67,9 +66,6 @@ export default function RegisterScreen() {
   const Container = isSmallScreen ? ScrollView : View;
 
   const handleSignupComplete = async () => {
-    // Mark that user has opened the app and is authenticated
-    await setHasOpenedApp(true);
-    await setAuthenticated(true);
 
     // Navigate to the main drawers
     router.replace("/(drawers)");

@@ -32,7 +32,7 @@ const ads: Ad[] = [
     id: "2",
     title: "Running Shoes",
     price: 79.99,
-    images: ["http://img.wfrcdn.com/lf/50/hash/1888/3170512/1/1159583.jpg"],
+    images: ["https://images-na.ssl-images-amazon.com/images/I/61zIwprkyhL._SX355_.jpg"],
     description: "Comfortable and durable running shoes.",
     currency: "GHS",
     views: 85,

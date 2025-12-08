@@ -1,11 +1,11 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { User, LoginRequest, RegisterRequest, SocialData } from "@/types";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { authService } from "@/services/authService";
 import { userService } from "@/services/userService";
+import { LoginRequest, RegisterRequest, SocialData, User } from "@/types";
+import { mmkvStorage } from "@/utils/mmkvStorage";
 import { tokenManager } from "@/utils/tokenManager";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 type AuthState = {
   user: User | null;
@@ -35,8 +35,11 @@ export const useAuthStore = create<AuthState>()(
       // Social authentication
       socialAuthAsync: async (socialData: SocialData) => {
         const response = await authService.socialAuth(socialData);
-        // Store token using tokenManager
-        await tokenManager.setToken(response.access_token);
+        // Store tokens using tokenManager
+        await tokenManager.setTokens(response.access_token, response.refresh_token);
+        if (response.user?.id) {
+          await tokenManager.setUserId(response.user.id);
+        }
 
         set({
           user: { ...get().user, ...response.user },
@@ -46,8 +49,11 @@ export const useAuthStore = create<AuthState>()(
 
       loginAsync: async (credentials: LoginRequest) => {
         const response = await authService.login(credentials);
-        // Store token using tokenManager
-        await tokenManager.setToken(response.access_token);
+        // Store tokens using tokenManager
+        await tokenManager.setTokens(response.access_token, response.refresh_token);
+        if (response.user?.id) {
+          await tokenManager.setUserId(response.user.id);
+        }
 
         set({
           user: response.user,
@@ -57,8 +63,11 @@ export const useAuthStore = create<AuthState>()(
 
       registerAsync: async (userData: RegisterRequest) => {
         const response = await authService.register(userData);
-        // Store token using tokenManager
-        await tokenManager.setToken(response.access_token);
+        // Store tokens using tokenManager
+        await tokenManager.setTokens(response.access_token, response.refresh_token);
+        if (response.user?.id) {
+          await tokenManager.setUserId(response.user.id);
+        }
 
         set({
           user: response.user,
@@ -69,8 +78,8 @@ export const useAuthStore = create<AuthState>()(
       refreshAuthAsync: async () => {
         try {
           const response = await authService.refreshToken();
-          // Update token using tokenManager
-          await tokenManager.setToken(response.access_token);
+          // Update tokens using tokenManager
+          await tokenManager.setTokens(response.access_token, response.refresh_token);
         } catch (error: any) {
           if (error.response) {
             const { data } = error.response;
@@ -119,8 +128,8 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          // Clear token using tokenManager
-          await tokenManager.clearToken();
+          // Clear all tokens using tokenManager
+          await tokenManager.clearAllTokens();
 
           // Sign out from Google if applicable
           try {
@@ -147,15 +156,15 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "login-user-storage",
       storage: {
-        getItem: async (name: string) => {
-          const value = await AsyncStorage.getItem(name);
+        getItem: (name: string) => {
+          const value = mmkvStorage.getItem(name);
           return value ? JSON.parse(value) : null;
         },
-        setItem: async (name: string, value: any) => {
-          return await AsyncStorage.setItem(name, JSON.stringify(value));
+        setItem: (name: string, value: any) => {
+          mmkvStorage.setItem(name, JSON.stringify(value));
         },
-        removeItem: async (name: string) => {
-          await AsyncStorage.removeItem(name);
+        removeItem: (name: string) => {
+          mmkvStorage.removeItem(name);
         },
       },
     }

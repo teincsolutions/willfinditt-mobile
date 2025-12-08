@@ -21,7 +21,6 @@ import InputField from "@/components/ui/InputField";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { useTheme } from "@/contexts/ThemeContext";
-import { setAuthenticated, setHasOpenedApp } from "@/lib/storage";
 import Feather from "@expo/vector-icons/Feather";
 import { router, Stack } from "expo-router";
 
@@ -30,10 +29,6 @@ export default function AuthScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLoginComplete = async () => {
-    // Mark that user has opened the app and is authenticated
-    await setHasOpenedApp(true);
-    await setAuthenticated(true);
-
     // Navigate to the main tabs
     router.replace("/(drawers)");
   };
