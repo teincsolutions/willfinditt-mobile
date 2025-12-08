@@ -90,14 +90,15 @@ export interface SellerVerification {
 
 // Request Types
 export interface LoginRequest {
-  email: string;
+  email?: string;
+  phone?: string;
   password: string;
 }
 
 export interface RegisterRequest {
   email?: string;
   phone?: string;
-  username: string;
+  username?: string;
   password: string;
   firstName: string;
   lastName: string;
@@ -156,7 +157,9 @@ export interface UpdateSellerProfileRequest {
 // Response Types
 export interface AuthResponse {
   access_token: string;
+  refresh_token: string;
   user: User;
+  requires2FA?: boolean;
 }
 
 export interface SocialData {

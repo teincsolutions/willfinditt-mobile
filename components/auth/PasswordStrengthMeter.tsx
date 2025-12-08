@@ -18,7 +18,7 @@ export default function PasswordStrengthMeter({ strength }: Props) {
           style={[
             styles.bar,
             {
-              backgroundColor: colors.primary,
+              backgroundColor: [colors.error, colors.warning, colors.success][strength - 1] || colors.border,
               opacity: strength > i ? 1 : 0.2,
             },
           ]}

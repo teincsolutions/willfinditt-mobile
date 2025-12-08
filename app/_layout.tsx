@@ -1,14 +1,23 @@
 import { OTAUpdateBanner } from "@/components/ui/OTAUpdateBanner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AppThemeProvider } from "@/contexts/ThemeContext";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
+import { Toaster } from "sonner-native";
 
 // Keep the splash screen visible while we fetch resources
 //SplashScreen.preventAutoHideAsync();
+
+// Configure Google Sign-In
+GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  scopes: ["profile", "email"],
+  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+});
 
 export default function RootLayout() {
   return (
@@ -22,6 +31,7 @@ export default function RootLayout() {
               <Stack.Screen name="(auth)" />
             </Stack>
           </View>
+          <Toaster />
           <StatusBar style="auto" />
         </GestureHandlerRootView>
       </AppThemeProvider>

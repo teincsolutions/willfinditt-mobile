@@ -1,12 +1,12 @@
-import api from "./api";
 import {
+  ApiResponse,
+  AuthResponse,
   LoginRequest,
   RegisterRequest,
-  AuthResponse,
-  User,
-  ApiResponse,
   SocialData,
+  User,
 } from "@/types";
+import api from "./api";
 
 // Enhanced error handling for auth operations
 const handleAuthError = (error: any): never => {
@@ -84,6 +84,25 @@ export const authService = {
     return response.data;
   },
 
+  // Change password (requires current password)
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<ApiResponse<any>> => {
+    try {
+      const response = await api.post<ApiResponse<any>>(
+        "/api/v1/auth/change-password",
+        {
+          currentPassword,
+          newPassword,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return handleAuthError(error);
+    }
+  },
+
   // Request password reset
   forgotPassword: async (email: string): Promise<ApiResponse<any>> => {
     try {
@@ -100,14 +119,33 @@ export const authService = {
   // Reset password with token
   resetPassword: async (
     token: string,
-    password: string
+    newPassword: string
   ): Promise<ApiResponse<any>> => {
     try {
       const response = await api.post<ApiResponse<any>>(
         "/api/v1/auth/reset-password",
         {
           token,
-          password,
+          newPassword,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return handleAuthError(error);
+    }
+  },
+
+  // Verify 2FA OTP
+  verify2FAOTP: async (
+    userId: string,
+    otpCode: string
+  ): Promise<AuthResponse> => {
+    try {
+      const response = await api.post<AuthResponse>(
+        "/api/v1/auth/verify-2fa-otp",
+        {
+          userId,
+          otpCode,
         }
       );
       return response.data;
@@ -166,7 +204,7 @@ export const authService = {
       );
       return response.data;
     } catch (error: any) {
-      console.log("Social auth error", error);
+      console.log("Social auth error", error.response.data);
       return handleAuthError(error);
     }
   },

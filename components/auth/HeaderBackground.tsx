@@ -12,14 +12,19 @@ import { TextButton } from "../ui/TextButton";
 type Props = {
   title: string;
   subtitle?: string;
+  onBack?: () => void;
 };
 
-export default function HeaderBackground({ title, subtitle }: Props) {
+export default function HeaderBackground({ title, subtitle, onBack }: Props) {
   const { colors, icons, spacing } = useTheme();
   const { width } = useWindowDimensions();
 
   // Circle diameter estimated from your screenshot
   const diameter = width * 1.8;
+
+  const handleSkip = () => {
+    router.push("/(drawers)");
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.primary }]}>
@@ -65,8 +70,9 @@ export default function HeaderBackground({ title, subtitle }: Props) {
       />
 
       <View style={styles.buttons}>
-        <HeaderBack onPress={() => router.back()} />
+        <HeaderBack onPress={onBack || (() => router.back())} />
         <TextButton
+          style={{ height: 40, paddingHorizontal: spacing.xs }}
           icon={
             <Entypo
               color={colors.iconBlack}
@@ -75,9 +81,7 @@ export default function HeaderBackground({ title, subtitle }: Props) {
             />
           }
           title="Skip"
-          onPress={() => {
-            router.push("/(drawers)");
-          }}
+          onPress={handleSkip}
         />
       </View>
       {/* TEXT CONTENT */}

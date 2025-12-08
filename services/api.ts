@@ -58,8 +58,24 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // Check if error is 401 and we haven't retried yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // List of endpoints that should NOT trigger token refresh
+    const authEndpoints = [
+      '/api/v1/auth/login',
+      '/api/v1/auth/register',
+      '/api/v1/auth/refresh',
+      '/api/v1/auth/forgot-password',
+      '/api/v1/auth/reset-password',
+      '/api/v1/auth/verify-email',
+      '/api/v1/auth/verify-phone',
+      '/api/v1/auth/social',
+    ];
+
+    const isAuthEndpoint = authEndpoints.some(endpoint => 
+      originalRequest.url?.includes(endpoint)
+    );
+
+    // Check if error is 401 and we haven't retried yet, and it's not an auth endpoint
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         // If already refreshing, queue this request
         return new Promise((resolve, reject) => {
@@ -84,32 +100,43 @@ api.interceptors.response.use(
         const refreshToken = await tokenManager.getRefreshToken();
 
         if (!refreshToken) {
+          console.error("No refresh token available for refresh");
           throw new Error("No refresh token available");
         }
 
-        // Call refresh endpoint
+        console.log("Attempting token refresh with refresh token");
+
+        // Call refresh endpoint - send refresh token in body, not header
         const response = await axios.post(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/auth/refresh`,
-          {},
+          `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/auth/refresh`,
+          { refresh_token: refreshToken },
           {
             headers: {
-              Authorization: `Bearer ${refreshToken}`,
               "X-Api-Key": process.env.APP_API_KEY || "",
             },
           }
         );
 
-        const { access_token, refresh_token } = response.data;
+        console.log("Token refresh response:", response.data);
+
+        const accessToken = response.data.access_token || response.data.accessToken;
+        const newRefreshToken = response.data.refresh_token || response.data.refreshToken;
+
+        if (!accessToken || !newRefreshToken) {
+          console.error("Missing tokens in refresh response:", response.data);
+          throw new Error("Invalid refresh response");
+        }
 
         // Store new tokens
-        await tokenManager.setTokens(access_token, refresh_token);
+        await tokenManager.setTokens(accessToken, newRefreshToken);
+        console.log("New tokens stored successfully");
 
         // Update authorization header
         if (originalRequest.headers) {
-          originalRequest.headers["Authorization"] = `Bearer ${access_token}`;
+          originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
         }
 
-        processQueue(null, access_token);
+        processQueue(null, accessToken);
 
         // Retry original request
         return api(originalRequest);

@@ -1,5 +1,6 @@
 // screens/LoginScreen.tsx
 
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Formik } from "formik";
 import React, { useState } from "react";
 import {
@@ -10,6 +11,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { toast } from "sonner-native";
+
 import * as Yup from "yup";
 
 import AuthTabSwitcher from "@/components/auth/AuthTabSwitcher";
@@ -21,16 +24,105 @@ import InputField from "@/components/ui/InputField";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/hooks/useAuth";
+import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
 import Feather from "@expo/vector-icons/Feather";
 import { router, Stack } from "expo-router";
 
 export default function AuthScreen() {
   const { spacing, colors, radius, icons } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
+  const {
+    loginAsync,
+    isLoggingIn,
+    loginError,
+    socialAuthAsync,
+    isSocialAuthLoading,
+    requires2FA,
+    twoFAUserId,
+  } = useAuth();
 
-  const handleLoginComplete = async () => {
-    // Navigate to the main tabs
-    router.replace("/(drawers)");
+  const handleLogin = async (values: { email: string; password: string }) => {
+    try {
+      // Determine if input is email or phone
+      const loginId = values.email.trim();
+      const isPhone = /^[0-9+]/.test(loginId);
+
+      // Prepare login data
+      const loginData = {
+        email: isPhone ? undefined : loginId,
+        phone: isPhone ? formatPhoneNumber(loginId) : undefined,
+        password: values.password,
+      };
+
+      const result = await loginAsync(loginData);
+
+      // Check if 2FA is required
+      if (requires2FA && twoFAUserId) {
+        router.push({
+          pathname: "/verify-otp",
+          params: { userId: twoFAUserId, type: "2fa" },
+        });
+        return;
+      }
+
+      // Navigate to the main tabs
+      router.replace("/(drawers)");
+    } catch (error: any) {
+      toast.error(
+        error?.message ||
+          loginError?.message ||
+          "Login failed. Please check your credentials and try again."
+      );
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      // Check Play Services availability
+      await GoogleSignin.hasPlayServices();
+
+      // Clear any cached tokens
+      const currentUser = GoogleSignin.getCurrentUser();
+      if (currentUser?.idToken) {
+        await GoogleSignin.clearCachedAccessToken(currentUser.idToken);
+      }
+      await GoogleSignin.signOut();
+
+      // Start sign-in flow
+      const signInResponse = await GoogleSignin.signIn();
+
+      if (signInResponse.type === "success") {
+        // Prepare social auth data
+        const socialAuthData = {
+          provider: "GOOGLE" as const,
+          accessToken: signInResponse.data.idToken,
+        };
+
+        // Send to backend API
+        await socialAuthAsync(socialAuthData);
+
+        toast.success("Google Sign-In Successful!");
+
+        // Check if 2FA is required
+        if (requires2FA && twoFAUserId) {
+          router.push({
+            pathname: "/verify-otp",
+            params: { userId: twoFAUserId, type: "2fa" },
+          });
+          return;
+        }
+
+        // Navigate to main screen
+        router.replace("/(drawers)");
+      } else if (signInResponse.type === "cancelled") {
+        // User cancelled, no error needed
+        console.log("Google sign-in cancelled");
+      }
+    } catch (error: any) {
+      console.log("Google sign-in error:", error.message);
+      toast.error(error?.message || "Google login failed. Please try again.");
+    }
   };
 
   const window = useWindowDimensions();
@@ -42,8 +134,26 @@ export default function AuthScreen() {
   // -------------------------
   const LoginSchema = Yup.object().shape({
     email: Yup.string()
-      .email("Invalid email address")
-      .required("Email is required"),
+      .required("Email or phone number is required")
+      .test(
+        "email-or-phone",
+        "Invalid email or phone number",
+        function (value) {
+          if (!value) return false;
+          // Check if it's a phone number (starts with digit or +)
+          const isPhone = /^[0-9+]/.test(value);
+          if (isPhone) {
+            // Validate Ghana phone format (9 or 10 digits)
+            const cleaned = value.replace(/\D/g, "");
+            const withoutLeadingZero = cleaned.startsWith("0")
+              ? cleaned.substring(1)
+              : cleaned;
+            return withoutLeadingZero.length === 9;
+          }
+          // Validate as email
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        }
+      ),
     password: Yup.string().required("Password is required"),
   });
 
@@ -83,7 +193,7 @@ export default function AuthScreen() {
             <Formik
               initialValues={{ email: "", password: "" }}
               validationSchema={LoginSchema}
-              onSubmit={handleLoginComplete}
+              onSubmit={handleLogin}
             >
               {({ values, handleChange, handleSubmit, errors, touched }) => (
                 <View
@@ -98,8 +208,8 @@ export default function AuthScreen() {
                 >
                   {/* EMAIL */}
                   <InputField
-                    label="Email"
-                    placeholder="Enter email"
+                    label="Login ID"
+                    placeholder="Enter email or phone number"
                     value={values.email}
                     onChangeText={handleChange("email")}
                     keyboardType="email-address"
@@ -157,18 +267,27 @@ export default function AuthScreen() {
                   {/* FORGOT PASSWORD */}
                   <SecondaryTextButton
                     title="Forgot password?"
-                    onPress={() => {}}
+                    onPress={() => router.push("/forgot-password")}
                   />
 
                   <View style={{ marginTop: spacing.lg, gap: spacing.md }}>
                     {/* LOGIN BUTTON */}
-                    <PrimaryButton title="Login" onPress={handleSubmit} />
+                    <PrimaryButton
+                      title={isLoggingIn ? "Logging in..." : "Login"}
+                      onPress={handleSubmit}
+                      disabled={isLoggingIn}
+                      loading={isLoggingIn}
+                    />
 
                     {/* DIVIDER */}
                     <FormDividerText text="or Continue with" />
 
                     {/* SOCIAL ROW */}
-                    <SocialLogins onGoogle={() => {}} onApple={() => {}} />
+                    <SocialLogins
+                      onGoogle={handleGoogleLogin}
+                      onApple={() => {}}
+                      loading={isSocialAuthLoading}
+                    />
                   </View>
                 </View>
               )}

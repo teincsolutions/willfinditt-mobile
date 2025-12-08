@@ -12,7 +12,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.willfinditt.willfinditt",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "GIDClientID": "679415897594-dm2231pgajnh7id1ft1t6qts1tvdkkbs.apps.googleusercontent.com"
       }
     },
     "android": {
@@ -50,7 +51,7 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.181055438274-243ie9q3uj0f8igug6h73pusnmrg0t6c"
+          "iosUrlScheme": "com.googleusercontent.apps.679415897594-dm2231pgajnh7id1ft1t6qts1tvdkkbs"
         }
       ],
       [

@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { toast } from "sonner-native";
 import * as Yup from "yup";
 
 import AuthTabSwitcher from "@/components/auth/AuthTabSwitcher";
@@ -25,6 +26,8 @@ import InputField from "@/components/ui/InputField";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/hooks/useAuth";
+import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
 import { router, Stack } from "expo-router";
 
 // -------------------------
@@ -60,21 +63,122 @@ export default function RegisterScreen() {
   const { spacing, radius, icons, colors } = useTheme();
   const [step, setStep] = useState<"step1" | "step2">("step1");
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState<any>(null);
+  const {
+    registerAsync,
+    isRegistering,
+    registerError,
+    socialAuthAsync,
+    isSocialAuthLoading,
+    requires2FA,
+    twoFAUserId,
+  } = useAuth();
 
   const window = useWindowDimensions();
   const isSmallScreen = window.height - 320 < 750;
   const Container = isSmallScreen ? ScrollView : View;
 
-  const handleSignupComplete = async () => {
+  const handleSignupComplete = async (passwordData: {
+    password: string;
+    confirmPassword: string;
+  }) => {
+    try {
+      if (!formData) return;
 
-    // Navigate to the main drawers
-    router.replace("/(drawers)");
+      // Prepare registration data
+      const registrationData = {
+        email: formData.mode === "email" ? formData.email : undefined,
+        phone: formData.mode === "phone" ? formatPhoneNumber(formData.phone) : undefined,
+        password: passwordData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      };
+
+      const result = await registerAsync(registrationData);
+
+      // Check if 2FA is required
+      if (requires2FA && twoFAUserId) {
+        router.push({
+          pathname: "/verify-otp",
+          params: { userId: twoFAUserId, type: "2fa" },
+        });
+        return;
+      }
+
+      // Navigate to the main drawers
+      router.replace("/(drawers)");
+    } catch (error: any) {
+      toast.error(
+        error?.message || registerError?.message || "Registration failed. Please try again."
+      );
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    try {
+      const { GoogleSignin } = await import("@react-native-google-signin/google-signin");
+      
+      // Check Play Services availability
+      await GoogleSignin.hasPlayServices();
+      
+      // Clear any cached tokens
+      const currentUser = GoogleSignin.getCurrentUser();
+      if (currentUser?.idToken) {
+        await GoogleSignin.clearCachedAccessToken(currentUser.idToken);
+      }
+      await GoogleSignin.signOut();
+      
+      // Start sign-in flow
+      const signInResponse = await GoogleSignin.signIn();
+
+      if (signInResponse.type === "success") {
+        // Prepare social auth data
+        const socialAuthData = {
+          provider: "GOOGLE" as const,
+          accessToken: signInResponse.data.idToken,
+        };
+
+        // Send to backend API
+        await socialAuthAsync(socialAuthData);
+
+        toast.success("Google Sign-Up Successful!");
+
+        // Check if 2FA is required
+        if (requires2FA && twoFAUserId) {
+          router.push({
+            pathname: "/verify-otp",
+            params: { userId: twoFAUserId, type: "2fa" },
+          });
+          return;
+        }
+
+        // Navigate to main screen
+        router.replace("/(drawers)");
+      } else if (signInResponse.type === "cancelled") {
+        // User cancelled, no error needed
+        console.log("Google sign-up cancelled");
+      }
+    } catch (error: any) {
+      console.log("Google sign-up error:", error.message);
+      toast.error(error?.message || "Google signup failed. Please try again.");
+    }
+  };
+
+  const handleBack = () => {
+    if (step === "step2") {
+      setStep("step1"); 
+    } else {
+      router.back(); 
+    }
   };
 
   const renderStep1 = () => (
     <View style={styles.section}>
       <Formik
-        onSubmit={() => setStep("step2")}
+        onSubmit={(values) => {
+          setFormData(values);
+          setStep("step2");
+        }}
         validationSchema={BasicInfoSchema}
         initialValues={{
           phone: "",
@@ -169,10 +273,14 @@ export default function RegisterScreen() {
               />
 
               {/* DIVIDER */}
-              <FormDividerText text="or Create Account wuth" />
+              <FormDividerText text="or Create Account with" />
 
               {/* SOCIAL ROW */}
-              <SocialLogins onGoogle={() => {}} onApple={() => {}} />
+              <SocialLogins
+                onGoogle={handleGoogleSignup}
+                onApple={() => {}}
+                loading={isSocialAuthLoading}
+              />
             </View>
           </View>
         )}
@@ -206,7 +314,7 @@ export default function RegisterScreen() {
                 placeholder="Enter password"
                 value={values.password}
                 onChangeText={handleChange("password")}
-                secure
+                secure={!showPassword}
                 error={
                   touched.password && errors.password
                     ? errors.password
@@ -240,7 +348,7 @@ export default function RegisterScreen() {
                 placeholder="Confirm password"
                 value={values.confirmPassword}
                 onChangeText={handleChange("confirmPassword")}
-                secure
+                secure={!showPassword}
                 error={
                   touched.confirmPassword && errors.confirmPassword
                     ? errors.confirmPassword
@@ -271,9 +379,10 @@ export default function RegisterScreen() {
 
             <View style={{ marginTop: spacing.lg }}>
               <PrimaryButton
-                disabled={!isValid}
-                title="Create Account"
+                disabled={!isValid || isRegistering}
+                title={isRegistering ? "Creating Account..." : "Create Account"}
                 onPress={handleSubmit}
+                loading={isRegistering}
               />
             </View>
           </View>
@@ -300,6 +409,7 @@ export default function RegisterScreen() {
               <HeaderBackground
                 title="Go ahead and setup your Account"
                 subtitle="Sign up to enjoy the best experience"
+                onBack={handleBack}
               />
             ),
           }}
