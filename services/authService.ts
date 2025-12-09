@@ -104,11 +104,17 @@ export const authService = {
   },
 
   // Request password reset
-  forgotPassword: async (email: string): Promise<ApiResponse<any>> => {
+  forgotPassword: async ({
+    email,
+    phone,
+  }: {
+    email?: string;
+    phone?: string;
+  }): Promise<ApiResponse<any>> => {
     try {
       const response = await api.post<ApiResponse<any>>(
         "/api/v1/auth/forgot-password",
-        { email }
+        { email, phone }
       );
       return response.data;
     } catch (error) {
@@ -199,7 +205,6 @@ export const authService = {
   socialAuth: async (socialData: SocialData): Promise<AuthResponse> => {
     try {
       // log req data
-      console.log("Social auth request data", socialData);
       const response = await api.post<AuthResponse>(
         "/api/v1/auth/social-auth",
         socialData
@@ -224,17 +229,38 @@ export const authService = {
     }
   },
 
-  // Verify phone OTP for password reset
-  verifyPhoneOTPAndReset: async (
+  // Verify phone OTP for password reset (optional - just verification)
+  verifyResetPhoneOtp: async (
     phone: string,
     otp: string
   ): Promise<ApiResponse<any>> => {
     try {
       const response = await api.post<ApiResponse<any>>(
-        "/api/v1/auth/verify-phone-otp-reset",
+        "/api/v1/auth/verify-reset-phone-otp",
         {
           phone,
           otp,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return handleAuthError(error);
+    }
+  },
+
+  // Reset password with phone OTP
+  resetPasswordWithPhone: async (
+    phone: string,
+    otp: string,
+    newPassword: string
+  ): Promise<ApiResponse<any>> => {
+    try {
+      const response = await api.post<ApiResponse<any>>(
+        "/api/v1/auth/reset-password-phone",
+        {
+          phone,
+          otp,
+          newPassword,
         }
       );
       return response.data;

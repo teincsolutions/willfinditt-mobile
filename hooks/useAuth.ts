@@ -227,7 +227,8 @@ export function useAuth() {
   });
 
   const forgotPasswordMutation = useMutation({
-    mutationFn: (email: string) => authService.forgotPassword(email),
+    mutationFn: ({ email, phone }: { email?: string; phone?: string }) =>
+      authService.forgotPassword({ email, phone }),
   });
 
   const resetPasswordMutation = useMutation({
@@ -277,9 +278,21 @@ export function useAuth() {
     mutationFn: (phone: string) => authService.sendPhoneOTP(phone),
   });
 
-  const verifyPhoneOTPAndResetMutation = useMutation({
+  const verifyResetPhoneOtpMutation = useMutation({
     mutationFn: ({ phone, otp }: { phone: string; otp: string }) =>
-      authService.verifyPhoneOTPAndReset(phone, otp),
+      authService.verifyResetPhoneOtp(phone, otp),
+  });
+
+  const resetPasswordWithPhoneMutation = useMutation({
+    mutationFn: ({
+      phone,
+      otp,
+      newPassword,
+    }: {
+      phone: string;
+      otp: string;
+      newPassword: string;
+    }) => authService.resetPasswordWithPhone(phone, otp, newPassword),
   });
 
   // ============================================
@@ -413,10 +426,15 @@ export function useAuth() {
     isSendingPhoneOTP: sendPhoneOTPMutation.isPending,
     sendPhoneOTPError: sendPhoneOTPMutation.error,
 
-    verifyPhoneOTPAndReset: verifyPhoneOTPAndResetMutation.mutate,
-    verifyPhoneOTPAndResetAsync: verifyPhoneOTPAndResetMutation.mutateAsync,
-    isVerifyingPhoneOTPAndReset: verifyPhoneOTPAndResetMutation.isPending,
-    verifyPhoneOTPAndResetError: verifyPhoneOTPAndResetMutation.error,
+    verifyResetPhoneOtp: verifyResetPhoneOtpMutation.mutate,
+    verifyResetPhoneOtpAsync: verifyResetPhoneOtpMutation.mutateAsync,
+    isVerifyingResetPhoneOtp: verifyResetPhoneOtpMutation.isPending,
+    verifyResetPhoneOtpError: verifyResetPhoneOtpMutation.error,
+
+    resetPasswordWithPhone: resetPasswordWithPhoneMutation.mutate,
+    resetPasswordWithPhoneAsync: resetPasswordWithPhoneMutation.mutateAsync,
+    isResettingPasswordWithPhone: resetPasswordWithPhoneMutation.isPending,
+    resetPasswordWithPhoneError: resetPasswordWithPhoneMutation.error,
 
     // Session Management
     refreshToken: refreshTokenMutation.mutate,

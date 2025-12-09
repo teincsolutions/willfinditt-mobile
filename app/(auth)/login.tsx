@@ -42,10 +42,10 @@ export default function AuthScreen() {
     twoFAUserId,
   } = useAuth();
 
-  const handleLogin = async (values: { email: string; password: string }) => {
+  const handleLogin = async (values: { loginId: string; password: string }) => {
     try {
       // Determine if input is email or phone
-      const loginId = values.email.trim();
+      const loginId = values.loginId.trim();
       const isPhone = /^[0-9+]/.test(loginId);
 
       // Prepare login data
@@ -55,7 +55,7 @@ export default function AuthScreen() {
         password: values.password,
       };
 
-      const result = await loginAsync(loginData);
+      await loginAsync(loginData);
 
       // Check if 2FA is required
       if (requires2FA && twoFAUserId) {
@@ -133,7 +133,7 @@ export default function AuthScreen() {
   // VALIDATION SCHEMA
   // -------------------------
   const LoginSchema = Yup.object().shape({
-    email: Yup.string()
+    loginId: Yup.string()
       .required("Email or phone number is required")
       .test(
         "email-or-phone",
@@ -191,7 +191,7 @@ export default function AuthScreen() {
               FORM START (Formik)
              ------------------------- */}
             <Formik
-              initialValues={{ email: "", password: "" }}
+              initialValues={{ loginId: "", password: "" }}
               validationSchema={LoginSchema}
               onSubmit={handleLogin}
             >
@@ -206,19 +206,21 @@ export default function AuthScreen() {
                     },
                   ]}
                 >
-                  {/* EMAIL */}
+                  {/* LOGIN ID */}
                   <InputField
                     label="Login ID"
                     placeholder="Enter email or phone number"
-                    value={values.email}
-                    onChangeText={handleChange("email")}
+                    value={values.loginId}
+                    onChangeText={handleChange("loginId")}
                     keyboardType="email-address"
                     error={
-                      touched.email && errors.email ? errors.email : undefined
+                      touched.loginId && errors.loginId
+                        ? errors.loginId
+                        : undefined
                     }
                     leftIcon={
                       <Feather
-                        name="mail"
+                        name="user"
                         color={colors.primary}
                         size={icons.md}
                       />

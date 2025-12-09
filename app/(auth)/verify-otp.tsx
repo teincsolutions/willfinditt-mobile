@@ -3,10 +3,10 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    ScrollView,
-    StyleSheet,
-    View,
+  KeyboardAvoidingView,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
 import { toast } from "sonner-native";
 
@@ -20,14 +20,19 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function VerifyOTPScreen() {
-  const { spacing, colors, radius, icons } = useTheme();
-  const params = useLocalSearchParams<{ userId: string; type: string }>();
+  const { spacing, colors, radius } = useTheme();
+  const params = useLocalSearchParams<{
+    userId: string;
+    type: string;
+    phone?: string;
+  }>();
   const [otp, setOtp] = useState("");
-  
+
   const {
     verify2FAAsync,
     isVerifying2FA,
-    resendVerificationAsync,
+    verifyResetPhoneOtpAsync,
+    isVerifyingResetPhoneOtp,
     isResendingVerification,
   } = useAuth();
 
@@ -42,6 +47,21 @@ export default function VerifyOTPScreen() {
         await verify2FAAsync(otp);
         toast.success("Verification successful!");
         router.replace("/(drawers)");
+      } else if (params.type === "password-reset" && params.phone) {
+        // Verify OTP (optional verification step)
+        await verifyResetPhoneOtpAsync({
+          phone: params.phone,
+          otp,
+        });
+        toast.success("OTP verified! Please enter your new password.");
+        // Navigate to reset password screen with phone and OTP
+        router.push({
+          pathname: "/(auth)/reset-password",
+          params: {
+            phone: params.phone,
+            otp: otp,
+          },
+        });
       }
     } catch (error: any) {
       toast.error(error?.message || "Invalid OTP. Please try again.");
@@ -70,8 +90,16 @@ export default function VerifyOTPScreen() {
           options={{
             header: () => (
               <HeaderBackground
-                title="Verify Your Identity"
-                subtitle="Enter the 6-digit code sent to your device"
+                title={
+                  params.type === "password-reset"
+                    ? "Reset Password"
+                    : "Verify Your Identity"
+                }
+                subtitle={
+                  params.type === "password-reset"
+                    ? "Enter the 6-digit code sent to your phone"
+                    : "Enter the 6-digit code sent to your device"
+                }
               />
             ),
           }}
@@ -80,7 +108,12 @@ export default function VerifyOTPScreen() {
           <View
             style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}
           >
-            <View style={[styles.section, { gap: spacing.md, marginTop: spacing.lg }]}>
+            <View
+              style={[
+                styles.section,
+                { gap: spacing.md, marginTop: spacing.lg },
+              ]}
+            >
               {/* OTP Label */}
               <AppText
                 style={{
@@ -110,7 +143,7 @@ export default function VerifyOTPScreen() {
                   marginTop: spacing.sm,
                 }}
               >
-                Didn't receive the code?
+                Didn&apos;t receive the code?
               </AppText>
 
               {/* Resend Button */}
@@ -123,10 +156,16 @@ export default function VerifyOTPScreen() {
               {/* Verify Button */}
               <View style={{ marginTop: spacing.lg }}>
                 <PrimaryButton
-                  title={isVerifying2FA ? "Verifying..." : "Verify"}
+                  title={
+                    isVerifying2FA || isVerifyingResetPhoneOtp
+                      ? "Verifying..."
+                      : "Verify"
+                  }
                   onPress={handleVerifyOTP}
-                  disabled={isVerifying2FA || otp.length < 6}
-                  loading={isVerifying2FA}
+                  disabled={
+                    isVerifying2FA || isVerifyingResetPhoneOtp || otp.length < 6
+                  }
+                  loading={isVerifying2FA || isVerifyingResetPhoneOtp}
                 />
               </View>
 

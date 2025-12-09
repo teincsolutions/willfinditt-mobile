@@ -21,11 +21,26 @@ import PrimaryButton from "@/components/ui/PrimaryButton";
 import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
+import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
 
 const ForgotPasswordSchema = Yup.object().shape({
-  email: Yup.string()
-    .email("Invalid email address")
-    .required("Email is required"),
+  loginId: Yup.string()
+    .required("Email or phone number is required")
+    .test("email-or-phone", "Invalid email or phone number", function (value) {
+      if (!value) return false;
+      // Check if it's a phone number (starts with digit or +)
+      const isPhone = /^[0-9+]/.test(value);
+      if (isPhone) {
+        // Validate Ghana phone format (9 or 10 digits)
+        const cleaned = value.replace(/\D/g, "");
+        const withoutLeadingZero = cleaned.startsWith("0")
+          ? cleaned.substring(1)
+          : cleaned;
+        return withoutLeadingZero.length === 9;
+      }
+      // Validate as email
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }),
 });
 
 export default function ForgotPasswordScreen() {
@@ -34,14 +49,38 @@ export default function ForgotPasswordScreen() {
 
   const { forgotPasswordAsync, isSendingPasswordReset } = useAuth();
 
-  const handleForgotPassword = async (values: { email: string }) => {
+  const handleForgotPassword = async (values: { loginId: string }) => {
     try {
-      await forgotPasswordAsync(values.email);
-      setEmailSent(true);
-      toast.success("Password reset link sent to your email");
+      // Determine if input is email or phone
+      const loginId = values.loginId.trim();
+      const isPhone = /^[0-9+]/.test(loginId);
+
+      // Format the identifier and prepare request data
+      const requestData = isPhone
+        ? { phone: formatPhoneNumber(loginId) }
+        : { email: loginId.toLowerCase() };
+
+      const res = await forgotPasswordAsync(requestData);
+      console.log("Forgot password response:", res);
+
+      // If phone, redirect to OTP verification
+      if (isPhone) {
+        toast.success("OTP sent to your phone");
+        router.push({
+          pathname: "/verify-otp",
+          params: {
+            type: "password-reset",
+            phone: requestData.phone,
+          },
+        });
+      } else {
+        // For email, show success message
+        setEmailSent(true);
+        toast.success("Password reset link sent to your email");
+      }
     } catch (error: any) {
       toast.error(
-        error?.message || "Failed to send reset email. Please try again."
+        error?.message || "Failed to send reset link. Please try again."
       );
     }
   };
@@ -63,7 +102,7 @@ export default function ForgotPasswordScreen() {
                 subtitle={
                   emailSent
                     ? "Check your email for reset instructions"
-                    : "Enter your email to receive a reset link"
+                    : "Enter your email or phone number to reset your password"
                 }
               />
             ),
@@ -123,14 +162,14 @@ export default function ForgotPasswordScreen() {
 
                 <View style={{ alignItems: "center", marginTop: spacing.md }}>
                   <SecondaryTextButton
-                    title="Didn't receive the email?"
+                    title="Didn't receive the reset link?"
                     onPress={() => setEmailSent(false)}
                   />
                 </View>
               </View>
             ) : (
               <Formik
-                initialValues={{ email: "" }}
+                initialValues={{ loginId: "" }}
                 validationSchema={ForgotPasswordSchema}
                 onSubmit={handleForgotPassword}
               >
@@ -141,19 +180,21 @@ export default function ForgotPasswordScreen() {
                       { gap: spacing.md, marginTop: spacing.lg },
                     ]}
                   >
-                    {/* Email Input */}
+                    {/* Email or Phone Input */}
                     <InputField
-                      label="Email"
-                      placeholder="Enter your email"
-                      value={values.email}
-                      onChangeText={handleChange("email")}
+                      label="Email or Phone"
+                      placeholder="Enter your email or phone number"
+                      value={values.loginId}
+                      onChangeText={handleChange("loginId")}
                       keyboardType="email-address"
                       error={
-                        touched.email && errors.email ? errors.email : undefined
+                        touched.loginId && errors.loginId
+                          ? errors.loginId
+                          : undefined
                       }
                       leftIcon={
                         <Feather
-                          name="mail"
+                          name="user"
                           color={colors.primary}
                           size={icons.md}
                         />
