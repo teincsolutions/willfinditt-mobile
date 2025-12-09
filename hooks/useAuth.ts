@@ -1,11 +1,6 @@
 import { authService } from "@/services/authService";
 import { userService } from "@/services/userService";
-import type {
-  LoginRequest,
-  RegisterRequest,
-  SocialData,
-  User
-} from "@/types";
+import type { LoginRequest, RegisterRequest, SocialData, User } from "@/types";
 import { mmkvStorage } from "@/utils/mmkvStorage";
 import { tokenManager } from "@/utils/tokenManager";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
@@ -76,7 +71,7 @@ export function useAuth() {
   const handleAuthResponse = useCallback(
     async (response: any) => {
       console.log("Auth response received:", JSON.stringify(response, null, 2));
-      
+
       // Check if 2FA is required
       if (response.requires2FA) {
         const userId = response.userId || response.user?.id || "";
@@ -88,7 +83,7 @@ export function useAuth() {
       // Store tokens - check both snake_case and camelCase
       const accessToken = response.access_token || response.accessToken;
       const refreshToken = response.refresh_token || response.refreshToken;
-      
+
       console.log("Token check:", {
         hasAccessToken: !!accessToken,
         hasRefreshToken: !!refreshToken,
@@ -207,7 +202,7 @@ export function useAuth() {
       // Clear all auth-related queries
       queryClient.setQueryData(["auth", "user"], null);
       queryClient.removeQueries({ queryKey: ["user"] });
-      
+
       // Clear 2FA state
       set2FAState(false, null);
       setTwoFAState({ requires2FA: false, userId: null });
@@ -222,8 +217,13 @@ export function useAuth() {
   // ============================================
 
   const changePasswordMutation = useMutation({
-    mutationFn: ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) =>
-      authService.changePassword(currentPassword, newPassword),
+    mutationFn: ({
+      currentPassword,
+      newPassword,
+    }: {
+      currentPassword: string;
+      newPassword: string;
+    }) => authService.changePassword(currentPassword, newPassword),
   });
 
   const forgotPasswordMutation = useMutation({
@@ -231,8 +231,13 @@ export function useAuth() {
   });
 
   const resetPasswordMutation = useMutation({
-    mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
-      authService.resetPassword(token, newPassword),
+    mutationFn: ({
+      token,
+      newPassword,
+    }: {
+      token: string;
+      newPassword: string;
+    }) => authService.resetPassword(token, newPassword),
   });
 
   // ============================================
@@ -284,7 +289,10 @@ export function useAuth() {
   const refreshTokenMutation = useMutation({
     mutationFn: () => authService.refreshToken(),
     onSuccess: async (response) => {
-      await tokenManager.setTokens(response.access_token, response.refresh_token);
+      await tokenManager.setTokens(
+        response.access_token,
+        response.refresh_token
+      );
     },
     onError: async () => {
       // If refresh fails, logout user

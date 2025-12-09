@@ -5,10 +5,10 @@ import { router, Stack } from "expo-router";
 import { Formik } from "formik";
 import React, { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    ScrollView,
-    StyleSheet,
-    View,
+  KeyboardAvoidingView,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
 import { toast } from "sonner-native";
 import * as Yup from "yup";
@@ -31,7 +31,7 @@ const ForgotPasswordSchema = Yup.object().shape({
 export default function ForgotPasswordScreen() {
   const { spacing, colors, radius, icons } = useTheme();
   const [emailSent, setEmailSent] = useState(false);
-  
+
   const { forgotPasswordAsync, isSendingPasswordReset } = useAuth();
 
   const handleForgotPassword = async (values: { email: string }) => {
@@ -40,7 +40,9 @@ export default function ForgotPasswordScreen() {
       setEmailSent(true);
       toast.success("Password reset link sent to your email");
     } catch (error: any) {
-      toast.error(error?.message || "Failed to send reset email. Please try again.");
+      toast.error(
+        error?.message || "Failed to send reset email. Please try again."
+      );
     }
   };
 
@@ -72,7 +74,12 @@ export default function ForgotPasswordScreen() {
             style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}
           >
             {emailSent ? (
-              <View style={[styles.section, { gap: spacing.md, marginTop: spacing.lg }]}>
+              <View
+                style={[
+                  styles.section,
+                  { gap: spacing.md, marginTop: spacing.lg },
+                ]}
+              >
                 <View
                   style={{
                     alignItems: "center",
@@ -104,8 +111,8 @@ export default function ForgotPasswordScreen() {
                       paddingHorizontal: spacing.md,
                     }}
                   >
-                    We've sent a password reset link to your email. Please check
-                    your inbox and follow the instructions.
+                    We&apos;ve sent a password reset link to your email. Please
+                    check your inbox and follow the instructions.
                   </AppText>
                 </View>
 
@@ -169,7 +176,9 @@ export default function ForgotPasswordScreen() {
                     </View>
 
                     {/* Back to Login */}
-                    <View style={{ alignItems: "center", marginTop: spacing.md }}>
+                    <View
+                      style={{ alignItems: "center", marginTop: spacing.md }}
+                    >
                       <SecondaryTextButton
                         title="Back to Login"
                         onPress={() => router.replace("/login")}

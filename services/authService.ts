@@ -198,6 +198,8 @@ export const authService = {
   // Social authentication (Google, Facebook, etc.)
   socialAuth: async (socialData: SocialData): Promise<AuthResponse> => {
     try {
+      // log req data
+      console.log("Social auth request data", socialData);
       const response = await api.post<AuthResponse>(
         "/api/v1/auth/social-auth",
         socialData
