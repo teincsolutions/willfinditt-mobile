@@ -7,19 +7,19 @@ import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
 import PopupMenu, { PopupMenuItem } from "@/components/ui/PopupMenu";
 import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
-import { useInfiniteSavedAds } from "@/hooks/useAds";
+import { useInfiniteSavedAds, useUnsaveAd } from "@/hooks/useAds";
 import { useTheme } from "@/hooks/useTheme";
 import { Ad } from "@/types/ad";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import Drawer from "expo-router/drawer";
-import { Trash2 } from "iconsax-react-nativejs";
+import { Trash } from "iconsax-react-nativejs";
 import { useState } from "react";
-import MasonryList from "reanimated-masonry-list";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import MasonryList from "reanimated-masonry-list";
 
 export default function FavoritesScreen() {
-  const { icons, spacing, colors } = useTheme();
+  const { icons, spacing, colors, shadows } = useTheme();
   const [query, setQuery] = useState("");
   const [selection, setSelection] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -33,6 +33,7 @@ export default function FavoritesScreen() {
     isLoading,
     isFetchingNextPage,
   } = useInfiniteSavedAds({ limit: 20 });
+  const { mutate: unsaveAd, isPending: isUnsaving } = useUnsaveAd();
 
   const savedAds: Ad[] = savedAdsData?.pages.flatMap((page) => page.data) || [];
 
@@ -64,9 +65,9 @@ export default function FavoritesScreen() {
   };
 
   const handleDeleteSelected = () => {
-    // TODO: Implement bulk delete/unsave functionality
-    console.log("Delete selected items:", Array.from(selectedItems));
-    // After deletion, reset selection
+    selectedItems.forEach((adId) => {
+      unsaveAd(adId);
+    });
     handleCancelSelection();
   };
 
@@ -93,7 +94,7 @@ export default function FavoritesScreen() {
                     onPress={handleCancelSelection}
                   />
                 ) : (
-                  <DrawerHeaderToggle />
+                  <DrawerHeaderToggle style={{ marginStart: 0 }} />
                 )
               }
               leftSideStyle={{ marginLeft: spacing.md }}
@@ -134,7 +135,7 @@ export default function FavoritesScreen() {
         data={showSkeletons ? Array(6).fill({}) : filteredAds}
         numColumns={2}
         keyExtractor={(item, index) => item.id || `skeleton-${index}`}
-        renderItem={({ item, index }: { item: Ad; index: number }) => {
+        renderItem={({ item, index }: any) => {
           if (showSkeletons) {
             return <ProductCardSkeleton />;
           }
@@ -142,7 +143,9 @@ export default function FavoritesScreen() {
             <ProductCard
               selectMode={selection}
               isSelected={selectedItems.has(item.id)}
-              onSelectToggle={(selected) => handleToggleSelection(item.id, selected)}
+              onSelectToggle={(selected) =>
+                handleToggleSelection(item.id, selected)
+              }
               onPress={() =>
                 router.push({ pathname: "/[adId]", params: { adId: item.id } })
               }
@@ -156,7 +159,6 @@ export default function FavoritesScreen() {
           }
         }}
         onEndReachedThreshold={0.1}
-        extraData={selection}
         contentContainerStyle={{}}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
@@ -172,6 +174,11 @@ export default function FavoritesScreen() {
             backgroundColor: colors.background,
             borderTopWidth: 1,
             borderTopColor: colors.border,
+            elevation: 5,
+            shadowColor:shadows.shadowColor,
+            shadowOffset:shadows.shadowOffset,
+            shadowOpacity:shadows.shadowOpacity,
+            shadowRadius:shadows.shadowRadius,
           }}
         >
           <AppText variant="lg" style={{ fontWeight: "600" }}>
@@ -181,8 +188,8 @@ export default function FavoritesScreen() {
             variant="lg"
             title="Delete"
             onPress={handleDeleteSelected}
-            disabled={selectedItems.size === 0}
-            icon={({ size, color }) => <Trash2 size={size} color={color} />}
+            disabled={selectedItems.size === 0 || isUnsaving}
+            icon={<Trash size={icons.md} color={colors.error} />}
             titleStyle={{ color: colors.error }}
           />
         </AppView>
