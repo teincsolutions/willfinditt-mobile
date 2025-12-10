@@ -21,7 +21,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
 }) => {
   const { icons, spacing, colors } = useTheme();
   const handleBack = () => {
-    if (canGoBack) router.back();
+    if (canGoBack) router.dismiss();
   };
 
   return (
@@ -30,9 +30,8 @@ export const BackButton: React.FC<BackButtonProps> = ({
       onPress={handleBack}
       style={[styles.container, style, { gap: spacing.sm }]}
       activeOpacity={0.7}
-      hitSlop={8}
     >
-      <ArrowLeft size={icons.lg} color={tintColor || colors.iconBlack} />
+      <ArrowLeft onPress={handleBack} size={icons.lg} color={tintColor || colors.iconBlack} />
       <AppText
         variant="lg"
         style={{ color: tintColor || colors.text, fontWeight: "500" }}

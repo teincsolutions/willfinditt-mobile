@@ -40,6 +40,9 @@ export default function RecentSearches({
       </AppText>
       <FlatList
         data={data}
+        horizontal
+          showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: spacing.sm }}
         keyboardShouldPersistTaps="handled"
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (

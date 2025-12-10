@@ -35,9 +35,6 @@ export default function SearchScreen() {
   const {
     data: savedAdsData,
     isLoading: isSavedAdsLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
   } = useInfiniteSavedAds({ limit: 10 });
 
   // Debounce query for API calls
