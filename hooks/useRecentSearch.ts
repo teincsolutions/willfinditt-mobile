@@ -1,40 +1,50 @@
-// stores/useRecentSearchStore.ts
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Suggestion } from '@/types';
+import { Suggestion } from "@/types";
+import { mmkvStorage } from "@/utils/mmkvStorage";
+import { useCallback, useState } from "react";
 
-interface RecentSearchState {
-  recentSearches: Suggestion[];
-  addRecent: (suggestion:Suggestion) => void;
-  clearRecents: () => void;
-}
+const RECENT_SEARCHES_KEY = "recent-searches";
+const MAX_RECENT_SEARCHES = 10;
 
-export const useRecentSearch= create<RecentSearchState>()(
-  persist(
-    (set, get) => ({
-      recentSearches: [],
-      addRecent: (term) => {
-        const current = get().recentSearches;
-        const updated = [term, ...current.filter(t => t.id !== term.id)].slice(0, 10);
-        set({ recentSearches: updated });
-      },
-      clearRecents: () => set({ recentSearches: [] }),
-    }),
-    {
-      name: 'recent-searches', // storage key
-      storage: {
-        getItem: async (key) => {
-          const value = await AsyncStorage.getItem(key);
-          return value ? JSON.parse(value) : null;
-        },
-        setItem: async (key, value) => {
-          await AsyncStorage.setItem(key, JSON.stringify(value));
-        },
-        removeItem: async (key) => {
-          await AsyncStorage.removeItem(key);
-        },
-      },
-    }
-  )
-);
+/**
+ * Hook for managing recent search history using MMKV storage
+ */
+export const useRecentSearch = () => {
+  // Initialize state from MMKV storage
+  const [recentSearches, setRecentSearches] = useState<Suggestion[]>(() => {
+    const stored = mmkvStorage.getJSON<Suggestion[]>(RECENT_SEARCHES_KEY);
+    return stored || [];
+  });
+
+  // Add a recent search
+  const addRecent = useCallback((suggestion: Suggestion) => {
+    const current = mmkvStorage.getJSON<Suggestion[]>(RECENT_SEARCHES_KEY) || [];
+    // Remove if already exists and add to front, limit to max items
+    const updated = [
+      suggestion,
+      ...current.filter((t) => t.id !== suggestion.id),
+    ].slice(0, MAX_RECENT_SEARCHES);
+    mmkvStorage.setJSON(RECENT_SEARCHES_KEY, updated);
+    setRecentSearches(updated);
+  }, []);
+
+  // Clear all recent searches
+  const clearRecents = useCallback(() => {
+    mmkvStorage.removeItem(RECENT_SEARCHES_KEY);
+    setRecentSearches([]);
+  }, []);
+
+  // Remove a specific recent search
+  const removeRecent = useCallback((id: string) => {
+    const current = mmkvStorage.getJSON<Suggestion[]>(RECENT_SEARCHES_KEY) || [];
+    const updated = current.filter((t) => t.id !== id);
+    mmkvStorage.setJSON(RECENT_SEARCHES_KEY, updated);
+    setRecentSearches(updated);
+  }, []);
+
+  return {
+    recentSearches,
+    addRecent,
+    clearRecents,
+    removeRecent,
+  };
+};

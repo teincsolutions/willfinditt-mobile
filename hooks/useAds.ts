@@ -1,17 +1,17 @@
 import { adService } from "@/services/adService";
 import {
-  AdCondition,
-  AdSearchRequest,
-  AdSearchSuggestionsParams,
-  AdStatus,
-  CreateAdRequest,
-  UpdateAdRequest
+    AdCondition,
+    AdSearchRequest,
+    AdSearchSuggestionsParams,
+    AdStatus,
+    CreateAdRequest,
+    UpdateAdRequest
 } from "@/types";
 import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
+    useInfiniteQuery,
+    useMutation,
+    useQuery,
+    useQueryClient,
 } from "@tanstack/react-query";
 
 // Hook for infinite scrolling ads (basic endpoint - /ads)
@@ -54,60 +54,6 @@ export const useAd = (id: string, enabled: boolean = true) => {
   });
 };
 
-// Hook for advanced search (single page with facets)
-export const useSearchAds = (params: AdSearchRequest, enabled: boolean = true) => {
-  return useQuery({
-    queryKey: ["ads-search", params],
-    queryFn: () => adService.search(params),
-    enabled,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000,
-  });
-};
-
-// Hook for fetching user's ads
-export const useMyAds = (params?: {
-  page?: number;
-  limit?: number;
-  status?: AdStatus;
-}) => {
-  return useQuery({
-    queryKey: ["my-ads", params],
-    queryFn: () => adService.getMyAds(params),
-    staleTime: 2 * 60 * 1000, // 2 minutes for user's own data
-    gcTime: 5 * 60 * 1000,
-  });
-};
-
-// Hook for fetching saved ads
-export const useSavedAds = (params?: { page?: number; limit?: number }) => {
-  return useQuery({
-    queryKey: ["saved-ads", params],
-    queryFn: () => adService.getSavedAds(params),
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-  });
-};
-
-// Hook for infinite scrolling saved ads
-export const useInfiniteSavedAds = (params?: { limit?: number }) => {
-  return useInfiniteQuery({
-    queryKey: ["saved-ads-infinite", params],
-    queryFn: ({ pageParam = 1 }) =>
-      adService.getSavedAds({ ...params, page: pageParam }),
-    getNextPageParam: (lastPage) => {
-      if (!lastPage || !lastPage.meta) {
-        return undefined;
-      }
-      const { page, totalPages } = lastPage.meta;
-      return page < totalPages ? page + 1 : undefined;
-    },
-    initialPageParam: 1,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-  });
-};
-
 // Hook for infinite scrolling advanced search results (/ads/search with graph-like request)
 export const useInfiniteSearchAds = (params: AdSearchRequest, enabled: boolean = true) => {
   return useInfiniteQuery({
@@ -128,30 +74,6 @@ export const useInfiniteSearchAds = (params: AdSearchRequest, enabled: boolean =
     enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes - cached for quick return
     gcTime: 10 * 60 * 1000, // 10 minutes
-  });
-};
-
-// Hook for infinite scrolling search suggestions (lightweight endpoint)
-// Perfect for autocomplete, search-as-you-type, and mobile list views
-export const useInfiniteSearchSuggestions = (
-  params: AdSearchSuggestionsParams,
-  enabled: boolean = true
-) => {
-  return useInfiniteQuery({
-    queryKey: ["ads-suggestions-infinite", params],
-    queryFn: ({ pageParam = 1 }) =>
-      adService.searchSuggestions({ ...params, page: pageParam }),
-    getNextPageParam: (lastPage) => {
-      if (!lastPage || !lastPage.meta) {
-        return undefined;
-      }
-      const { page, totalPages } = lastPage.meta;
-      return page < totalPages ? page + 1 : undefined;
-    },
-    initialPageParam: 1,
-    enabled,
-    staleTime: 5 * 60 * 1000, // 5 minutes - backend has Redis cache
-    gcTime: 10 * 60 * 1000,
   });
 };
 
@@ -260,7 +182,6 @@ export const useSaveAd = () => {
     },
     onSuccess: (_, adId) => {
       // Invalidate relevant queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["saved-ads"] });
       queryClient.invalidateQueries({ queryKey: ["saved-ads-infinite"] });
       queryClient.invalidateQueries({ queryKey: ["ad", adId] });
       // Also invalidate infinite ads queries to update isSaved status
@@ -299,49 +220,11 @@ export const useUnsaveAd = () => {
   return unsaveAdMutation;
 };
 
-// Hook for trending ads
-export const useTrendingAds = (params?: { limit?: number }, enabled: boolean = true) => {
-  return useQuery({
-    queryKey: ["trending-ads", params],
-    queryFn: () => adService.getTrendingAds(params),
-    enabled,
-    staleTime: 10 * 60 * 1000, // 10 minutes - trending changes slowly
-    gcTime: 15 * 60 * 1000,
-  });
-};
-
-// Hook for ads by specific seller
-export const useSellerAds = (
-  userId: string,
-  params?: {
-    page?: number;
-    limit?: number;
-    status?: AdStatus;
-  },
-  enabled: boolean = true
-) => {
-  return useQuery({
-    queryKey: ["seller-ads", userId, params],
-    queryFn: () => adService.getAdsBySeller(userId, params),
-    enabled: !!userId && enabled,
-    staleTime: 3 * 60 * 1000, // 3 minutes
-    gcTime: 5 * 60 * 1000,
-  });
-};
-
-// Hook for infinite scrolling seller ads
-export const useInfiniteSellerAds = (
-  userId: string,
-  params?: {
-    limit?: number;
-    status?: AdStatus;
-  },
-  enabled: boolean = true
-) => {
+export const useInfiniteSavedAds = (params?: { limit?: number }) => {
   return useInfiniteQuery({
-    queryKey: ["seller-ads-infinite", userId, params],
+    queryKey: ["saved-ads-infinite", params],
     queryFn: ({ pageParam = 1 }) =>
-      adService.getAdsBySeller(userId, { ...params, page: pageParam }),
+      adService.getSavedAds({ ...params, page: pageParam }),
     getNextPageParam: (lastPage) => {
       if (!lastPage || !lastPage.meta) {
         return undefined;
@@ -350,8 +233,7 @@ export const useInfiniteSellerAds = (
       return page < totalPages ? page + 1 : undefined;
     },
     initialPageParam: 1,
-    enabled: !!userId && enabled,
-    staleTime: 3 * 60 * 1000, // 3 minutes
+    staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
 };

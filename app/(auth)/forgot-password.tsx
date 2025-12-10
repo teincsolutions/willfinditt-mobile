@@ -5,10 +5,10 @@ import { router, Stack } from "expo-router";
 import { Formik } from "formik";
 import React, { useState } from "react";
 import {
-  KeyboardAvoidingView,
-  ScrollView,
-  StyleSheet,
-  View,
+    KeyboardAvoidingView,
+    ScrollView,
+    StyleSheet,
+    View,
 } from "react-native";
 import { toast } from "sonner-native";
 import * as Yup from "yup";
@@ -24,7 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
 
 const ForgotPasswordSchema = Yup.object().shape({
-  loginId: Yup.string()
+  indentifier: Yup.string()
     .required("Email or phone number is required")
     .test("email-or-phone", "Invalid email or phone number", function (value) {
       if (!value) return false;
@@ -49,16 +49,16 @@ export default function ForgotPasswordScreen() {
 
   const { forgotPasswordAsync, isSendingPasswordReset } = useAuth();
 
-  const handleForgotPassword = async (values: { loginId: string }) => {
+  const handleForgotPassword = async (values: { indentifier: string }) => {
     try {
       // Determine if input is email or phone
-      const loginId = values.loginId.trim();
-      const isPhone = /^[0-9+]/.test(loginId);
+      const indentifier = values.indentifier.trim();
+      const isPhone = /^[0-9+]/.test(indentifier);
 
       // Format the identifier and prepare request data
       const requestData = isPhone
-        ? { phone: formatPhoneNumber(loginId) }
-        : { email: loginId.toLowerCase() };
+        ? { phone: formatPhoneNumber(indentifier) }
+        : { email: indentifier.toLowerCase() };
 
       const res = await forgotPasswordAsync(requestData);
       console.log("Forgot password response:", res);
@@ -169,7 +169,7 @@ export default function ForgotPasswordScreen() {
               </View>
             ) : (
               <Formik
-                initialValues={{ loginId: "" }}
+                initialValues={{ indentifier: "" }}
                 validationSchema={ForgotPasswordSchema}
                 onSubmit={handleForgotPassword}
               >
@@ -184,12 +184,12 @@ export default function ForgotPasswordScreen() {
                     <InputField
                       label="Email or Phone"
                       placeholder="Enter your email or phone number"
-                      value={values.loginId}
-                      onChangeText={handleChange("loginId")}
+                      value={values.indentifier}
+                      onChangeText={handleChange("indentifier")}
                       keyboardType="email-address"
                       error={
-                        touched.loginId && errors.loginId
-                          ? errors.loginId
+                        touched.indentifier && errors.indentifier
+                          ? errors.indentifier
                           : undefined
                       }
                       leftIcon={
@@ -205,11 +205,7 @@ export default function ForgotPasswordScreen() {
                     {/* Submit Button */}
                     <View style={{ marginTop: spacing.lg }}>
                       <PrimaryButton
-                        title={
-                          isSendingPasswordReset
-                            ? "Sending..."
-                            : "Send Reset Link"
-                        }
+                        title="Submit"
                         onPress={handleSubmit}
                         disabled={isSendingPasswordReset}
                         loading={isSendingPasswordReset}

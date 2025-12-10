@@ -10,9 +10,11 @@ import AppView from "../ui/AppView";
 interface RecentSearchesProps {
   data: RecentSearchAd[];
   query: string;
+  onAdPress?: (ad: RecentSearchAd) => void;
 }
 export default function RecentSearches({
   data,
+  onAdPress,
 }: RecentSearchesProps) {
   const { colors, spacing } = useTheme();
 
@@ -34,7 +36,7 @@ export default function RecentSearches({
           },
         ]}
       >
-        Recent Searches
+        Recently Saved
       </AppText>
       <FlatList
         data={data}
@@ -42,8 +44,8 @@ export default function RecentSearches({
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <ProductCardSmall
-          ad={item}
-            onPress={() =>{}}
+            ad={item}
+            onPress={() => onAdPress && onAdPress(item)}
           />
         )}
         ItemSeparatorComponent={() => (

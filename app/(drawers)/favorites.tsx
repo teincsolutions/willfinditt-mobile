@@ -1,94 +1,74 @@
 import ProductCard from "@/components/ads/ProductCard";
+import ProductCardSkeleton from "@/components/ads/ProductCardSkeleton";
 import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
 import { SearchBar } from "@/components/search/SearchBar";
+import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
 import PopupMenu, { PopupMenuItem } from "@/components/ui/PopupMenu";
 import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
+import { useInfiniteSavedAds } from "@/hooks/useAds";
 import { useTheme } from "@/hooks/useTheme";
 import { Ad } from "@/types/ad";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import Drawer from "expo-router/drawer";
+import { Trash2 } from "iconsax-react-nativejs";
 import { useState } from "react";
 import MasonryList from "reanimated-masonry-list";
-
-const ads: Ad[] = [
-  {
-    id: "1",
-    title: "Smartphone",
-    price: 299.99,
-    images: [
-      "https://images-na.ssl-images-amazon.com/images/I/61zIwprkyhL._SX355_.jpg",
-    ],
-    description: "A great smartphone with awesome features.",
-    currency: "GHS",
-    views: 150,
-    isNegotiable: true,
-    userId: "user1",
-    categoryId: "1",
-  },
-  {
-    id: "2",
-    title: "Running Shoes",
-    price: 79.99,
-    images: ["https://images-na.ssl-images-amazon.com/images/I/61zIwprkyhL._SX355_.jpg"],
-    description: "Comfortable and durable running shoes.",
-    currency: "GHS",
-    views: 85,
-    isNegotiable: false,
-    userId: "user2",
-    categoryId: "6",
-  },
-  {
-    id: "3",
-    title: "Coffee Maker",
-    price: 49.99,
-    images: [
-      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    ],
-    description: "Brew the perfect cup of coffee every morning.",
-    currency: "GHS",
-    views: 60,
-    isNegotiable: true,
-    userId: "user3",
-    categoryId: "3",
-  },
-
-  {
-    id: "4",
-    title: "Wireless Headphones",
-    price: 99.99,
-    images: [
-      "https://images.unsplash.com/photo-1704307068094-c2c88c467014?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    ],
-    description: "Experience high-quality sound without the wires.",
-    currency: "GHS",
-    views: 120,
-    isNegotiable: false,
-    userId: "user4",
-    categoryId: "1",
-  },
-  {
-    id: "5",
-    title: "Mountain Bike",
-    price: 499.99,
-    images: [
-      "https://images.unsplash.com/photo-1699528136769-d795893462c6?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    ],
-    description: "Conquer any terrain with this rugged mountain bike.",
-    currency: "GHS",
-    views: 45,
-    isNegotiable: true,
-    userId: "user5",
-    categoryId: "6",
-  },
-];
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function FavoritesScreen() {
   const { icons, spacing, colors } = useTheme();
   const [query, setQuery] = useState("");
   const [selection, setSelection] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const inserts = useSafeAreaInsets();
+
+  // Fetch saved ads
+  const {
+    data: savedAdsData,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isFetchingNextPage,
+  } = useInfiniteSavedAds({ limit: 20 });
+
+  const savedAds: Ad[] = savedAdsData?.pages.flatMap((page) => page.data) || [];
+
+  // Only show skeletons on initial load when there's no data yet
+  const showSkeletons = isLoading && savedAds.length === 0;
+
+  // Filter ads based on search query
+  const filteredAds = query
+    ? savedAds.filter((ad) =>
+        ad.title.toLowerCase().includes(query.toLowerCase())
+      )
+    : savedAds;
+
+  const handleToggleSelection = (adId: string, selected: boolean) => {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(adId);
+      } else {
+        newSet.delete(adId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleCancelSelection = () => {
+    setSelection(false);
+    setSelectedItems(new Set());
+  };
+
+  const handleDeleteSelected = () => {
+    // TODO: Implement bulk delete/unsave functionality
+    console.log("Delete selected items:", Array.from(selectedItems));
+    // After deletion, reset selection
+    handleCancelSelection();
+  };
 
   const menuItems: PopupMenuItem[] = [
     {
@@ -108,9 +88,9 @@ export default function FavoritesScreen() {
               left={
                 selection ? (
                   <SecondaryTextButton
-                  variant="lg"
+                    variant="lg"
                     title="Cancel"
-                    onPress={() => setSelection(false)}
+                    onPress={handleCancelSelection}
                   />
                 ) : (
                   <DrawerHeaderToggle />
@@ -148,26 +128,65 @@ export default function FavoritesScreen() {
         style={{
           gap: spacing.sm,
           paddingHorizontal: spacing.md,
-          backgroundColor: colors.backgroundPrimary,
           paddingTop: spacing.md,
+          flexGrow: 1,
         }}
-        data={ads}
+        data={showSkeletons ? Array(6).fill({}) : filteredAds}
         numColumns={2}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item, index }: { item: Ad; index: number }) => (
-          <ProductCard
-            selectMode={selection}
-            onPress={() =>
-              router.push({ pathname: "/[adId]", params: { adId: item.id } })
-            }
-            ad={item}
-          />
-        )}
+        keyExtractor={(item, index) => item.id || `skeleton-${index}`}
+        renderItem={({ item, index }: { item: Ad; index: number }) => {
+          if (showSkeletons) {
+            return <ProductCardSkeleton />;
+          }
+          return (
+            <ProductCard
+              selectMode={selection}
+              isSelected={selectedItems.has(item.id)}
+              onSelectToggle={(selected) => handleToggleSelection(item.id, selected)}
+              onPress={() =>
+                router.push({ pathname: "/[adId]", params: { adId: item.id } })
+              }
+              ad={item}
+            />
+          );
+        }}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        onEndReachedThreshold={0.1}
         extraData={selection}
         contentContainerStyle={{}}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
       />
+      {selection && (
+        <AppView
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: spacing.md,
+            paddingBottom: inserts.bottom + spacing.md,
+            backgroundColor: colors.background,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+          }}
+        >
+          <AppText variant="lg" style={{ fontWeight: "600" }}>
+            {selectedItems.size} selected
+          </AppText>
+          <SecondaryTextButton
+            variant="lg"
+            title="Delete"
+            onPress={handleDeleteSelected}
+            disabled={selectedItems.size === 0}
+            icon={({ size, color }) => <Trash2 size={size} color={color} />}
+            titleStyle={{ color: colors.error }}
+          />
+        </AppView>
+      )}
     </AppView>
   );
 }

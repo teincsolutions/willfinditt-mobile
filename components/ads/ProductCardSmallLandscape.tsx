@@ -1,7 +1,8 @@
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSaveAd, useUnsaveAd } from "@/hooks/useAds";
 import { Ad } from "@/types/ad";
 import { Image } from "expo-image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleProp,
   StyleSheet,
@@ -21,7 +22,29 @@ interface Props {
 export function ProductCardSmallLandscape({ ad, onPress, style }: Props) {
   const { colors, spacing, radius } = useTheme();
 
-  const [toggle, onToggleWishlist] = useState(false);
+  const [isSaved, setSaved] = useState(ad.isSaved === true);
+  const saveAdMutation = useSaveAd();
+  const unsaveAdMutation = useUnsaveAd();
+
+  // Sync isSaved state with ad prop
+  useEffect(() => {
+    setSaved(ad.isSaved === true);
+  }, [ad.isSaved]);
+
+  const handleToggleSave = async (newState: boolean) => {
+    setSaved(newState);
+    try {
+      if (newState) {
+        await saveAdMutation.mutateAsync(ad.id);
+      } else {
+        await unsaveAdMutation.mutateAsync(ad.id);
+      }
+    } catch (error) {
+      // Revert on error
+      setSaved(!newState);
+      console.error("Error toggling save:", error);
+    }
+  };
 
   return (
     <TouchableOpacity
@@ -59,7 +82,7 @@ export function ProductCardSmallLandscape({ ad, onPress, style }: Props) {
         </AppText>
       </AppView>
 
-      <FavouriteButton onToggle={onToggleWishlist} active={toggle} />
+      <FavouriteButton onToggle={handleToggleSave} active={isSaved} />
     </TouchableOpacity>
   );
 }

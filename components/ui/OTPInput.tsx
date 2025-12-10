@@ -2,11 +2,10 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import React, { useRef, useState } from "react";
 import {
-    NativeSyntheticEvent,
     StyleSheet,
     TextInput,
-    TextInputKeyPressEventData,
-    View,
+    TextInputKeyPressEvent,
+    View
 } from "react-native";
 
 interface OTPInputProps {
@@ -15,6 +14,7 @@ interface OTPInputProps {
   onChange: (otp: string) => void;
   disabled?: boolean;
   error?: boolean;
+  onComplete?: (otp: string) => void;
 }
 
 export default function OTPInput({
@@ -23,6 +23,7 @@ export default function OTPInput({
   onChange,
   disabled = false,
   error = false,
+  onComplete,
 }: OTPInputProps) {
   const { colors, spacing, radius } = useTheme();
   const inputRefs = useRef<(TextInput | null)[]>([]);
@@ -51,7 +52,13 @@ export default function OTPInput({
         }
       });
 
-      onChange(newDigits.join(""));
+      const completeOTP = newDigits.join("");
+      onChange(completeOTP);
+
+      // If all digits filled, trigger onComplete
+      if (completeOTP.length === length && onComplete) {
+        setTimeout(() => onComplete(completeOTP), 100);
+      }
 
       // Focus the next empty field or the last field
       const nextIndex = Math.min(index + pastedDigits.length, length - 1);
@@ -62,16 +69,20 @@ export default function OTPInput({
     // Handle single character input
     const newDigits = [...digits];
     newDigits[index] = sanitized;
-    onChange(newDigits.join(""));
+    const completeOTP = newDigits.join("");
+    onChange(completeOTP);
 
     // Auto-focus next input if digit was entered
     if (sanitized && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
+    } else if (sanitized && index === length - 1 && completeOTP.length === length && onComplete) {
+      // If last digit and complete, trigger onComplete
+      setTimeout(() => onComplete(completeOTP), 100);
     }
   };
 
   const handleKeyPress = (
-    e: NativeSyntheticEvent<TextInputKeyPressEventData>,
+    e: TextInputKeyPressEvent,
     index: number
   ) => {
     if (disabled) return;

@@ -7,17 +7,21 @@ import { Header } from "@/components/ui/Header";
 import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
 import { TextButton } from "@/components/ui/TextButton";
+import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { useUser } from "@/hooks/useUser";
 import { Feather } from "@expo/vector-icons";
 import Drawer from "expo-router/drawer";
 import { useFormik } from "formik";
 import { useRef, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   TextInput,
 } from "react-native";
+import { toast } from "sonner-native";
 import * as Yup from "yup";
 
 // -------------------------
@@ -31,28 +35,46 @@ const BasicInfoSchema = Yup.object().shape({
 
 export default function ProfileScreen() {
   const { icons, spacing, colors, radius, fontSizes } = useTheme();
+  const { user, isLoading } = useAuth();
+  const { updateProfileAsync, isUpdatingProfile } = useUser();
   const [isEditing, setIsEditing] = useState(false);
-  const user = {
-    firstName: "Silvia",
-    lastName: "Aful",
-    dateOfBirth: null,
-  };
 
-  const { values, handleChange, setFieldValue, handleBlur, errors, touched } =
+  const { values, handleChange, setFieldValue, handleBlur, errors, touched, handleSubmit } =
     useFormik({
       initialValues: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : null,
+        firstName: user?.firstName || "",
+        lastName: user?.lastName || "",
+        dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth) : null,
       },
       validationSchema: BasicInfoSchema,
-      onSubmit: (values) => {
-        // Handle profile update logic here
-        console.log("Profile updated:", values);
+      enableReinitialize: true,
+      onSubmit: async (values) => {
+        try {
+          await updateProfileAsync({
+            firstName: values.firstName,
+            lastName: values.lastName,
+            dateOfBirth: values.dateOfBirth?.toISOString(),
+          });
+          toast.success("Profile updated successfully");
+          setIsEditing(false);
+        } catch (error: any) {
+          toast.error(error?.message || "Failed to update profile");
+        }
       },
     });
 
   const lastNameRef = useRef<TextInput>(null);
+
+  if (isLoading || !user) {
+    return (
+      <AppView style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </AppView>
+    );
+  }
+
+  const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User";
+  const joinedDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "Recently";
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -64,9 +86,13 @@ export default function ProfileScreen() {
               right={
                 <TextButton
                   onPress={() => {
-                    setIsEditing(!isEditing);
+                    if (isEditing) {
+                      handleSubmit();
+                    } else {
+                      setIsEditing(true);
+                    }
                   }}
-                  title={isEditing ? "Save" : "Edit"}
+                  title={isUpdatingProfile ? "Saving..." : (isEditing ? "Save" : "Edit")}
                   titleStyle={{
                     color: colors.textWhite,
                     fontSize: fontSizes.md,
@@ -115,17 +141,18 @@ export default function ProfileScreen() {
                 borderSize={4}
                 size="xxl"
                 styleContainer={{ marginBottom: spacing.md }}
-                verified
+                verified={user.isVerified}
+                uri={user.avatar}
               />
               <AppText variant="lg" style={{ marginTop: spacing.md }}>
-                Silvia Aful
+                {fullName}
               </AppText>
 
               <AppText
                 variant="sm"
                 style={{ marginTop: spacing.sm, opacity: 0.7 }}
               >
-                Joined Nov 12, 2025
+                Joined {joinedDate}
               </AppText>
             </AppView>
 
@@ -196,7 +223,7 @@ export default function ProfileScreen() {
                   }
                   label="Firstname"
                   placeholder="Not set"
-                  value={"Silvia"}
+                  value={user.firstName || ""}
                 />
 
                 <PlaceholderField
@@ -209,7 +236,7 @@ export default function ProfileScreen() {
                   }
                   label="Lastname"
                   placeholder="Not set"
-                  value={"Aful"}
+                  value={user.lastName || ""}
                 />
 
                 <PlaceholderField

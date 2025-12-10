@@ -42,16 +42,16 @@ export default function AuthScreen() {
     twoFAUserId,
   } = useAuth();
 
-  const handleLogin = async (values: { loginId: string; password: string }) => {
+  const handleLogin = async (values: { indentifier: string; password: string }) => {
     try {
       // Determine if input is email or phone
-      const loginId = values.loginId.trim();
-      const isPhone = /^[0-9+]/.test(loginId);
+      const indentifier = values.indentifier.trim();
+      const isPhone = /^[0-9+]/.test(indentifier);
 
       // Prepare login data
       const loginData = {
-        email: isPhone ? undefined : loginId,
-        phone: isPhone ? formatPhoneNumber(loginId) : undefined,
+        email: isPhone ? undefined : indentifier,
+        phone: isPhone ? formatPhoneNumber(indentifier) : undefined,
         password: values.password,
       };
 
@@ -69,6 +69,7 @@ export default function AuthScreen() {
       // Navigate to the main tabs
       router.replace("/(drawers)");
     } catch (error: any) {
+      console.log("Login error:", error.response?.data || error.message);
       toast.error(
         error?.message ||
           loginError?.message ||
@@ -133,7 +134,7 @@ export default function AuthScreen() {
   // VALIDATION SCHEMA
   // -------------------------
   const LoginSchema = Yup.object().shape({
-    loginId: Yup.string()
+    indentifier: Yup.string()
       .required("Email or phone number is required")
       .test(
         "email-or-phone",
@@ -191,7 +192,7 @@ export default function AuthScreen() {
               FORM START (Formik)
              ------------------------- */}
             <Formik
-              initialValues={{ loginId: "", password: "" }}
+              initialValues={{ indentifier: "", password: "" }}
               validationSchema={LoginSchema}
               onSubmit={handleLogin}
             >
@@ -210,12 +211,12 @@ export default function AuthScreen() {
                   <InputField
                     label="Login ID"
                     placeholder="Enter email or phone number"
-                    value={values.loginId}
-                    onChangeText={handleChange("loginId")}
+                    value={values.indentifier}
+                    onChangeText={handleChange("indentifier")}
                     keyboardType="email-address"
                     error={
-                      touched.loginId && errors.loginId
-                        ? errors.loginId
+                      touched.indentifier && errors.indentifier
+                        ? errors.indentifier
                         : undefined
                     }
                     leftIcon={

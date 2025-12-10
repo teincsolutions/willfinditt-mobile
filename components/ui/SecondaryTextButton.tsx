@@ -19,6 +19,7 @@ type Props = {
   icon?: ReactNode;
   underline?: boolean;
   style?: StyleProp<ViewStyle>;
+  disabled?: boolean;
   onPress: () => void;
 };
 
@@ -30,6 +31,7 @@ export default function SecondaryTextButton({
   isLeft,
   titleStyle,
   style,
+  disabled,
   onPress,
 }: Props) {
   const { spacing } = useTheme();
@@ -42,11 +44,12 @@ export default function SecondaryTextButton({
         style,
       ]}
       onPress={onPress}
+      disabled={disabled}
     >
       {!!isLeft && icon}
       <AppText
         variant={variant}
-        style={[underline && { textDecorationLine: "underline" }, titleStyle]}
+        style={[underline && { textDecorationLine: "underline", opacity: disabled ? 0.5 : 1 }, titleStyle]}
       >
         {title}
       </AppText>

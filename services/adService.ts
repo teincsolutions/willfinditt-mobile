@@ -26,6 +26,7 @@ export const adService = {
     limit?: number;
     categoryId?: string;
     cityId?: string;
+    userId?: string;
     minPrice?: number;
     maxPrice?: number;
     condition?: AdCondition;
@@ -33,70 +34,26 @@ export const adService = {
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
   }): Promise<PaginatedResponse<Ad>> => {
-    try {
-      const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}`, { params });
-      if (!response.data) {
-        return {
-          data: [],
-          meta: {
-            page: 1,
-            limit: 20,
-            total: 0,
-            totalPages: 0
-          }
-        };
-      }
-      return response.data;
-    } catch (error) {
-      return {
-        data: [],
-        meta: {
-          page: 1,
-          limit: 20,
-          total: 0,
-          totalPages: 0
-        }
-      };
-    }
+    console.log("Get all ads with params:", params);
+    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}`, { params });
+    return response.data;
   },
 
   // Search ads with advanced filtering and facets (graph-like request)
   search: async (params: AdSearchRequest): Promise<PaginatedResponse<Ad>> => {
-    try {
-      const response = await api.post<PaginatedResponse<Ad>>(`${baseUrl}/search`, params);
-      return response.data;
-    } catch (error) {
-      return {
-        data: [],
-        meta: {
-          page: 1,
-          limit: 20,
-          total: 0,
-          totalPages: 0
-        }
-      };
-    }
+    console.log("Search params:", params);
+    const response = await api.post<PaginatedResponse<Ad>>(`${baseUrl}/search`, params);
+    return response.data;
   },
 
   // Search suggestions - lightweight endpoint for autocomplete and quick previews
   searchSuggestions: async (params: AdSearchSuggestionsParams): Promise<PaginatedResponse<AdSuggestion>> => {
-    try {
-      const response = await api.post<PaginatedResponse<AdSuggestion>>(
-        `${baseUrl}/search/suggestions`, 
-        params
-      );
-      return response.data;
-    } catch (error) {
-      return {
-        data: [],
-        meta: {
-          page: 1,
-          limit: 20,
-          total: 0,
-          totalPages: 0
-        }
-      };
-    }
+    console.log("Search suggestions params:", params);
+    const response = await api.post<PaginatedResponse<AdSuggestion>>(
+      `${baseUrl}/search/suggestions`,
+      params
+    );
+    return response.data;
   },
 
   // Get ad by ID
@@ -113,7 +70,7 @@ export const adService = {
 
   // Delete an ad (soft delete)
   delete: async (id: string): Promise<void> => {
-    await api.delete(`/api/v1/ads/${id}`);
+    await api.delete(`${baseUrl}/${id}`);
   },
 
   // Get current user's ads
@@ -123,15 +80,6 @@ export const adService = {
     status?: AdStatus;
   }): Promise<PaginatedResponse<Ad>> => {
     const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}/my-ads`, { params });
-    return response.data;
-  },
-
-  // Get user's saved/bookmarked ads
-  getSavedAds: async (params?: {
-    page?: number;
-    limit?: number;
-  }): Promise<PaginatedResponse<Ad>> => {
-    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}/saved`, { params });
     return response.data;
   },
 
@@ -145,40 +93,12 @@ export const adService = {
     await api.delete(`${baseUrl}/${adId}/save`);
   },
 
-  // Get trending ads
-  getTrendingAds: async (params?: {
-    limit?: number;
-  }): Promise<Ad[]> => {
-    try {
-      const response = await api.get<Ad[]>(`${baseUrl}/trending`, { params });
-      return response.data || [];
-    } catch (error) {
-      return [];
-    }
-  },
-
-  // Get ads by seller/user
-  getAdsBySeller: async (userId: string, params?: {
+  // Get saved ads
+  getSavedAds: async (params?: {
     page?: number;
     limit?: number;
-    status?: AdStatus;
   }): Promise<PaginatedResponse<Ad>> => {
-    try {
-      const response = await api.get<PaginatedResponse<Ad>>(
-        `${baseUrl}/seller/${userId}`,
-        { params }
-      );
-      return response.data;
-    } catch (error) {
-      return {
-        data: [],
-        meta: {
-          page: 1,
-          limit: 20,
-          total: 0,
-          totalPages: 0
-        }
-      };
-    }
+    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}/saved`, { params });
+    return response.data;
   },
 };

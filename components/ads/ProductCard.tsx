@@ -1,5 +1,6 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSaveAd, useUnsaveAd } from "@/hooks/useAds";
 import { Ad } from "@/types";
 import { Image, useImage } from "expo-image";
 import React, { useEffect, useState } from "react";
@@ -21,11 +22,15 @@ export default function ProductCard({
   ad,
   style,
   selectMode,
+  isSelected,
+  onSelectToggle,
   onPress,
 }: {
   ad: Ad;
   style?: StyleProp<ViewStyle>;
   selectMode?: boolean;
+  isSelected?: boolean;
+  onSelectToggle?: (selected: boolean) => void;
   onPress?: () => void;
 }) {
   const { spacing, radius, colors } = useTheme();
@@ -33,7 +38,9 @@ export default function ProductCard({
 
   const image = ad.images?.[0] || "";
   const [isSaved, setSaved] = useState(ad.isSaved === true);
-  const [isSelected, setSelected] = useState(false);
+
+  const saveAdMutation = useSaveAd();
+  const unsaveAdMutation = useUnsaveAd();
 
   // useImage hook returns image info once fetched and loaded
   const imageRef = useImage(image);
@@ -47,6 +54,26 @@ export default function ProductCard({
       setCalculatedHeight(newHeight);
     }
   }, [imageRef?.width, imageRef?.height, width]);
+
+  // Sync isSaved state with ad prop
+  useEffect(() => {
+    setSaved(ad.isSaved === true);
+  }, [ad.isSaved]);
+
+  const handleToggleSave = async (newState: boolean) => {
+    setSaved(newState);
+    try {
+      if (newState) {
+        await saveAdMutation.mutateAsync(ad.id);
+      } else {
+        await unsaveAdMutation.mutateAsync(ad.id);
+      }
+    } catch (error) {
+      // Revert on error
+      setSaved(!newState);
+      console.error("Error toggling save:", error);
+    }
+  };
   return (
     <Pressable
       style={[
@@ -61,7 +88,11 @@ export default function ProductCard({
         },
         style,
       ]}
-      onPress={selectMode ? () => setSelected(!isSelected) : onPress}
+      onPress={
+        selectMode
+          ? () => onSelectToggle?.(!isSelected)
+          : onPress
+      }
     >
       {/* IMAGE */}
       <Image
@@ -77,7 +108,10 @@ export default function ProductCard({
         ]}
       />
       {selectMode && (
-        <SelectButton active={isSelected} onToggle={setSelected} />
+        <SelectButton
+          active={isSelected || false}
+          onToggle={(selected) => onSelectToggle?.(selected)}
+        />
       )}
 
       {/* CONTENT */}
@@ -106,7 +140,7 @@ export default function ProductCard({
             ) : null}
           </AppView>
           {/* SAVE HEART */}
-          <FavouriteButton active={isSaved} onToggle={setSaved} />
+          <FavouriteButton active={isSaved} onToggle={handleToggleSave} />
         </AppView>
       </View>
     </Pressable>

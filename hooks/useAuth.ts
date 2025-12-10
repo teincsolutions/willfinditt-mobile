@@ -1,5 +1,4 @@
 import { authService } from "@/services/authService";
-import { userService } from "@/services/userService";
 import type { LoginRequest, RegisterRequest, SocialData, User } from "@/types";
 import { mmkvStorage } from "@/utils/mmkvStorage";
 import { tokenManager } from "@/utils/tokenManager";
@@ -61,11 +60,10 @@ export function useAuth() {
   // Get user from React Query cache or storage
   const { data: user, isLoading } = useQuery<User | null>({
     queryKey: ["auth", "user"],
-    queryFn: () => getStoredUser(),
-    staleTime: Infinity,
+    queryFn: async () =>  await authService.getProfile(), 
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
-
-  const isLoggedIn = !!user;
 
   // Helper to handle auth response
   const handleAuthResponse = useCallback(
@@ -105,11 +103,8 @@ export function useAuth() {
       if (response.user?.id) {
         await tokenManager.setUserId(response.user.id);
       }
-
-      // Update user in storage and React Query cache
-      setStoredUser(response.user);
-      queryClient.setQueryData(["auth", "user"], response.user);
-
+        queryClient.setQueryData(["auth", "user"], response.user);
+        queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
       // Clear 2FA state
       set2FAState(false, null);
       setTwoFAState({ requires2FA: false, userId: null });
@@ -194,9 +189,6 @@ export function useAuth() {
       } catch (error) {
         // Ignore Google sign out errors
       }
-
-      // Clear user from storage
-      setStoredUser(null);
     },
     onSuccess: () => {
       // Clear all auth-related queries
@@ -322,24 +314,11 @@ export function useAuth() {
   });
 
   const checkUserStatusMutation = useMutation({
-    mutationFn: () => userService.getProfile(),
+    mutationFn: () => authService.getProfile(),
     onSuccess: async (updatedUser) => {
-      if (!user) return;
-
-      // Check if user data has changed
-      const hasChanged =
-        user.firstName !== updatedUser.firstName ||
-        user.lastName !== updatedUser.lastName ||
-        user.email !== updatedUser.email ||
-        user.phone !== updatedUser.phone ||
-        user.avatar !== updatedUser.avatar ||
-        user.isActive !== updatedUser.isActive ||
-        user.isVerified !== updatedUser.isVerified;
-
-      if (hasChanged) {
-        setStoredUser(updatedUser);
-        queryClient.setQueryData(["auth", "user"], updatedUser);
-      }
+      // Always update stored data with fresh data from server
+      setStoredUser(updatedUser);
+      queryClient.setQueryData(["auth", "user"], updatedUser);
 
       // If user is no longer active, logout
       if (!updatedUser.isActive) {

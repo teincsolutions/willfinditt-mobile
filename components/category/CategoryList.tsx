@@ -22,68 +22,82 @@ export function CategoryList({
 }) {
   const { spacing, colors, icons } = useTheme();
 
+  // Render loading state
+  if (isLoading) {
+    return (
+      <AppView
+        style={{
+          paddingHorizontal: isGrid ? spacing.md : spacing.lg,
+          gap: spacing.md,
+          ...(isGrid
+            ? { flexDirection: "row", flexWrap: "wrap" }
+            : { flexDirection: "row" }),
+        }}
+      >
+        {isGrid
+          ? Array(8)
+              .fill(null)
+              .map((_, index) => <CategoryCardCircularSkeleton key={index} />)
+          : Array(4)
+              .fill(null)
+              .map((_, index) => <CategoryCardCircularSkeleton key={index} />)}
+      </AppView>
+    );
+  }
+
+  // Render empty state
+  if (data.length === 0) {
+    return (
+      <AppView
+        style={{
+          alignItems: "center",
+          flex: 1,
+          gap: spacing.md,
+        }}
+      >
+        <MaterialCommunityIcons
+          name="package-variant-closed-remove"
+          size={icons.xl}
+          color={colors.iconGray}
+        />
+        <AppText style={{ textAlign: "center", color: colors.textGray }}>
+          No Categories Found
+        </AppText>
+      </AppView>
+    );
+  }
+
+  // Grid layout - render in a simple View without ScrollView
+  if (isGrid) {
+    return (
+      <AppView
+        style={{
+          paddingHorizontal: spacing.md,
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: spacing.xs,
+        }}
+      >
+        {data.map((item, key) => <AppView key={key}>{renderItem({ item })}</AppView>)}
+      </AppView>
+    );
+  }
+
+  // Horizontal list layout - use FlatList
   return (
     <FlatList
       data={data}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
       showsHorizontalScrollIndicator={false}
-      columnWrapperStyle={isGrid ? { gap: spacing.xs } : undefined}
-      numColumns={isGrid ? 5 : 1}
       contentContainerStyle={{
-        paddingHorizontal: isGrid ? spacing.md : spacing.lg,
+        paddingHorizontal: spacing.lg,
         gap: spacing.xs,
-        flexGrow: 1,
       }}
-      key={isGrid ? "grid" : "list"}
-      extraData={isGrid}
-      horizontal={!isGrid}
-      initialNumToRender={isGrid ? 8 : 4}
+      horizontal
+      initialNumToRender={4}
       onEndReached={onEndReached}
       onEndReachedThreshold={0.5}
-      ListEmptyComponent={
-        isLoading ? (
-          <AppView
-            style={{
-              paddingHorizontal: isGrid ? spacing.md : spacing.lg,
-              gap: spacing.md,
-              ...(isGrid
-                ? { flexDirection: "row", flexWrap: "wrap" }
-                : { flexDirection: "row" }),
-            }}
-          >
-            {isGrid
-              ? Array(8)
-                  .fill(null)
-                  .map((_, index) => (
-                    <CategoryCardCircularSkeleton key={index} />
-                  ))
-              : Array(4)
-                  .fill(null)
-                  .map((_, index) => (
-                    <CategoryCardCircularSkeleton key={index} />
-                  ))}
-          </AppView>
-        ) : (
-          <AppView
-            style={{
-              alignItems: "center",
-              flex: 1,
-              gap: spacing.md,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="package-variant-closed-remove"
-              size={icons.xl}
-              color={colors.iconGray}
-            />
-            {/* You can add a "No Categories Found" message here if needed */}
-            <AppText style={{ textAlign: "center", color: colors.textGray }}>
-              No Categories Found
-            </AppText>
-          </AppView>
-        )
-      }
     />
   );
 }

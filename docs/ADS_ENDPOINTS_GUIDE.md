@@ -789,6 +789,7 @@ Content-Type: application/json
     "query": "Toyota",
     "categoryIds": ["cars_category_id"],
     "cityIds": ["new_york_id"],
+    "userIds": ["user_id"],
     "priceMin": 15000,
     "priceMax": 25000,
     "conditions": ["GOOD", "LIKE_NEW"],

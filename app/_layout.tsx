@@ -3,6 +3,7 @@ import { QueryProvider } from "@/contexts/QueryProvider";
 import { AppThemeProvider } from "@/contexts/ThemeContext";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Stack } from "expo-router";
+// import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -10,7 +11,7 @@ import "react-native-reanimated";
 import { Toaster } from "sonner-native";
 
 // Keep the splash screen visible while we fetch resources
-//SplashScreen.preventAutoHideAsync();
+// SplashScreen.preventAutoHideAsync();
 
 // Configure Google Sign-In
 GoogleSignin.configure({
@@ -29,6 +30,7 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(drawers)" />
               <Stack.Screen name="(auth)" />
+              <Stack.Screen name="onboarding" />
             </Stack>
           </View>
           <Toaster />

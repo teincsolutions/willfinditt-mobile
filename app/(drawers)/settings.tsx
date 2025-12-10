@@ -8,19 +8,29 @@ import AppView from "@/components/ui/AppView";
 import FormDividerText from "@/components/ui/FormDividerText";
 import { Header } from "@/components/ui/Header";
 import PlaceholderField from "@/components/ui/PlaceholderField";
+import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useRef } from "react";
-import { ScrollView } from "react-native";
+import { ActivityIndicator, ScrollView } from "react-native";
 
 export default function CategoriesScreen() {
   const { icons, spacing, colors, radius } = useTheme();
+  const { user, isLoading } = useAuth();
   const changeEmailSheetRef = useRef<BottomSheet>(null);
   const changePhoneNumberSheetRef = useRef<BottomSheet>(null);
   const changePasswordSheetRef = useRef<BottomSheet>(null);
   const changeUsernameSheetRef = useRef<BottomSheet>(null);
   const notificationSettingsSheetRef = useRef<BottomSheet>(null);
+
+  if (isLoading || !user) {
+    return (
+      <AppView style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </AppView>
+    );
+  }
 
   return (
     <>
@@ -44,7 +54,7 @@ export default function CategoriesScreen() {
           }
           label="Username"
           inputStyle={{ borderRadius: radius.md }}
-          value={"@johndoe"}
+          value={user.username ? `@${user.username}` : "Not set"}
           onPress={() => changeUsernameSheetRef.current?.expand()}
           rightIcon={
             <Feather
@@ -61,7 +71,7 @@ export default function CategoriesScreen() {
           }
           label="Email"
           inputStyle={{ borderRadius: radius.md }}
-          value={"samplename@gmail.com"}
+          value={user.email || "Not set"}
           rightIcon={
             <AppView
               style={{
@@ -70,11 +80,13 @@ export default function CategoriesScreen() {
                 gap: spacing.sm,
               }}
             >
-              <Feather
-                name="check-circle"
-                color={colors.green}
-                size={icons.sm}
-              />
+              {user.isVerified && (
+                <Feather
+                  name="check-circle"
+                  color={colors.green}
+                  size={icons.sm}
+                />
+              )}
               <Feather
                 name="chevron-right"
                 color={colors.iconGray}
@@ -93,7 +105,7 @@ export default function CategoriesScreen() {
           }
           label="Phone number"
           inputStyle={{ borderRadius: radius.md }}
-          value={"+2330246092155"}
+          value={user.phone || "Not set"}
           onPress={() => changePhoneNumberSheetRef.current?.expand()}
           rightIcon={
             <AppView
@@ -103,11 +115,13 @@ export default function CategoriesScreen() {
                 gap: spacing.sm,
               }}
             >
-              <Feather
-                name="check-circle"
-                color={colors.green}
-                size={icons.sm}
-              />
+              {user.phoneVerified && (
+                <Feather
+                  name="check-circle"
+                  color={colors.green}
+                  size={icons.sm}
+                />
+              )}
               <Feather
                 name="chevron-right"
                 color={colors.iconGray}

@@ -57,4 +57,14 @@ export const mmkvStorage = {
   getNumber: (key: string): number | undefined => {
     return storage.getNumber(key);
   },
+
+  // App-specific helpers
+  isFirstLaunch: (): boolean => {
+    const hasLaunched = storage.getBoolean("hasLaunchedBefore");
+    return hasLaunched === undefined || !hasLaunched;
+  },
+
+  setFirstLaunchComplete: () => {
+    storage.set("hasLaunchedBefore", true);
+  },
 };

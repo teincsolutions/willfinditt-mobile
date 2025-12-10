@@ -70,9 +70,17 @@ api.interceptors.response.use(
       '/api/v1/auth/social',
     ];
 
-    const isAuthEndpoint = authEndpoints.some(endpoint => 
+    const isAuthEndpoint = authEndpoints.some(endpoint =>
       originalRequest.url?.includes(endpoint)
     );
+
+    // Get refresh token
+    const refreshToken = await tokenManager.getRefreshToken();
+
+    if (!refreshToken) {
+      // No refresh token, cannot refresh
+      return Promise.reject(error);
+    }
 
     // Check if error is 401 and we haven't retried yet, and it's not an auth endpoint
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
@@ -96,13 +104,6 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Get refresh token
-        const refreshToken = await tokenManager.getRefreshToken();
-
-        if (!refreshToken) {
-          console.error("No refresh token available for refresh");
-          throw new Error("No refresh token available");
-        }
 
         console.log("Attempting token refresh with refresh token");
 

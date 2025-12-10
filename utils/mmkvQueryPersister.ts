@@ -34,7 +34,7 @@ export function createMMKVPersister(): Persister {
     },
     removeClient: async () => {
       try {
-        storage.delete(QUERY_CACHE_KEY);
+        storage.remove(QUERY_CACHE_KEY);
       } catch (error) {
         console.error("Error removing query client:", error);
       }

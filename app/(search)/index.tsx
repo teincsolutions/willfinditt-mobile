@@ -1,15 +1,138 @@
+import RecentSearches from "@/components/search/RecentSearches";
 import { SearchBar } from "@/components/search/SearchBar";
 import SearchEmptyState from "@/components/search/SearchEmptyState";
 import SuggestionDropdown from "@/components/search/SuggestionDropdown";
+import AppText from "@/components/ui/AppText";
+import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
+import { useInfiniteSavedAds, useSearchSuggestions } from "@/hooks/useAds";
+import { useRecentSearch } from "@/hooks/useRecentSearch";
 import { useTheme } from "@/hooks/useTheme";
+import { Ad, AdSuggestion, Suggestion } from "@/types";
 import { router, Stack } from "expo-router";
-import React, { useState } from "react";
-import { View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, FlatList, ScrollView, View } from "react-native";
 
 export default function SearchScreen() {
   const { colors, spacing } = useTheme();
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  // Recent searches from local storage
+  const { recentSearches, addRecent } = useRecentSearch();
+
+  // Search suggestions from API (using the hook from useAds.ts)
+  const { data: suggestionsData, isLoading: isSuggestionsLoading } =
+    useSearchSuggestions(
+      {
+        query: debouncedQuery,
+        limit: 10,
+      },
+      debouncedQuery.length > 0
+    );
+
+  // Recent saved ads
+  const {
+    data: savedAdsData,
+    isLoading: isSavedAdsLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteSavedAds({ limit: 10 });
+
+  // Debounce query for API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Convert API suggestions to Suggestion format
+  const searchSuggestions: Suggestion[] =
+    suggestionsData?.data?.map((ad: AdSuggestion) => ({
+      id: ad.id,
+      keyword: ad.title,
+      productId: ad.id,
+      categoryId: ad.categoryId,
+      categoryFieldId: "",
+      isRecent: false,
+    })) || [];
+
+  // Flatten saved ads for display
+  const savedAds: Ad[] =
+    savedAdsData?.pages?.flatMap((page) => page.data || []) || [];
+
+  // Handle search submission
+  const handleSearchSubmit = () => {
+    if (!query.trim()) return;
+
+    // Add to recent searches
+    const suggestion: Suggestion = {
+      id: `search-${Date.now()}`,
+      keyword: query,
+      productId: "",
+      categoryId: "",
+      categoryFieldId: "",
+      isRecent: true,
+    };
+    addRecent(suggestion);
+
+    // Navigate to search results
+    router.push({
+      pathname: "/(search)/results",
+      params: { query },
+    });
+  };
+
+  // Handle suggestion selection
+  const handleSuggestionSelect = (suggestion: Suggestion) => {
+    setQuery(suggestion.keyword);
+    addRecent(suggestion);
+    
+    // Navigate to search results
+    router.push({
+      pathname: "/(search)/results",
+      params: { query: suggestion.keyword },
+    });
+  };
+
+  // Handle recent search selection
+  const handleRecentSearchSelect = (suggestion: Suggestion) => {
+    setQuery(suggestion.keyword);
+    addRecent(suggestion);
+    
+    // Navigate to search results
+    router.push({
+      pathname: "/(search)/results",
+      params: { query: suggestion.keyword },
+    });
+  };
+
+  // Handle saved ad selection
+  const handleSavedAdPress = (ad: Ad) => {
+    router.push(`/(ads)/${ad.id}`);
+  };
+
+  // Show loading for suggestions
+  const showSuggestionsLoading = isSuggestionsLoading && debouncedQuery.length > 0;
+
+  // Show suggestions when query exists
+  const showSuggestions = query.length > 0 && searchSuggestions.length > 0;
+
+  // Show empty state when query exists but no suggestions
+  const showEmptyState =
+    query.length > 0 &&
+    !isSuggestionsLoading &&
+    searchSuggestions.length === 0 &&
+    debouncedQuery === query;
+
+  // Show recent searches when no query
+  const showRecentSearches = query.length === 0 && recentSearches.length > 0;
+
+  // Show recent saved ads when no query
+  const showRecentSaved = query.length === 0 && savedAds.length > 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -25,24 +148,105 @@ export default function SearchScreen() {
               <SearchBar
                 value={query}
                 onChangeText={setQuery}
-                onSubmit={() => {}}
-                onPressFilter={() => router.push("/search/filters")}
+                onSubmit={handleSearchSubmit}
+                onPressFilter={() => router.push("/(search)/filters")}
+                onClear={()=>{setQuery("")}}
                 autoFocus
               />
             </Header>
           ),
         }}
       />
-      {query.length === 0 && suggestions.length > 0 && (
+
+      {/* LOADING STATE FOR SUGGESTIONS */}
+      {showSuggestionsLoading && (
+        <View
+          style={{
+            padding: spacing.lg,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ActivityIndicator size="small" color={colors.primary} />
+        </View>
+      )}
+
+      {/* SEARCH SUGGESTIONS */}
+      {showSuggestions && (
         <SuggestionDropdown
-          data={suggestions}
+          data={searchSuggestions}
           query={query}
-          onSelect={(item) => setQuery(item.keyword)}
+          onSelect={handleSuggestionSelect}
         />
       )}
 
       {/* EMPTY STATE */}
-      {query.length > 0 && suggestions.length === 0 && <SearchEmptyState />}
+      {showEmptyState && <SearchEmptyState />}
+
+      {/* RECENT SEARCHES AND SAVED ADS (when not searching) */}
+      {query.length === 0 && (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: spacing.lg }}
+        >
+          {/* RECENT SEARCHES */}
+          {showRecentSearches && (
+            <View style={{ marginTop: spacing.xs }}>
+              <AppText
+                style={{
+                  marginVertical: spacing.md,
+                  fontWeight: "bold",
+                  marginHorizontal: spacing.md,
+                }}
+              >
+                Recent Searches
+              </AppText>
+              <FlatList
+                data={recentSearches}
+                scrollEnabled={false}
+                keyboardShouldPersistTaps="handled"
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <View>
+                    {/* Using SuggestionItem directly would be better but reusing SuggestionDropdown logic */}
+                    <SuggestionDropdown
+                      data={[item]}
+                      query=""
+                      onSelect={handleRecentSearchSelect}
+                    />
+                  </View>
+                )}
+                ItemSeparatorComponent={() => (
+                  <AppView
+                    style={{ height: 1, backgroundColor: colors.border }}
+                  />
+                )}
+              />
+            </View>
+          )}
+
+          {/* RECENT SAVED ADS */}
+          {showRecentSaved && (
+            <RecentSearches
+              data={savedAds}
+              query={query}
+              onAdPress={handleSavedAdPress}
+            />
+          )}
+
+          {/* LOADING MORE SAVED ADS */}
+          {isSavedAdsLoading && (
+            <View
+              style={{
+                padding: spacing.lg,
+                alignItems: "center",
+              }}
+            >
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 }

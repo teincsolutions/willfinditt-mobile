@@ -2,7 +2,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Feather } from "@expo/vector-icons";
 import { CloseCircle, DirectDown } from "iconsax-react-nativejs";
 import React from "react";
-import { StyleProp, ViewStyle } from "react-native";
+import { Pressable, StyleProp, ViewStyle } from "react-native";
 import InputField from "../ui/InputField";
 import { TextButton } from "../ui/TextButton";
 
@@ -10,6 +10,7 @@ interface SearchBarProps {
   value: string;
   onChangeText?: (t: string) => void;
   onSubmit?: () => void;
+  onClear?: () => void;
   onPressFilter?: () => void;
   filterValue?: string;
   placeholder?: string;
@@ -22,6 +23,7 @@ interface SearchBarProps {
 export function SearchBar({
   value,
   onChangeText,
+  onClear,
   onSubmit,
   onPressFilter,
   placeholder = "Search...",
@@ -44,11 +46,9 @@ export function SearchBar({
       autoFocus={autoFocus}
       leftIcon={
         value.length > 0 ? (
-          <CloseCircle
-            onPress={() => onChangeText && onChangeText("")}
-            size={icons.md}
-            color={colors.iconBlack}
-          />
+          <Pressable onPress={onClear}>
+            <CloseCircle size={icons.md} color={colors.iconBlack} />
+          </Pressable>
         ) : (
           <Feather name="search" size={icons.md} color={colors.iconBlack} />
         )

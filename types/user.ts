@@ -26,6 +26,7 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   sellerProfile?: SellerProfile;
+  dateOfBirth?: string | null;
 }
 
 export interface SellerProfile {
@@ -109,6 +110,7 @@ export interface UpdateProfileRequest {
   lastName?: string;
   avatar?: string;
   phone?: string;
+  dateOfBirth?: string | null;
   countryId?: string | null;
 }
 

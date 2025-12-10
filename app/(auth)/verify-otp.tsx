@@ -1,12 +1,12 @@
 // screens/VerifyOTPScreen.tsx
 
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  KeyboardAvoidingView,
-  ScrollView,
-  StyleSheet,
-  View,
+    KeyboardAvoidingView,
+    ScrollView,
+    StyleSheet,
+    View,
 } from "react-native";
 import { toast } from "sonner-native";
 
@@ -27,6 +27,8 @@ export default function VerifyOTPScreen() {
     phone?: string;
   }>();
   const [otp, setOtp] = useState("");
+  const [countdown, setCountdown] = useState(60); // 60 seconds countdown
+  const [canResend, setCanResend] = useState(false);
 
   const {
     verify2FAAsync,
@@ -35,6 +37,18 @@ export default function VerifyOTPScreen() {
     isVerifyingResetPhoneOtp,
     isResendingVerification,
   } = useAuth();
+
+  // Countdown timer for resend button
+  useEffect(() => {
+    if (countdown > 0 && !canResend) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0) {
+      setCanResend(true);
+    }
+  }, [countdown, canResend]);
 
   const handleVerifyOTP = async () => {
     if (!otp || otp.length < 6) {
@@ -69,9 +83,15 @@ export default function VerifyOTPScreen() {
   };
 
   const handleResendOTP = async () => {
+    if (!canResend) return;
+    
     try {
       // Resend verification - this would need user's email/phone
       toast.success("OTP has been resent to your device");
+      
+      // Reset countdown
+      setCountdown(60);
+      setCanResend(false);
     } catch (error: any) {
       toast.error(error?.message || "Failed to resend OTP");
     }
@@ -131,7 +151,8 @@ export default function VerifyOTPScreen() {
                 length={6}
                 value={otp}
                 onChange={setOtp}
-                disabled={isVerifying2FA}
+                onComplete={handleVerifyOTP}
+                disabled={isVerifying2FA || isVerifyingResetPhoneOtp}
               />
 
               {/* Info Text */}
@@ -147,10 +168,16 @@ export default function VerifyOTPScreen() {
               </AppText>
 
               {/* Resend Button */}
-              <PrimaryButton
-                title={isResendingVerification ? "Resending..." : "Resend Code"}
+              <SecondaryTextButton
+                title={
+                  isResendingVerification
+                    ? "Resending..."
+                    : canResend
+                    ? "Resend Code"
+                    : `Resend Code (${countdown}s)`
+                }
                 onPress={handleResendOTP}
-                disabled={isResendingVerification}
+                disabled={isResendingVerification || !canResend}
               />
 
               {/* Verify Button */}

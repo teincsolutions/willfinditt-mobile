@@ -1,16 +1,16 @@
 import { AvatarSizeKey } from "@/constants";
 import { useTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { ImageStyle } from "expo-image";
+import { Image, ImageStyle } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { Image, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import AppView from "./AppView";
 
 interface AvatarProps {
   style?: ImageStyle;
   styleContainer?: StyleProp<ViewStyle>;
   verified?: boolean;
-  source?: { uri: string };
+  uri?: string;
   size?: AvatarSizeKey;
   borderSize?: 2 | 4;
 }
@@ -19,7 +19,7 @@ export function Avatar({
   style,
   styleContainer,
   verified,
-  source,
+  uri,
   borderSize = 2,
   size,
 }: AvatarProps) {
@@ -53,7 +53,9 @@ export function Avatar({
           }}
         >
           <Image
-            source={source || { uri: "https://i.pravatar.cc/200" }}
+            source={{ uri: uri || "" }}
+            placeholder={require("@/assets/images/avatar-placeholder.gif")}
+            placeholderContentFit="contain"
             style={[
               {
                 width: size ? avatarSize[size] : avatarSize.lg,

@@ -6,7 +6,9 @@ import {
 } from "@react-navigation/drawer";
 import React from "react";
 
+import { useAuth } from "@/hooks/useAuth";
 import { router } from "expo-router";
+import { Alert } from "react-native";
 import DrawerMenuItem from "./DrawerMenuItem";
 import DrawerPromoCard from "./DrawerPromoCard";
 import DrawerUserHeader from "./DrawerUserHeader";
@@ -15,6 +17,39 @@ export default function CustomDrawerContent(
   props: DrawerContentComponentProps
 ) {
   const { colors, icons, spacing } = useTheme();
+  const { logoutAsync, isAuthenticated } = useAuth();
+
+  const handleLogout = async () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await logoutAsync();
+          router.push("/(auth)/login");
+        },
+      },
+    ]);
+  };
+
+  const handleLogin = () => {
+    Alert.alert("Login", "Do you want to login now?", [
+        {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "OK",
+        onPress: () => {
+          router.push("/(auth)/login");
+        },
+      },
+    ]);
+  };
 
   return (
     <DrawerContentScrollView
@@ -44,6 +79,10 @@ export default function CustomDrawerContent(
         label="Profile"
         active={props.state.index === 1}
         onPress={() => {
+          if (!isAuthenticated) {
+            handleLogin();
+            return;
+          }
           props.navigation.navigate("profile");
         }}
         icon={({ active }) => (
@@ -71,6 +110,10 @@ export default function CustomDrawerContent(
         label="Favorites"
         active={props.state.index === 2}
         onPress={() => {
+          if (!isAuthenticated) {
+            handleLogin();
+            return;
+          }
           props.navigation.navigate("favorites");
         }}
         icon={({ active }) => (
@@ -82,9 +125,13 @@ export default function CustomDrawerContent(
         )}
       />
 
-       <DrawerMenuItem
+      <DrawerMenuItem
         label="Create Ad"
         onPress={() => {
+          if (!isAuthenticated) {
+            handleLogin();
+            return;
+          }
           router.push("/create-ad");
         }}
         icon={({ active }) => (
@@ -100,6 +147,10 @@ export default function CustomDrawerContent(
         active={props.state.index === 3}
         count={2}
         onPress={() => {
+          if (!isAuthenticated) {
+            handleLogin();
+            return;
+          }
           props.navigation.navigate("messages");
         }}
         icon={({ active }) => (
@@ -129,6 +180,10 @@ export default function CustomDrawerContent(
         label="Settings & Security"
         active={props.state.index === 5}
         onPress={() => {
+          if (!isAuthenticated) {
+            handleLogin();
+            return;
+          }
           props.navigation.navigate("settings");
         }}
         icon={({ active }) => (
@@ -170,16 +225,17 @@ export default function CustomDrawerContent(
       {/* PROMO CARD */}
       <DrawerPromoCard />
       {/* LOGOUT */}
-      <DrawerMenuItem
-        label="Logout"
-        onPress={() => {
-          router.push("/(auth)/login");
-        }}
-        labelStyle={{ color: colors.accentRed }}
-        icon={() => (
-          <Feather name="log-out" size={icons.md} color={colors.accentRed} />
-        )}
-      />
+
+      {isAuthenticated && (
+        <DrawerMenuItem
+          label="Logout"
+          onPress={handleLogout}
+          labelStyle={{ color: colors.accentRed }}
+          icon={() => (
+            <Feather name="log-out" size={icons.md} color={colors.accentRed} />
+          )}
+        />
+      )}
     </DrawerContentScrollView>
   );
 }

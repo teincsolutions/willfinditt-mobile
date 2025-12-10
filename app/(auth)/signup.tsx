@@ -1,6 +1,7 @@
 // screens/RegisterScreen.tsx
 
 import Feather from "@expo/vector-icons/Feather";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Formik } from "formik";
 import React, { useState } from "react";
 import {
@@ -116,8 +117,6 @@ export default function RegisterScreen() {
 
   const handleGoogleSignup = async () => {
     try {
-      const { GoogleSignin } = await import("@react-native-google-signin/google-signin");
-      
       // Check Play Services availability
       await GoogleSignin.hasPlayServices();
       
