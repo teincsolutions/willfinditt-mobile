@@ -34,11 +34,15 @@ export default function HomeScreen() {
 
     switch (tab) {
       case "Trending":
-        return { search: { ...baseParams, sortBy: "views", sortOrder: "desc" } };
+        return {
+          search: { ...baseParams, sortBy: "views", sortOrder: "desc" },
+        };
       case "Cheapest":
         return { search: { ...baseParams, sortBy: "price", sortOrder: "asc" } };
       case "New":
-        return { search: { ...baseParams, sortBy: "createdAt", sortOrder: "desc" } };
+        return {
+          search: { ...baseParams, sortBy: "createdAt", sortOrder: "desc" },
+        };
       default:
         return { search: baseParams };
     }
@@ -51,11 +55,16 @@ export default function HomeScreen() {
     useParentCategories();
 
   // fetch ads based on selected tab
-  const { data: adsData, fetchNextPage, hasNextPage, isLoading:isLoadingAds, isFetchingNextPage } =
-    useInfiniteSearchAds(searchRequest);
+  const {
+    data: adsData,
+    fetchNextPage,
+    hasNextPage,
+    isLoading: isLoadingAds,
+    isFetchingNextPage,
+  } = useInfiniteSearchAds(searchRequest);
 
-  const ads: Ad[] = adsData?.pages.flatMap(page => page.data) || [];
-  
+  const ads: Ad[] = adsData?.pages.flatMap((page) => page.data) || [];
+
   // Only show skeletons on initial load when there's no data yet
   const showSkeletons = isLoadingAds && ads.length === 0;
 
@@ -113,7 +122,17 @@ export default function HomeScreen() {
         data={categories}
         isLoading={isLoadingCategories}
         isGrid={showAllCategories}
-        renderItem={({ item }) => <CategoryCardCircular category={item} />}
+        renderItem={({ item }) => (
+          <CategoryCardCircular
+            onPress={() =>
+              router.push({
+                pathname: "/categories/[parentId]",
+                params: { parentId: item.id },
+              })
+            }
+            category={item}
+          />
+        )}
       />
       {/* SLIDER */}
       <PromoSlider

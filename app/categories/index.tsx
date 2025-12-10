@@ -7,45 +7,24 @@ import { SearchBar } from "@/components/search/SearchBar";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
+import { useParentCategories } from "@/hooks/useCategories";
 import { useTheme } from "@/hooks/useTheme";
-import { Category } from "@/types/category";
 import { router } from "expo-router";
 import { Grid2, RowVertical } from "iconsax-react-nativejs";
-import { useEffect, useState } from "react";
-import { Keyboard } from "react-native";
+import { useState } from "react";
 import { FlatList } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-// Dummy data
-const categories: Category[] = [
-  {
-    id: "1",
-    name: "Electronics",
-    icon: "https://i.imgur.com/1.png",
-    _count: { ads: 120 },
-  },
-  {
-    id: "2",
-    name: "Fashion",
-    icon: "https://i.imgur.com/2.png",
-    _count: { ads: 80 },
-  },
-  { id: "3", name: "Home", icon: "https://i.imgur.com/3.png" },
-  { id: "4", name: "Books", icon: "https://i.imgur.com/4.png" },
-  { id: "5", name: "Toys", icon: "https://i.imgur.com/5.png" },
-  { id: "6", name: "Sports", icon: "https://i.imgur.com/6.png" },
-];
 
 export default function CategoriesScreen() {
   const insets = useSafeAreaInsets();
   const { icons, spacing, colors } = useTheme();
+  const { data: categories, isLoading } = useParentCategories();
   const [query, setQuery] = useState("");
   const [isGrid, setIsGrid] = useState(true);
-  const isLoading = true;
-
-  useEffect(() => {
-    return () => Keyboard.dismiss();
-  }, []);
+  const filteredCategories =
+    categories?.filter((cat) =>
+      cat.name?.toLowerCase().includes(query.toLowerCase())
+    ) || [];
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -56,12 +35,14 @@ export default function CategoriesScreen() {
             icon={
               isGrid ? (
                 <Grid2
+                  onPress={() => setIsGrid(false)}
                   variant="Outline"
                   color={colors.iconBlack}
                   size={icons.md}
                 />
               ) : (
                 <RowVertical
+                  onPress={() => setIsGrid(true)}
                   variant="Outline"
                   color={colors.iconBlack}
                   size={icons.md}
@@ -88,26 +69,45 @@ export default function CategoriesScreen() {
       </Header>
 
       <FlatList
-        data={categories}
-        keyExtractor={(_, index) => index.toString()}
+        data={filteredCategories}
+        keyExtractor={(item, index) => item.id || index.toString()}
         numColumns={isGrid ? 4 : 1}
         showsHorizontalScrollIndicator={false}
-        style={{ paddingTop: spacing.sm }}
+        style={{ paddingTop: spacing.sm, backgroundColor: colors.background }}
         columnWrapperStyle={isGrid ? { gap: spacing.xs } : undefined}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: spacing.md,
-          gap: spacing.sm,
           width: "100%",
         }}
         key={isGrid ? "grid" : "list"}
+        extraData={isGrid}
         renderItem={({ item }) =>
           isGrid ? (
-            <CategoryCardCircular category={item} />
+            <CategoryCardCircular
+              category={item}
+              onPress={() => {
+                router.push({
+                  pathname: "/categories/[parentId]",
+                  params: { parentId: item.id },
+                });
+              }}
+            />
           ) : (
-            <CategoryCardLandscape category={item} onPress={() => {}} />
+            <CategoryCardLandscape
+              category={item}
+              onPress={() => {
+                router.push({
+                  pathname: "/categories/[parentId]",
+                  params: { parentId: item.id },
+                });
+              }}
+            />
           )
         }
+        ItemSeparatorComponent={() => (
+          <AppView style={{ height: spacing.xs }} />
+        )}
         ListEmptyComponent={() =>
           isLoading ? (
             <AppView

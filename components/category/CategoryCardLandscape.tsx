@@ -1,11 +1,11 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Category } from "@/types";
+import { Image } from "expo-image";
 import { DirectRight } from "iconsax-react-nativejs";
 import React from "react";
 import { Pressable, StyleSheet } from "react-native";
 import AppView from "../ui/AppView";
-import { Avatar } from "../ui/Avatar";
 import Badge from "../ui/Badge";
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function CategoryCardLandscape({ category, onPress }: Props) {
-  const { colors, spacing, radius, icons } = useTheme();
+  const { colors, spacing, radius, avatarSize, icons } = useTheme();
 
   return (
     <Pressable
@@ -25,11 +25,23 @@ export default function CategoryCardLandscape({ category, onPress }: Props) {
           backgroundColor: colors.background,
           borderRadius: radius.md,
           padding: spacing.md,
+          borderColor: colors.border,
+          borderWidth: 1,
         },
       ]}
     >
       {/* LEFT ICON IMAGE */}
-      <Avatar source={{ uri: category.icon || "" }} size="md" borderSize={2} />
+      <Image
+        source={{ uri: category.icon || "" }}
+        style={{
+          width: avatarSize.lg,
+          height: avatarSize.lg,
+          borderRadius:avatarSize.lg,
+          borderWidth: 2,
+          backgroundColor: colors.backgroundGray,
+          borderColor: colors.backgroundPrimary,
+        }}
+      />
 
       {/* TEXT CONTENT */}
       <AppView style={{ flex: 1, marginLeft: spacing.md }}>

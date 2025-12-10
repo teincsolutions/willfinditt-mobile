@@ -2,7 +2,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Category } from "@/types";
 import { Image, ImageStyle } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleProp, StyleSheet, ViewStyle } from "react-native";
+import { Pressable, StyleProp, StyleSheet, ViewStyle } from "react-native";
 import AppText from "../ui/AppText";
 import AppView from "../ui/AppView";
 
@@ -10,17 +10,20 @@ interface CategoryCardCircularProps {
   style?: ImageStyle;
   styleContainer?: StyleProp<ViewStyle>;
   category?: Category;
+  onPress?: () => void;
 }
 
 export function CategoryCardCircular({
   style,
   styleContainer,
   category,
+  onPress
 }: CategoryCardCircularProps) {
   const { colors, avatarSize, spacing } = useTheme();
   return (
-    <AppView
+    <Pressable
       style={[styles.avatarWrapper, { gap: spacing.sm }, styleContainer]}
+      onPress={onPress}
     >
       <LinearGradient
         colors={[colors.primary, colors.secondary]}
@@ -62,7 +65,7 @@ export function CategoryCardCircular({
       >
         {category?.name}
       </AppText>
-    </AppView>
+    </Pressable>
   );
 }
 const styles = StyleSheet.create({
