@@ -3,6 +3,7 @@ import { LocationSheetButton } from "@/components/bottom-sheet/LocationSheetButt
 import { SelectableListSheet } from "@/components/bottom-sheet/SelectableBottomSheet";
 import { SelectBoxSheet } from "@/components/bottom-sheet/SelectBoxSheet";
 import SheetRadioOptionItem from "@/components/bottom-sheet/SheetRadioOptionItem";
+import { BackButton } from "@/components/ui/BackButton";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import PlaceholderField from "@/components/ui/PlaceholderField";
@@ -35,9 +36,13 @@ export default function FiltersScreen() {
         containerStyle={{
           backgroundColor: colors.background,
           paddingBottom: spacing.lg,
+          paddingTop: spacing.md,
         }}
+        left={<BackButton label="Cancel" showIcon={false} />}
         title="Filters"
+        
         navRowStyle={{ marginHorizontal: spacing.md }}
+
       />
       <ScrollView
         style={{ backgroundColor: colors.background }}

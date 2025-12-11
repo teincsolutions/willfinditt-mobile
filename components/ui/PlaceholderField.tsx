@@ -16,6 +16,7 @@ type Props = {
   size?: "sm" | "md";
   placeholder?: string;
   secure?: boolean;
+  numberOfLines?: number;
   keyboardType?: KeyboardTypeOptions;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -32,6 +33,7 @@ export default function PlaceholderField({
   value,
   size = "md",
   placeholder,
+  numberOfLines,
   leftIcon,
   rightIcon,
   rightIconStyle,
@@ -73,6 +75,7 @@ export default function PlaceholderField({
 
         <AppText
           variant="md"
+          numberOfLines={numberOfLines}
           style={[
             styles.input,
             { color: value ? colors.text : colors.placeholder },

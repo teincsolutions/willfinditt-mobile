@@ -1,17 +1,20 @@
 // screens/HomeScreen.tsx
 
 import React, { useRef, useState } from "react";
-import { Animated } from "react-native";
 
 import ProductCard from "@/components/ads/ProductCard";
 import ProductCardSkeleton from "@/components/ads/ProductCardSkeleton";
 import { CategoryCardCircular } from "@/components/category/CategoryCardCircular";
 import { CategoryList } from "@/components/category/CategoryList";
 import SectionHeader from "@/components/category/SectionHeader";
+import DrawerHeaderRight from "@/components/drawer/DrawerHeaderRight";
+import DrawerHeaderTitle from "@/components/drawer/DrawerHeaderTitle";
+import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
 import { SearchBarPlaceholder } from "@/components/search/SearchBarPlaceholder";
 import { PromoSlider } from "@/components/sliders/PromoSlider";
 import AppView from "@/components/ui/AppView";
 import FilterTabs from "@/components/ui/FilterTabs";
+import { Header } from "@/components/ui/Header";
 import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { ToggleAction } from "@/components/ui/ToggleAction";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -70,114 +73,129 @@ export default function HomeScreen() {
 
   // Animation values for search bar
   const lastScrollY = useRef(0);
-  const searchBarOpacity = useRef(new Animated.Value(1)).current;
+  const stickThreshold = insert.top;
+  const [isSearchBarStuck, setIsSearchBarStuck] = useState(false);
+  const [isHeaderStuck, setIsHeaderStuck] = useState(false);
 
   // Handle scroll events for search bar animation
   const handleScroll = (event: any) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
+
+    // Stick search bar when scrolling past threshold
+    if (currentScrollY > stickThreshold && !isSearchBarStuck) {
+      setIsSearchBarStuck(true);
+    } else if (currentScrollY <= stickThreshold && isSearchBarStuck) {
+      setIsSearchBarStuck(false);
+    }
     const diff = currentScrollY - lastScrollY.current;
 
-    // Detect scroll direction with minimal threshold
-    if (Math.abs(diff) > 1) {
-      if (diff > 0 && currentScrollY > 50) {
-        // Scrolling down - hide search bar
-        Animated.timing(searchBarOpacity, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      } else if (diff < 0) {
-        // Scrolling up - show search bar
-        Animated.timing(searchBarOpacity, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      }
-      lastScrollY.current = currentScrollY;
+    // Stick header when scrolling up
+    if (diff < 0 && !isHeaderStuck) {
+      setIsHeaderStuck(true);
+    } else if (diff > 0 && isHeaderStuck && currentScrollY > stickThreshold) {
+      setIsHeaderStuck(false);
     }
+
+    lastScrollY.current = currentScrollY;
   };
 
   const renderHeader = () => (
-    <AppView
-      style={{
-        gap: spacing.md,
-        backgroundColor: colors.backgroundPrimary,
-        paddingTop: 70, // Space for fixed search bar
-      }}
-    >
-      {/* ALL CATEGORIES */}
-      <SectionHeader
-        title="All Categories"
-        style={{ alignItems: "center" }}
-        left={
-          <ToggleAction
-            toggle={showAllCategories}
-            onToggle={setShowAllCategories}
-          />
-        }
+    <>
+      <Header
+        left={<DrawerHeaderToggle />}
+        right={<DrawerHeaderRight />}
+        title={<DrawerHeaderTitle />}
+        containerStyle={{ paddingVertical: spacing.sm }}
       />
 
-      <CategoryList
-        data={categories}
-        isLoading={isLoadingCategories}
-        isGrid={showAllCategories}
-        renderItem={({ item }) => (
-          <CategoryCardCircular
-            onPress={() =>
-              router.push({
-                pathname: "/categories/[parentId]",
-                params: { parentId: item.id },
-              })
-            }
-            category={item}
-          />
-        )}
-      />
-      {/* SLIDER */}
-      <PromoSlider
-        data={[
-          {
-            source: require("@/assets/images/woman-with-shopping-bags.png"),
-            title: "Independence Sale is Here!",
-            subtitle: "Get more for less from our sellers.",
-            color: colors.text,
-          },
-          {
-            source: require("@/assets/images/independence-square.png"),
-            title: "Find products anywhere in Ghana",
-            positionRight: true,
-            subtitle: "Choose your location to find items near you.",
-          },
-        ]}
-      />
       <AppView
         style={{
-          backgroundColor: colors.background,
-          paddingBottom: spacing.lg,
-          paddingTop: 100,
+          gap: spacing.md,
+          backgroundColor: colors.backgroundPrimary,
         }}
       >
-        {/* FILTER TABS */}
-        <FilterTabs
-          selected={selectedTab}
-          onSelect={setSelectedTab}
-          tabs={["Trending", "Kumasi", "Cheapest", "New"]}
+        <SearchBarPlaceholder
+          onPress={() => router.push({ pathname: "/(search)" })}
+          onPressFilter={() => {
+            router.push({ pathname: "/regions" });
+          }}
+          style={{ marginHorizontal: spacing.md }}
         />
-        {/* NEW ARRIVAL */}
+        {/* ALL CATEGORIES */}
         <SectionHeader
-          title="New Arrival"
+          title="All Categories"
+          style={{ alignItems: "center" }}
           left={
-            <SecondaryTextButton
-              variant="lg"
-              onPress={() => {}}
-              title="See All"
-              titleStyle={{ color: colors.textGray }}
+            <ToggleAction
+              toggle={showAllCategories}
+              onToggle={setShowAllCategories}
             />
           }
         />
+
+        <CategoryList
+          data={categories}
+          isLoading={isLoadingCategories}
+          isGrid={showAllCategories}
+          renderItem={({ item }) => (
+            <CategoryCardCircular
+              onPress={() =>
+                router.push({
+                  pathname: "/categories/[parentId]",
+                  params: { parentId: item.id },
+                })
+              }
+              category={item}
+            />
+          )}
+        />
+        {/* SLIDER */}
+        <PromoSlider
+          data={[
+            {
+              source: require("@/assets/images/woman-with-shopping-bags.png"),
+              title: "Independence Sale is Here!",
+              subtitle: "Get more for less from our sellers.",
+              color: colors.text,
+            },
+            {
+              source: require("@/assets/images/independence-square.png"),
+              title: "Find products anywhere in Ghana",
+              positionRight: true,
+              subtitle: "Choose your location to find items near you.",
+            },
+          ]}
+        />
+        <AppView
+          style={{
+            backgroundColor: colors.background,
+            paddingBottom: spacing.lg,
+            paddingTop: 100 + spacing.md,
+          }}
+        >
+          {/* FILTER TABS */}
+          <FilterTabs
+            selected={selectedTab}
+            onSelect={setSelectedTab}
+            tabs={["Trending", "Kumasi", "Cheapest", "New"]}
+          />
+          {/* NEW ARRIVAL */}
+          <SectionHeader
+            title="New Arrival"
+            left={
+              <SecondaryTextButton
+                variant="lg"
+                onPress={() => {
+                  router.push({ pathname: "/(search)/results" });
+                }}
+                title="See All"
+                titleStyle={{ color: colors.textGray }}
+              />
+            }
+          />
+        </AppView>
       </AppView>
-    </AppView>
+    </>
   );
 
   return (
@@ -188,28 +206,40 @@ export default function HomeScreen() {
         paddingBottom: insert.bottom,
       }}
     >
-      {/* Fixed Search Bar */}
-      <Animated.View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1,
-          paddingHorizontal: spacing.md,
-          paddingTop: spacing.md,
-          paddingBottom: spacing.sm,
-          backgroundColor: colors.backgroundPrimary,
-          opacity: searchBarOpacity,
-        }}
-      >
-        <SearchBarPlaceholder
-          onPress={() => router.push({ pathname: "/(search)" })}
-          onPressFilter={() => {
-            router.push({ pathname: "/regions" });
+      {/* Sticky Search Bar */}
+      {isSearchBarStuck && (
+        <AppView
+          style={{
+            position: "absolute",
+            paddingTop: insert.top,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            backgroundColor: colors.backgroundPrimary,
+            paddingVertical: spacing.sm,
+            height: "auto",
           }}
-        />
-      </Animated.View>
+        >
+          {isHeaderStuck && (
+            <Header
+              left={<DrawerHeaderToggle />}
+              right={<DrawerHeaderRight />}
+              title={<DrawerHeaderTitle />}
+              containerStyle={{
+                paddingVertical: spacing.sm,
+                paddingTop: 10,
+              }}
+            />
+          )}
+          <SearchBarPlaceholder
+            onPress={() => router.push({ pathname: "/(search)" })}
+            onPressFilter={() => {
+              router.push({ pathname: "/regions" });
+            }}
+            style={{ marginHorizontal: spacing.md }}
+          />
+        </AppView>
+      )}
 
       {/* Scrollable Content */}
       <MasonryList

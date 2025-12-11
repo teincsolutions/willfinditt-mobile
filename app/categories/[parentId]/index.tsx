@@ -3,10 +3,11 @@ import CategoryCardLandscapeSkeleton from "@/components/category/CategoryCardLan
 import { EmptyCategoryCard } from "@/components/category/EmptyCategoryCard";
 import { SearchBar } from "@/components/search/SearchBar";
 import AppView from "@/components/ui/AppView";
+import { BackButton } from "@/components/ui/BackButton";
 import { Header } from "@/components/ui/Header";
 import { useCategory, useSubcategories } from "@/hooks/useCategories";
 import { useTheme } from "@/hooks/useTheme";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { FlatList } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,23 +26,29 @@ export default function SubCategoriesScreen() {
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
-      <Header
-        navRowStyle={{ marginHorizontal: spacing.md }}
-        title={parentCategory?.name || "Categories"}
-        containerStyle={{
-          paddingBottom: spacing.lg,
-          paddingTop: insets.top,
+      <Stack.Screen
+        options={{
+          header: () => (
+            <Header
+              left={<BackButton label="Cancel" showIcon={false} />}
+              navRowStyle={{ marginHorizontal: spacing.md }}
+              title={parentCategory?.name || "Categories"}
+              containerStyle={{
+                paddingBottom: spacing.sm,
+              }}
+            >
+              <SearchBar
+                style={{ marginHorizontal: spacing.md }}
+                value={query}
+                onChangeText={setQuery}
+                onPressFilter={() => {
+                  router.push("/(search)/filters");
+                }}
+              />
+            </Header>
+          ),
         }}
-      >
-        <SearchBar
-          style={{ marginHorizontal: spacing.md }}
-          value={query}
-          onChangeText={setQuery}
-          onPressFilter={() => {
-            router.push("/(search)/filters");
-          }}
-        />
-      </Header>
+      />
 
       <FlatList
         data={filteredCategories}
@@ -54,7 +61,15 @@ export default function SubCategoriesScreen() {
           width: "100%",
         }}
         renderItem={({ item }) => (
-          <CategoryCardLandscape category={item} onPress={() => {}} />
+          <CategoryCardLandscape
+            category={item}
+            onPress={() => {
+              router.push({
+                pathname: "/(search)/results",
+                params: { categoryId: item.id, query: item.name },
+              });
+            }}
+          />
         )}
         ItemSeparatorComponent={() => (
           <AppView style={{ height: spacing.xs }} />

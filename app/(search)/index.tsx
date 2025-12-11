@@ -5,16 +5,18 @@ import SuggestionDropdown from "@/components/search/SuggestionDropdown";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
+import IconButton from "@/components/ui/IconButton";
 import { useInfiniteSavedAds, useSearchSuggestions } from "@/hooks/useAds";
 import { useRecentSearch } from "@/hooks/useRecentSearch";
 import { useTheme } from "@/hooks/useTheme";
 import { Ad, AdSuggestion, Suggestion } from "@/types";
 import { router, Stack } from "expo-router";
+import { FilterSearch } from "iconsax-react-nativejs";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, ScrollView, View } from "react-native";
 
 export default function SearchScreen() {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, icons } = useTheme();
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
@@ -32,10 +34,8 @@ export default function SearchScreen() {
     );
 
   // Recent saved ads
-  const {
-    data: savedAdsData,
-    isLoading: isSavedAdsLoading,
-  } = useInfiniteSavedAds({ limit: 10 });
+  const { data: savedAdsData, isLoading: isSavedAdsLoading } =
+    useInfiniteSavedAds({ limit: 10 });
 
   // Debounce query for API calls
   useEffect(() => {
@@ -87,7 +87,7 @@ export default function SearchScreen() {
   const handleSuggestionSelect = (suggestion: Suggestion) => {
     setQuery(suggestion.keyword);
     addRecent(suggestion);
-    
+
     // Navigate to search results
     router.push({
       pathname: "/(search)/results",
@@ -99,7 +99,7 @@ export default function SearchScreen() {
   const handleRecentSearchSelect = (suggestion: Suggestion) => {
     setQuery(suggestion.keyword);
     addRecent(suggestion);
-    
+
     // Navigate to search results
     router.push({
       pathname: "/(search)/results",
@@ -113,7 +113,8 @@ export default function SearchScreen() {
   };
 
   // Show loading for suggestions
-  const showSuggestionsLoading = isSuggestionsLoading && debouncedQuery.length > 0;
+  const showSuggestionsLoading =
+    isSuggestionsLoading && debouncedQuery.length > 0;
 
   // Show suggestions when query exists
   const showSuggestions = query.length > 0 && searchSuggestions.length > 0;
@@ -139,15 +140,26 @@ export default function SearchScreen() {
             <Header
               containerStyle={{
                 paddingHorizontal: spacing.md,
-                backgroundColor: colors.background,
+                backgroundColor: colors.backgroundPrimary,
+                paddingBottom: spacing.sm,
               }}
+              right={
+                <IconButton
+                  onPress={() => router.push("/(search)/filters")}
+                  icon={
+                    <FilterSearch size={icons.md} color={colors.iconBlack} />
+                  }
+                />
+              }
             >
               <SearchBar
                 value={query}
                 onChangeText={setQuery}
                 onSubmit={handleSearchSubmit}
                 onPressFilter={() => router.push("/(search)/filters")}
-                onClear={()=>{setQuery("")}}
+                onClear={() => {
+                  setQuery("");
+                }}
                 autoFocus
               />
             </Header>

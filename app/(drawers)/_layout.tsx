@@ -1,6 +1,4 @@
 import CustomDrawerContent from "@/components/drawer/CustomDrawerContent";
-import DrawerHeaderRight from "@/components/drawer/DrawerHeaderRight";
-import DrawerHeaderTitle from "@/components/drawer/DrawerHeaderTitle";
 import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
 import { Header } from "@/components/ui/Header";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -25,19 +23,7 @@ export default function TabLayout() {
       }}
       drawerContent={CustomDrawerContent}
     >
-      <Drawer.Screen
-        name="index"
-        options={{
-          header: () => (
-            <Header
-              left={<DrawerHeaderToggle />}
-              right={<DrawerHeaderRight />}
-              title={<DrawerHeaderTitle />}
-              containerStyle={{ paddingVertical: spacing.sm, zIndex: 1000 }}
-            />
-          ),
-        }}
-      />
+      <Drawer.Screen name="index" options={{ headerShown: false }} />
       <Drawer.Screen name="profile" />
       <Drawer.Screen name="favorites" />
       <Drawer.Screen name="messages" />

@@ -10,15 +10,19 @@ interface SearchBarPlaceholderProps {
   onPressFilter?: () => void;
   filterValue?: string;
   placeholder?: string;
+  value?: string;
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
+  onClear?: () => void;
 }
 
 export function SearchBarPlaceholder({
   onPressFilter,
   placeholder = "Search...",
   filterValue,
+  value,
   style,
+  onClear,
   onPress,
 }: SearchBarPlaceholderProps) {
   const { colors, icons, spacing, textButton } = useTheme();
@@ -26,11 +30,17 @@ export function SearchBarPlaceholder({
   return (
     <PlaceholderField
       onPress={onPress}
-      style={style}
+      style={[{maxHeight: 40},style]}
+      value={value}
       placeholder={placeholder}
+      numberOfLines={1}
       size="sm"
       leftIcon={
-        <Feather name="search" size={icons.md} color={colors.iconBlack} />
+        value?.length ? (
+          <Feather onPress={onClear} name="x-circle" size={icons.md} color={colors.iconBlack} />
+        ) : (
+          <Feather name="search" size={icons.md} color={colors.iconBlack} />
+        )
       }
       rightIcon={
         <TextButton

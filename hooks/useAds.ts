@@ -1,17 +1,17 @@
 import { adService } from "@/services/adService";
 import {
-    AdCondition,
-    AdSearchRequest,
-    AdSearchSuggestionsParams,
-    AdStatus,
-    CreateAdRequest,
-    UpdateAdRequest
+  AdCondition,
+  AdSearchRequest,
+  AdSearchSuggestionsParams,
+  AdStatus,
+  CreateAdRequest,
+  UpdateAdRequest
 } from "@/types";
 import {
-    useInfiniteQuery,
-    useMutation,
-    useQuery,
-    useQueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
 
 // Hook for infinite scrolling ads (basic endpoint - /ads)
@@ -58,7 +58,7 @@ export const useAd = (id: string, enabled: boolean = true) => {
 export const useInfiniteSearchAds = (params: AdSearchRequest, enabled: boolean = true) => {
   return useInfiniteQuery({
     queryKey: ["ads-search-infinite", params],
-    queryFn: ({ pageParam = 1 }) =>
+    queryFn: ({ pageParam = 1 }: { pageParam: number }) =>
       adService.search({
         ...params,
         search: { ...params.search, page: pageParam },

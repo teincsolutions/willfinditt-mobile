@@ -5,11 +5,12 @@ import CategoryCardLandscapeSkeleton from "@/components/category/CategoryCardLan
 import { EmptyCategoryCard } from "@/components/category/EmptyCategoryCard";
 import { SearchBar } from "@/components/search/SearchBar";
 import AppView from "@/components/ui/AppView";
+import { BackButton } from "@/components/ui/BackButton";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { useParentCategories } from "@/hooks/useCategories";
 import { useTheme } from "@/hooks/useTheme";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { Grid2, RowVertical } from "iconsax-react-nativejs";
 import { useState } from "react";
 import { FlatList } from "react-native-gesture-handler";
@@ -28,46 +29,51 @@ export default function CategoriesScreen() {
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
-      <Header
-        right={
-          <IconButton
-            onPress={() => setIsGrid(!isGrid)}
-            icon={
-              isGrid ? (
-                <Grid2
-                  onPress={() => setIsGrid(false)}
-                  variant="Outline"
-                  color={colors.iconBlack}
-                  size={icons.md}
+      <Stack.Screen
+        options={{
+          header: () => (
+            <Header
+              left={<BackButton label="Cancel" showIcon={false} />}
+              right={
+                <IconButton
+                  onPress={() => setIsGrid(!isGrid)}
+                  icon={
+                    isGrid ? (
+                      <Grid2
+                        onPress={() => setIsGrid(false)}
+                        variant="Outline"
+                        color={colors.iconBlack}
+                        size={icons.md}
+                      />
+                    ) : (
+                      <RowVertical
+                        onPress={() => setIsGrid(true)}
+                        variant="Outline"
+                        color={colors.iconBlack}
+                        size={icons.md}
+                      />
+                    )
+                  }
                 />
-              ) : (
-                <RowVertical
-                  onPress={() => setIsGrid(true)}
-                  variant="Outline"
-                  color={colors.iconBlack}
-                  size={icons.md}
-                />
-              )
-            }
-          />
-        }
-        navRowStyle={{ marginHorizontal: spacing.md }}
-        title="All Categories"
-        containerStyle={{
-          paddingBottom: spacing.lg,
-          paddingTop: insets.top,
+              }
+              navRowStyle={{ marginHorizontal: spacing.md }}
+              title="All Categories"
+              containerStyle={{
+                paddingBottom: spacing.lg, 
+              }}
+            >
+              <SearchBar
+                style={{ marginHorizontal: spacing.md }}
+                value={query}
+                onChangeText={setQuery}
+                onPressFilter={() => {
+                  router.push("/(search)/filters");
+                }}
+              />
+            </Header>
+          ),
         }}
-      >
-        <SearchBar
-          style={{ marginHorizontal: spacing.md }}
-          value={query}
-          onChangeText={setQuery}
-          onPressFilter={() => {
-            router.push("/(search)/filters");
-          }}
-        />
-      </Header>
-
+      />
       <FlatList
         data={filteredCategories}
         keyExtractor={(item, index) => item.id || index.toString()}

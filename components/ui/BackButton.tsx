@@ -11,6 +11,7 @@ interface BackButtonProps {
   href?: string;
   style?: ViewStyle;
   canGoBack?: boolean;
+  showIcon?: boolean;
 }
 
 export const BackButton: React.FC<BackButtonProps> = ({
@@ -18,6 +19,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
   label = "Back",
   style,
   canGoBack = true,
+  showIcon = true,
 }) => {
   const { icons, spacing, colors } = useTheme();
   const handleBack = () => {
@@ -28,10 +30,16 @@ export const BackButton: React.FC<BackButtonProps> = ({
     <TouchableOpacity
       accessibilityRole="button"
       onPress={handleBack}
-      style={[styles.container, style, { gap: spacing.sm }]}
+      style={[styles.container, style, { gap: spacing.xs }]}
       activeOpacity={0.7}
     >
-      <ArrowLeft onPress={handleBack} size={icons.lg} color={tintColor || colors.iconBlack} />
+      {showIcon && (
+        <ArrowLeft
+          onPress={handleBack}
+          size={icons.lg}
+          color={tintColor || colors.iconBlack}
+        />
+      )}
       <AppText
         variant="lg"
         style={{ color: tintColor || colors.text, fontWeight: "500" }}
