@@ -8,7 +8,7 @@ import { Dimensions, FlatList, StyleSheet } from "react-native";
 import AppView from "../ui/AppView";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-export function AdInfoBlock({ ad }: { ad: Ad }) {
+export function AdInfoBlock({ ad }: { ad?: Ad }) {
   const { spacing } = useTheme();
 
   const titleWidth = SCREEN_WIDTH - spacing.md * 2 - 80 - spacing.md;
@@ -31,10 +31,10 @@ export function AdInfoBlock({ ad }: { ad: Ad }) {
           }}
         >
           <AppText numberOfLines={3} variant="xl" style={{ fontWeight: "700" }}>
-            {ad.title}
+            {ad?.title}
           </AppText>
           <AppText variant="md" style={{ opacity: 0.7 }}>
-            {ad.address || ad.city?.name || "Unknown"}
+            {ad?.address || ad?.city?.name || "Unknown"}
           </AppText>
         </AppView>
 
@@ -43,14 +43,14 @@ export function AdInfoBlock({ ad }: { ad: Ad }) {
             Price
           </AppText>
           <AppText variant="lg" style={{ fontWeight: "500", lineHeight: 24 }}>
-            {formatCurrency(ad.price, "en-GH", ad.currency || "GHS")}
+            {formatCurrency(ad?.price || 0, "en-GH", ad?.currency || "GHS")}
           </AppText>
         </AppView>
       </AppView>
 
       {/* thumbnails */}
       <FlatList
-        data={ad.images || []}
+        data={ad?.images || []}
         horizontal
         keyExtractor={(_, i) => String(i)}
         renderItem={({ item }) => (

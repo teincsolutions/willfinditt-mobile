@@ -19,6 +19,7 @@ export const useInfiniteAds = (params?: {
   limit?: number;
   categoryId?: string;
   cityId?: string;
+  userId?: string;
   minPrice?: number;
   maxPrice?: number;
   condition?: AdCondition;

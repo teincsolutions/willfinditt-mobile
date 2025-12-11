@@ -10,22 +10,26 @@ import { Linking, Share as RNShare } from "react-native";
 import AppView from "../ui/AppView";
 import { Avatar } from "../ui/Avatar";
 
-export function AdSellerProfile({ ad }: { ad: Ad }) {
+export function AdSellerProfile({ ad }: { ad?: Ad }) {
   const { spacing, colors, icons } = useTheme();
 
   const handleCall = () => {
-    if (ad.user?.phone) Linking.openURL(`tel:${ad.user?.phone}`);
+    if (ad?.user?.phone) Linking.openURL(`tel:${ad.user?.phone}`);
   };
 
   const handleMessage = () => {
-    router.push({ pathname: "/messages", params: { adId: ad.id } });
+    if (ad) router.push({ pathname: "/messages", params: { adId: ad.id } });
   };
 
   const handleShare = () => {
     RNShare.share({
-      message: `Check out this ad from ${ad.user?.firstName} ${ad.user?.lastName}: ${ad.title}`,
+      message: `Check out this ad from ${ad?.user?.firstName} ${ad?.user?.lastName}: ${ad?.title}`,
     });
   };
+
+  if (ad?.user == null) {
+    return null;
+  }
 
   return (
     <AppView
@@ -37,9 +41,9 @@ export function AdSellerProfile({ ad }: { ad: Ad }) {
       }}
     >
       <Avatar
-        verified={ad.user?.isVerified}
+        verified={ad?.user?.isVerified}
         size="lg"
-        source={{ uri: ad.user?.avatar || "" }}
+        uri={ad?.user?.avatar}
       />
       <AppView style={{ flex: 1, gap: spacing.xs }}>
         <AppText

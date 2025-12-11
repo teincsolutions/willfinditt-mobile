@@ -6,8 +6,9 @@ import {
   Dimensions,
   FlatList,
   Modal,
+  Pressable,
   StatusBar,
-  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DotPagination } from "../sliders/DotPagination";
@@ -57,24 +58,6 @@ export function FullScreenImageCarousel({
           paddingTop: StatusBar.currentHeight || 0,
         }}
       >
-        {/* Close Button */}
-        <TouchableOpacity
-          onPress={onClose}
-          style={{
-            position: "absolute",
-            top: spacing.md + inserts.top,
-            right: 0,
-            zIndex: 10,
-            padding: spacing.md,
-          }}
-        >
-          <CloseCircle
-            size={icons.xl}
-            color={colors.iconWhite}
-            variant="Bold"
-          />
-        </TouchableOpacity>
-
         {/* Fullscreen Image Carousel */}
         <AppView style={{ flex: 1, justifyContent: "center" }}>
           <FlatList
@@ -124,6 +107,22 @@ export function FullScreenImageCarousel({
           </AppView>
         </AppView>
       </AppView>
+      {/* Close Button */}
+      <View
+        style={{
+          position: "absolute",
+          top: spacing.md + inserts.top,
+          right: spacing.md,
+        }}
+      >
+        <Pressable style={{ padding: spacing.xs }} onPress={onClose}>
+          <CloseCircle
+            size={icons.xl}
+            color={colors.iconWhite}
+            variant="Bold"
+          />
+        </Pressable>
+      </View>
     </Modal>
   );
 }

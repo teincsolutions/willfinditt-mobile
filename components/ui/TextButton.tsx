@@ -9,6 +9,7 @@ import {
   StyleProp,
   StyleSheet,
   TextStyle,
+  View,
   ViewStyle,
 } from "react-native";
 import AppText from "./AppText";
@@ -25,6 +26,7 @@ type Props = {
   loading?: boolean;
   accentColor?: string;
   numberOfLines?: number;
+  disabled?: boolean;
   onPress?: () => void;
 };
 
@@ -39,12 +41,14 @@ export function TextButton({
   backgroundColor,
   loading,
   accentColor,
+  disabled,
   numberOfLines,
   onPress,
 }: Props) {
   const { colors, textButton, spacing, icons } = useTheme();
   return (
-    <LinearGradient
+    <Pressable disabled={disabled} onPress={onPress}>
+       <LinearGradient
       colors={gradientColors || [colors.background, colors.background]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -57,8 +61,7 @@ export function TextButton({
         style,
       ]}
     >
-      <Pressable
-        onPress={onPress}
+      <View
         style={[
           styles.row,
           textButton,
@@ -94,8 +97,9 @@ export function TextButton({
             color={accentColor || colors.accent}
           />
         )}
-      </Pressable>
+      </View>
     </LinearGradient>
+    </Pressable>
   );
 }
 

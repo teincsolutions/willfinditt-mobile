@@ -13,7 +13,7 @@ export function ImageCarousel({
   renderHeader,
   renderFooter
 }: {
-  images: string[];
+  images?: string[];
   showPagination?: boolean;
   renderHeader?: React.ReactNode;
   renderFooter?: React.ReactNode;
@@ -47,13 +47,13 @@ export function ImageCarousel({
           >
             <Image
               source={{ uri: item }}
-              style={{ width, height: width }}
+              style={{ width, height: 400 }}
               contentFit="cover"
             />
           </TouchableOpacity>
         )}
       />
-      {showPagination && <DotPagination index={index} total={images.length} />}
+      {showPagination && <DotPagination index={index} total={images?.length || 0} />}
       {renderHeader && (
         <AppView style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
           {renderHeader}
@@ -69,7 +69,7 @@ export function ImageCarousel({
       {/* Fullscreen Image Carousel Modal */}
       <FullScreenImageCarousel
         visible={fullScreenVisible}
-        images={images}
+        images={images || []}
         initialIndex={fullScreenIndex}
         onClose={() => setFullScreenVisible(false)}
       />

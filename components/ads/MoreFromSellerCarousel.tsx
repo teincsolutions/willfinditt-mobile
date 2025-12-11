@@ -5,7 +5,7 @@ import { FlatList, View } from "react-native";
 import AppText from "../ui/AppText";
 import { ProductCardSmall } from "./ProductCardSmall";
 
-export default function MoreFromSellerCarousel({ ads }: { ads: Ad[] }) {
+export default function MoreFromSellerCarousel({ ads=[] }: { ads?: Ad[] }) {
   const { spacing } = useTheme();
   return (
     <View style={{ marginTop: spacing.md }}>

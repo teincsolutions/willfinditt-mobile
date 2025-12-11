@@ -1,6 +1,6 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Ad, AdFieldValue, CategoryField } from "@/types";
+import { Ad, AdFieldValue } from "@/types";
 import React, { useMemo } from "react";
 import { FlatList, View } from "react-native";
 import AppView from "../ui/AppView";
@@ -51,18 +51,12 @@ function mapAttributes(fieldValues: AdFieldValue[]) {
   return { singles, lists };
 }
 
-export default function ProductAttributesSection({
-  ad,
-  categoryFields,
-}: {
-  ad: Ad;
-  categoryFields: CategoryField[];
-}) {
+export default function ProductAttributesSection({ ad }: { ad?: Ad }) {
   const { spacing } = useTheme();
 
   const { singles, lists } = useMemo(
-    () => mapAttributes((ad.fieldValues as any) || []),
-    [ad.fieldValues]
+    () => mapAttributes((ad?.fieldValues) || []),
+    [ad?.fieldValues]
   );
 
   return (
