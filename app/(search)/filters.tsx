@@ -55,7 +55,8 @@ export default function FiltersScreen() {
         <PlaceholderField
           onPress={() => router.push("/categories")}
           placeholder={"Select a category"}
-          label={"Category"}
+          label="Category"
+          rightLabel="Reset"
           inputStyle={[
             {
               backgroundColor: colors.selectBg,

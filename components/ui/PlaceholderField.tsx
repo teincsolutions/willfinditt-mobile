@@ -5,6 +5,7 @@ import {
   Pressable,
   StyleProp,
   StyleSheet,
+  View,
   ViewStyle,
 } from "react-native";
 import AppText from "./AppText";
@@ -12,6 +13,7 @@ import AppView from "./AppView";
 
 type Props = {
   label?: string;
+  rightLabel?: string;
   value?: string;
   size?: "sm" | "md";
   placeholder?: string;
@@ -40,6 +42,7 @@ export default function PlaceholderField({
   leftIconStyle,
   style,
   inputStyle,
+  rightLabel,
   onPress,
 }: Props) {
   const { colors, input, inputSmall, spacing } = useTheme();
@@ -47,11 +50,19 @@ export default function PlaceholderField({
   const inputSizeStyle = size === "sm" ? inputSmall : input;
   return (
     <AppView style={style}>
-      {label && (
-        <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
-          {label}
-        </AppText>
-      )}
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        {label && (
+          <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
+            {label}
+          </AppText>
+        )}
+
+        {rightLabel && (
+          <AppText variant="sm" style={{ marginBottom: spacing.sm, color:colors.purple }}>
+            {rightLabel}
+          </AppText>
+        )}
+      </View>
 
       <Pressable
         onPress={onPress}

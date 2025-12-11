@@ -56,7 +56,7 @@ export default function CategoryCardLandscape({ category, onPress }: Props) {
           <AppText
             variant="lg"
             style={{ fontFamily: "Bold" }}
-            numberOfLines={1}
+            numberOfLines={2}
           >
             {category.name || "—"}
           </AppText>

@@ -13,6 +13,7 @@ import AppText from "./AppText";
 
 type Props = {
   label?: string;
+  rightLabel?: string;
   value: string;
   size?: "sm" | "md";
   onChangeText?: (t: string) => void;
@@ -34,28 +35,32 @@ type Props = {
   blurOnSubmit?: boolean;
 };
 
-const InputField = forwardRef<TextInput, Props>(function InputField({
-  label,
-  value,
-  size = "md",
-  onChangeText,
-  onSubmit,
-  onBlur,
-  placeholder,
-  secure,
-  keyboardType,
-  leftIcon,
-  rightIcon,
-  returnKeyLabel,
-  rightIconStyle,
-  leftIconStyle,
-  error,
-  style,
-  autoFocus,
-  inputStyle,
-  returnKeyType,
-  blurOnSubmit,
-}: Props, ref) {
+const InputField = forwardRef<TextInput, Props>(function InputField(
+  {
+    label,
+    rightLabel,
+    value,
+    size = "md",
+    onChangeText,
+    onSubmit,
+    onBlur,
+    placeholder,
+    secure,
+    keyboardType,
+    leftIcon,
+    rightIcon,
+    returnKeyLabel,
+    rightIconStyle,
+    leftIconStyle,
+    error,
+    style,
+    autoFocus,
+    inputStyle,
+    returnKeyType,
+    blurOnSubmit,
+  }: Props,
+  ref
+) {
   const { colors, input, inputSmall, spacing } = useTheme();
   const innerRef = useRef<TextInput>(null);
 
@@ -64,11 +69,22 @@ const InputField = forwardRef<TextInput, Props>(function InputField({
   const inputSizeStyle = size === "sm" ? inputSmall : input;
   return (
     <View style={style}>
-      {label && (
-        <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
-          {label}
-        </AppText>
-      )}
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        {label && (
+          <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
+            {label}
+          </AppText>
+        )}
+
+        {rightLabel && (
+          <AppText
+            variant="sm"
+            style={{ marginBottom: spacing.sm, color: colors.purple }}
+          >
+            {rightLabel}
+          </AppText>
+        )}     
+      </View>
 
       <View
         style={[
