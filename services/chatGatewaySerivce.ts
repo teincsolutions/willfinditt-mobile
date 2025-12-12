@@ -27,7 +27,7 @@ export const chatGatewaySerivce = {
       console.log("Connected to chat gateway");
     });
 
-    socket.on("disconnect", (reason) => {
+    socket.on("disconnect", (reason: any) => {
       console.log("Disconnected from chat gateway:", reason);
     });
 
@@ -96,7 +96,25 @@ export const chatGatewaySerivce = {
   },
 
   emit: (event: string, data: any) => {
-    socket?.emit(event, data);
+    // Support optional ACK: return a promise that resolves with the server ack (if any)
+    if (!socket) return Promise.reject(new Error("Socket not connected"));
+
+    return new Promise((resolve) => {
+      let handled = false;
+      try {
+        socket?.emit(event, data, (ack: any) => {
+          handled = true;
+          resolve(ack);
+        });
+      } catch (e) {
+        // emit without ack support
+      }
+
+      // Fallback: resolve after timeout if no ack provided
+      setTimeout(() => {
+        if (!handled) resolve(null);
+      }, 2000);
+    });
   },
 
   on: (
@@ -105,7 +123,9 @@ export const chatGatewaySerivce = {
       | "new_message"
       | "mark_as_read"
       | "typing_start"
-      | "typing_stop",
+      | "typing_stop"
+      | "message_delivered"
+      | 'message_read',
     handler: (...args: any[]) => void
   ) => {
     socket?.on(event, handler);
@@ -117,7 +137,9 @@ export const chatGatewaySerivce = {
       | "new_message"
       | "mark_as_read"
       | "typing_start"
-      | "typing_stop",
+      | "typing_stop"
+      | "message_delivered"
+      | 'message_read',
     handler?: (...args: any[]) => void
   ) => {
     if (handler) {

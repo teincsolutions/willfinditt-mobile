@@ -7,9 +7,10 @@ type Props = {
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
   icon?: React.ReactNode;
+  disabled?: boolean;
 };
 
-export default function IconButton({ onPress, style, icon }: Props) {
+export default function IconButton({ onPress, style, icon, disabled }: Props) {
   const { icons, iconButton, colors } = useTheme();
 
   return (
@@ -22,9 +23,11 @@ export default function IconButton({ onPress, style, icon }: Props) {
           width: iconButton.size,
           borderRadius: iconButton.radius,
           backgroundColor: colors.background,
+          opacity: disabled ? 0.5 : 1,
         },
         style,
       ]}
+      disabled={disabled}
     >
       {icon ? (
         icon

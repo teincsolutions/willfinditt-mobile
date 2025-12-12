@@ -1,5 +1,5 @@
+import { Chat, Message, PaginatedResponse } from "@/types";
 import api from "./api";
-import { Chat, Message, PaginatedResponse, User } from "@/types";
 
 interface CreateChatRequest {
   receiverId: string;
@@ -76,6 +76,14 @@ export const chatsSerivce = {
   deleteChat: async (chatId: string): Promise<{ message: string }> => {
     const response = await api.delete<{ message: string }>(
       `/api/v1/chat/${chatId}`
+    );
+    return response.data;
+  },
+
+  // Get chat stats for current user
+  getStats: async (): Promise<{ totalChats: number; activeChats: number; unreadMessages: number }> => {
+    const response = await api.get<{ totalChats: number; activeChats: number; unreadMessages: number }>(
+      `/api/v1/chat/stats`
     );
     return response.data;
   },

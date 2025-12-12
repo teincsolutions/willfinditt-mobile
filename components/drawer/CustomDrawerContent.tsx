@@ -7,6 +7,7 @@ import {
 import React from "react";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useChatStats } from "@/hooks/useChats";
 import { router } from "expo-router";
 import { Alert } from "react-native";
 import DrawerMenuItem from "./DrawerMenuItem";
@@ -18,6 +19,7 @@ export default function CustomDrawerContent(
 ) {
   const { colors, icons, spacing } = useTheme();
   const { logoutAsync, isAuthenticated } = useAuth();
+  const { data: chatStats } = useChatStats(isAuthenticated);
 
   const handleLogout = async () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -75,24 +77,7 @@ export default function CustomDrawerContent(
           />
         )}
       />
-      <DrawerMenuItem
-        label="Profile"
-        active={props.state.index === 1}
-        onPress={() => {
-          if (!isAuthenticated) {
-            handleLogin();
-            return;
-          }
-          props.navigation.navigate("profile");
-        }}
-        icon={({ active }) => (
-          <MaterialCommunityIcons
-            name={active ? "account" : "account-outline"}
-            size={icons.md}
-            color={active ? colors.iconWhite : colors.iconGray}
-          />
-        )}
-      />
+      
       <DrawerMenuItem
         label="Categories"
         onPress={() => {
@@ -106,6 +91,24 @@ export default function CustomDrawerContent(
           />
         )}
       />
+       <DrawerMenuItem
+        label="Create Ad"
+        onPress={() => {
+          if (!isAuthenticated) {
+            handleLogin();
+            return;
+          }
+          router.push("/create-ad");
+        }}
+        icon={({ active }) => (
+          <MaterialCommunityIcons
+            name="plus-box-outline"
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
+      />
+      
       <DrawerMenuItem
         label="Favorites"
         active={props.state.index === 2}
@@ -125,27 +128,11 @@ export default function CustomDrawerContent(
         )}
       />
 
-      <DrawerMenuItem
-        label="Create Ad"
-        onPress={() => {
-          if (!isAuthenticated) {
-            handleLogin();
-            return;
-          }
-          router.push("/create-ad");
-        }}
-        icon={({ active }) => (
-          <MaterialCommunityIcons
-            name="plus-box-outline"
-            size={icons.md}
-            color={active ? colors.iconWhite : colors.iconGray}
-          />
-        )}
-      />
+     
       <DrawerMenuItem
         label="Messages"
         active={props.state.index === 3}
-        count={2}
+        count={chatStats?.unreadMessages}
         onPress={() => {
           if (!isAuthenticated) {
             handleLogin();
@@ -171,6 +158,24 @@ export default function CustomDrawerContent(
         icon={({ active }) => (
           <Feather
             name="bell"
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
+      />
+      <DrawerMenuItem
+        label="Profile"
+        active={props.state.index === 1}
+        onPress={() => {
+          if (!isAuthenticated) {
+            handleLogin();
+            return;
+          }
+          props.navigation.navigate("profile");
+        }}
+        icon={({ active }) => (
+          <MaterialCommunityIcons
+            name={active ? "account" : "account-outline"}
             size={icons.md}
             color={active ? colors.iconWhite : colors.iconGray}
           />

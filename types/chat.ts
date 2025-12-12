@@ -53,6 +53,7 @@ export interface Message {
   createdAt: string;
   status?: MessageStatus;
   _tmpId?: string; // local only for optimistic UI
+  _isDelivered?: boolean; // local only for optimistic UI
 }
 
 // Request Types

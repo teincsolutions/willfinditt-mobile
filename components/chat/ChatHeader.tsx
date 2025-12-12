@@ -16,18 +16,20 @@ export default function ChatHeader({
   isOnline,
   onCall,
 }: ChatHeaderProps) {
-  const { colors, icons } = useTheme();
+  const { colors, icons, spacing } = useTheme();
 
   return (
     <Header
+      containerStyle={{ paddingHorizontal: spacing.md }}
       title={
-        <AppView>
+        <AppView style={{ alignItems: "center", gap: spacing.xs }}>
           <AppText variant="lg">{name}</AppText>
           <AppText variant="sm"> {isOnline ? "Online" : "Offline"}</AppText>
         </AppView>
       }
-      left={
+      right={
         <IconButton
+          onPress={onCall}
           icon={
             <Ionicons
               name="call-outline"

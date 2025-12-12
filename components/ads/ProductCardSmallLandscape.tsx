@@ -1,9 +1,10 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import { useSaveAd, useUnsaveAd } from "@/hooks/useAds";
+import { useAd, useSaveAd, useUnsaveAd } from "@/hooks/useAds";
 import { Ad } from "@/types/ad";
 import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   StyleProp,
   StyleSheet,
   TouchableOpacity,
@@ -14,12 +15,45 @@ import AppView from "../ui/AppView";
 import { FavouriteButton } from "../ui/FavouriteButton";
 
 interface Props {
-  ad: Ad;
+  ad?: Ad;
+  adId?: string;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
 }
 
-export function ProductCardSmallLandscape({ ad, onPress, style }: Props) {
+export function ProductCardSmallLandscape({ ad, adId, onPress, style }: Props) {
+  const { colors, spacing, radius } = useTheme();
+
+  // Fetch ad if only adId is provided
+  const { data: fetchedAd, isLoading } = useAd(adId || "", !!adId && !ad);
+  const actualAd = ad || fetchedAd;
+
+  if (isLoading) {
+    return (
+      <AppView
+        style={[
+          {
+            padding: spacing.md,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: colors.backgroundPrimary,
+          },
+          style,
+        ]}
+      >
+        <ActivityIndicator size="small" color={colors.primary} />
+      </AppView>
+    );
+  }
+
+  if (!actualAd) {
+    return null;
+  }
+
+  return <ProductCardContent ad={actualAd} onPress={onPress} style={style} />;
+}
+
+function ProductCardContent({ ad, onPress, style }: { ad: Ad; onPress?: () => void; style?: StyleProp<ViewStyle> }) {
   const { colors, spacing, radius } = useTheme();
 
   const [isSaved, setSaved] = useState(ad.isSaved === true);

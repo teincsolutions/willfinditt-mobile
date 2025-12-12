@@ -1,60 +1,96 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import { Feather, Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
 import { StyleSheet, TextInput } from "react-native";
 import AppView from "../ui/AppView";
 import IconButton from "../ui/IconButton";
 
-export default function ChatInputBar() {
-  const { colors, spacing, icons } = useTheme();
+interface ChatInputBarProps {
+  onSendMessage: (message: string) => void;
+  isSending?: boolean;
+}
+
+export default function ChatInputBar({
+  onSendMessage,
+  isSending = false,
+}: ChatInputBarProps) {
+  const { colors, spacing, icons, radius } = useTheme();
+  const [message, setMessage] = useState("");
+
+  const handleSend = () => {
+    if (message.trim() && !isSending) {
+      onSendMessage(message.trim());
+      setMessage("");
+    }
+  };
 
   return (
     <AppView
       style={[
         styles.wrap,
         {
-          paddingHorizontal: spacing.lg,
+          paddingHorizontal: spacing.md,
           paddingVertical: spacing.md,
           borderTopColor: colors.border,
-          backgroundColor: colors.background,
+          backgroundColor: colors.backgroundPrimary,
         },
       ]}
     >
-      <Feather name="smile" size={icons.md} color={colors.iconGray} />
+      <IconButton
+        style={{ backgroundColor: "transparent" }}
+        icon={<Feather name="smile" size={icons.md} color={colors.iconGray} />}
+      />
 
       <TextInput
         placeholder="Write a message..."
         placeholderTextColor={colors.textGray}
+        value={message}
+        onChangeText={setMessage}
+        multiline
+        maxLength={1000}
+        editable={!isSending}
         style={[
           styles.input,
           {
-            marginHorizontal: spacing.md,
+            minHeight: 60,
+            marginHorizontal: spacing.sm,
+            paddingHorizontal: spacing.md,
+            paddingVertical: spacing.sm,
             color: colors.text,
-            backgroundColor: colors.inputBg,
+            backgroundColor: colors.background,
+            borderRadius: radius.lg,
+            borderWidth: 1,
+            borderColor: colors.border,
           },
         ]}
+        onSubmitEditing={handleSend}
       />
 
-      <IconButton
-        style={{ backgroundColor: undefined }}
-        icon={
-          <MaterialCommunityIcons
-            name="microphone-message"
-            size={icons.md}
-            color={colors.iconGray}
-          />
-        }
-      />
-      <IconButton
-        style={{ backgroundColor: colors.primary }}
-        icon={
-          <MaterialCommunityIcons
-            name="microphone-message"
-            size={icons.md}
-            color={colors.iconWhite}
-          />
-        }
-      />
+      {message.trim() ? (
+        <IconButton
+          onPress={handleSend}
+          disabled={isSending}
+          style={{ backgroundColor: colors.primary }}
+          icon={
+            <Ionicons
+              name="send"
+              size={icons.md}
+              color={colors.iconWhite}
+            />
+          }
+        />
+      ) : (
+        <IconButton
+          style={{ backgroundColor: "transparent" }}
+          icon={
+            <Feather
+              name="paperclip"
+              size={icons.md}
+              color={colors.iconGray}
+            />
+          }
+        />
+      )}
     </AppView>
   );
 }

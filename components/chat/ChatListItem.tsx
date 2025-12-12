@@ -1,3 +1,5 @@
+import { useAd } from "@/hooks/useAds";
+import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { formatTime } from "@/lib/formatTime";
 import { Chat } from "@/types/chat";
@@ -14,20 +16,17 @@ type Props = {
   onPress?: () => void;
 };
 
-export default function ChatListItem({
-  chat,
-  currentUserId,
-  onPress,
-}: Props) {
+export default function ChatListItem({ chat, onPress }: Props) {
   const { colors, spacing, radius, icons } = useTheme();
+  const { user } = useAuth();
   // adTitle from adId
-  const adTitle = "Kike Sportwear Club Fleece";
+  const {data: ad} =useAd(chat?.adId||"");
   // Determine the other participant (not current user)
   const otherUser =
-    chat.senderId === currentUserId ? chat.receiver : chat.sender;
-  const displayName = [otherUser.firstName, otherUser.lastName]
-    .filter(Boolean)
-    .join(" ") || otherUser.username;
+    chat.senderId === user?.id ? chat.receiver : chat.sender;
+  const displayName =
+    [otherUser.firstName, otherUser.lastName].filter(Boolean).join(" ") ||
+    otherUser.username;
 
   return (
     <Pressable
@@ -44,11 +43,7 @@ export default function ChatListItem({
       ]}
     >
       {/* Avatar */}
-      <Avatar
-        source={otherUser.avatar ? { uri: otherUser.avatar } : undefined}
-        size="lg"
-        verified={false}
-      />
+      <Avatar uri={otherUser.avatar} size="lg" verified={false} />
 
       {/* Content */}
       <View style={[styles.content, { marginLeft: spacing.md }]}>
@@ -71,7 +66,7 @@ export default function ChatListItem({
         </View>
 
         {/* Ad Title (optional) */}
-        {adTitle && (
+        {ad ? (
           <View style={[styles.adTitleRow, { marginTop: spacing.xs }]}>
             <Feather
               name="package"
@@ -84,10 +79,10 @@ export default function ChatListItem({
               style={{ color: colors.textLightGray, flex: 1 }}
               numberOfLines={1}
             >
-              {adTitle}
+              {ad.title}
             </AppText>
           </View>
-        )}
+        ) : null}
 
         {/* Last Message and Badge */}
         <View style={[styles.bottomRow, { marginTop: spacing.xs }]}>
@@ -98,12 +93,12 @@ export default function ChatListItem({
           >
             {chat.lastMessage || "No messages yet"}
           </AppText>
-          {chat.unreadCount && chat.unreadCount > 0 && (
+          {chat.unreadCount && chat.unreadCount > 0 ? (
             <Badge
               count={chat.unreadCount}
               style={{ marginLeft: spacing.sm }}
             />
-          )}
+          ) : null}
         </View>
       </View>
     </Pressable>

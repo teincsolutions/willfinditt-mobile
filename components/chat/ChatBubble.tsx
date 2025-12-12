@@ -9,12 +9,19 @@ type Props = {
   time?: string;
   isSender?: boolean; // true -> right (me), false -> left (other)
   side?: "left" | "right"; // deprecated: kept for backward compatibility
+  isDelivered?: boolean;
+  isRead?: boolean;
+  isTemp?: boolean;
 };
 
-export default function ChatBubble({ text, time, isSender, side = "left" }: Props) {
+export default function ChatBubble({ text, time, isSender, side = "left", isDelivered, isRead, isTemp }: Props) {
   const { colors, spacing, radius } = useTheme();
 
   const isRight = isSender ?? (side === "right");
+
+  // Status indicator for sender messages
+  const statusText = isTemp ? "…" : (isRead ? "✓✓" :( isDelivered? "✓" : "⏳"));
+  const statusColor = isRead ? colors.primary : isRight ? colors.textWhite : colors.textGray;
 
   return (
     <View
@@ -49,15 +56,27 @@ export default function ChatBubble({ text, time, isSender, side = "left" }: Prop
         />
 
         {time ? (
-          <AppText
-            variant="xs"
-            style={[
-              styles.time,
-              { color: isRight ? colors.textWhite : colors.textGray, marginTop: spacing.xs },
-            ]}
-          >
-            {time}
-          </AppText>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginTop: spacing.xs }}>
+            <AppText
+              variant="xs"
+              style={[styles.time, { color: isRight ? colors.textWhite : colors.textGray }]}
+            >
+              {time}
+            </AppText>
+
+            {/* Status indicator shown for sender messages */}
+            {isRight ? (
+              <AppText
+                variant="xs"
+                style={{
+                  marginLeft: spacing.xs,
+                  color: statusColor,
+                }}
+              >
+                {statusText}
+              </AppText>
+            ) : null}
+          </View>
         ) : null}
       </View>
     </View>

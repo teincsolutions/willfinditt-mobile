@@ -1,10 +1,10 @@
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { chatsSerivce } from '@/services/chatService';
-import { Chat } from '@/types';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 export const useChats = (params?: {
   page?: number;
   limit?: number;
+  search?:string;
   adId?: string;
 }) => {
   return useInfiniteQuery({
@@ -21,5 +21,18 @@ export const useChats = (params?: {
     initialPageParam: 1,
     staleTime: 30 * 1000, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
+  });
+};
+
+// Hook to fetch chat statistics for current user
+export const useChatStats = (enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ["chat-stats"],
+    queryFn: () => chatsSerivce.getStats(),
+    enabled,
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 5 * 60 * 1000,
   });
 };

@@ -6,6 +6,7 @@ import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
 import RangeInput from "@/components/ui/RangeInput";
 import RichTextArea from "@/components/ui/RichTextArea";
+import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { TextButton } from "@/components/ui/TextButton";
 import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
@@ -33,6 +34,13 @@ export default function AdDetailsScreen() {
       }}
     >
       <Header
+        left={
+          <SecondaryTextButton
+            variant="lg"
+            title="Cancel"
+            onPress={() => { router.back(); }}
+          />
+        }
         right={
           <TextButton
             style={{ backgroundColor: colors.primary, borderRadius: radius.md }}
