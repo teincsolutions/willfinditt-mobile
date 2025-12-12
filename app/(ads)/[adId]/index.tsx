@@ -14,6 +14,7 @@ import SellerRating from "@/components/ui/SellerRating";
 import { TextButton } from "@/components/ui/TextButton";
 import { useAd, useInfiniteAds } from "@/hooks/useAds";
 import { useTheme } from "@/hooks/useTheme";
+import { useUser } from "@/hooks/useUser";
 import { Entypo } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { formatDistanceToNow } from "date-fns";
@@ -36,7 +37,7 @@ export default function AdDetailsScreen() {
   const relatedAds = ads?.pages.flatMap((page) => page.data) || [];
 
   const reviewSheetRef = useRef<BottomSheet>(null);
-  const sellerProfile = { rating: 4.5, totalReviews: 128 };
+  const { data: user } = useUser(ad?.userId);
 
   // Animation values for header
   const lastScrollY = useRef(0);
@@ -102,8 +103,8 @@ export default function AdDetailsScreen() {
           <AdInfoBlock ad={ad} />
           <SellerRating
             style={{ marginHorizontal: spacing.md }}
-            rating={sellerProfile.rating}
-            totalReviews={sellerProfile.totalReviews}
+            rating={user?.sellerProfile?.rating || 0}
+            totalReviews={user?.sellerProfile?.totalReviews || 0}
             onReviewPress={() => reviewSheetRef.current?.expand()}
           />
           <ProductAttributesSection ad={ad} />

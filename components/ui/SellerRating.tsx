@@ -100,7 +100,7 @@ export default function SellerRating({
           gap: spacing.sm,
         }}
       >
-        <AppView>
+        <AppView style={{ gap: spacing.sm}}>
           <View
             style={{
               flexDirection: "row",
@@ -111,7 +111,7 @@ export default function SellerRating({
             {renderStars()}
           </View>
 
-          <AppView style={{ gap: spacing.xs, flexDirection: "row" }}>
+          <AppView style={{ gap: spacing.xs, flexDirection: "row", alignItems: "baseline" }}>
             <AppText
               variant="md"
               fontWeight="medium"
