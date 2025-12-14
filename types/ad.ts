@@ -199,3 +199,11 @@ export type Suggestion = {
   isRecent?: boolean;
 };
 
+export interface Promo {
+  source?: any;
+  image?: string;
+  title: string;
+  positionRight?: boolean;
+  subtitle: string;
+  color?: string;
+}

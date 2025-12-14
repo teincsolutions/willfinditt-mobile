@@ -40,7 +40,7 @@ export default function CustomDrawerContent(
 
   const handleLogin = () => {
     Alert.alert("Login", "Do you want to login now?", [
-        {
+      {
         text: "Cancel",
         style: "cancel",
       },
@@ -77,7 +77,7 @@ export default function CustomDrawerContent(
           />
         )}
       />
-      
+
       <DrawerMenuItem
         label="Categories"
         onPress={() => {
@@ -91,7 +91,7 @@ export default function CustomDrawerContent(
           />
         )}
       />
-       <DrawerMenuItem
+      <DrawerMenuItem
         label="Create Ad"
         onPress={() => {
           if (!isAuthenticated) {
@@ -108,7 +108,7 @@ export default function CustomDrawerContent(
           />
         )}
       />
-      
+
       <DrawerMenuItem
         label="Favorites"
         active={props.state.index === 2}
@@ -128,7 +128,6 @@ export default function CustomDrawerContent(
         )}
       />
 
-     
       <DrawerMenuItem
         label="Messages"
         active={props.state.index === 3}
@@ -163,6 +162,25 @@ export default function CustomDrawerContent(
           />
         )}
       />
+      <DrawerMenuItem
+        label="Business Profile"
+        active={props.state.index === 1}
+        onPress={() => {
+          if (!isAuthenticated) {
+            handleLogin();
+            return;
+          }
+          router.push("/account/business");
+        }}
+        icon={({ active }) => (
+          <Ionicons
+            name={active ? "business" : "business-outline"}
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
+      />
+
       <DrawerMenuItem
         label="Profile"
         active={props.state.index === 1}

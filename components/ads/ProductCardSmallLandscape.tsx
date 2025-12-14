@@ -21,8 +21,10 @@ interface Props {
   style?: StyleProp<ViewStyle>;
 }
 
+const blurhash = "LKO2?U%2Tw=w]~RBVZRi};RPxuwH";
+
 export function ProductCardSmallLandscape({ ad, adId, onPress, style }: Props) {
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing } = useTheme();
 
   // Fetch ad if only adId is provided
   const { data: fetchedAd, isLoading } = useAd(adId || "", !!adId && !ad);
@@ -53,7 +55,15 @@ export function ProductCardSmallLandscape({ ad, adId, onPress, style }: Props) {
   return <ProductCardContent ad={actualAd} onPress={onPress} style={style} />;
 }
 
-function ProductCardContent({ ad, onPress, style }: { ad: Ad; onPress?: () => void; style?: StyleProp<ViewStyle> }) {
+function ProductCardContent({
+  ad,
+  onPress,
+  style,
+}: {
+  ad: Ad;
+  onPress?: () => void;
+  style?: StyleProp<ViewStyle>;
+}) {
   const { colors, spacing, radius } = useTheme();
 
   const [isSaved, setSaved] = useState(ad.isSaved === true);
@@ -103,6 +113,7 @@ function ProductCardContent({ ad, onPress, style }: { ad: Ad; onPress?: () => vo
             marginRight: spacing.md,
           },
         ]}
+        placeholder={{ blurhash }}
       />
 
       <AppView style={styles.info}>

@@ -7,11 +7,13 @@ import { FullScreenImageCarousel } from "./FullScreenImageCarousel";
 
 const { width } = Dimensions.get("window");
 
+const blurhash = "LKO2?U%2Tw=w]~RBVZRi};RPxuwH";
+
 export function ImageCarousel({
   images,
   showPagination = true,
   renderHeader,
-  renderFooter
+  renderFooter,
 }: {
   images?: string[];
   showPagination?: boolean;
@@ -49,11 +51,14 @@ export function ImageCarousel({
               source={{ uri: item }}
               style={{ width, height: 400 }}
               contentFit="cover"
+              placeholder={{ blurhash }}
             />
           </TouchableOpacity>
         )}
       />
-      {showPagination && <DotPagination index={index} total={images?.length || 0} />}
+      {showPagination && (
+        <DotPagination index={index} total={images?.length || 0} />
+      )}
       {renderHeader && (
         <AppView style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
           {renderHeader}

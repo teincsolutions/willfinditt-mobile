@@ -2,7 +2,7 @@ import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ad, AdFieldValue } from "@/types";
 import React, { useMemo } from "react";
-import { FlatList, View } from "react-native";
+import { View } from "react-native";
 import AppView from "../ui/AppView";
 import { Pill } from "../ui/Pill";
 import { SignleAttributeCard } from "./SingleAttributeCard";
@@ -55,7 +55,7 @@ export default function ProductAttributesSection({ ad }: { ad?: Ad }) {
   const { spacing } = useTheme();
 
   const { singles, lists } = useMemo(
-    () => mapAttributes((ad?.fieldValues) || []),
+    () => mapAttributes(ad?.fieldValues || []),
     [ad?.fieldValues]
   );
 
@@ -63,17 +63,33 @@ export default function ProductAttributesSection({ ad }: { ad?: Ad }) {
     <AppView style={{ paddingHorizontal: spacing.md }}>
       {/* singles grid */}
       {singles.length > 0 && (
-        <FlatList
-          data={singles}
-          keyExtractor={(_, i) => `single-${i}`}
-          numColumns={2}
-          columnWrapperStyle={{
-            marginBottom: spacing.md,
-            gap: spacing.md,
-          }}
-          contentContainerStyle={{ gap: spacing.md }}
-          renderItem={({ item }) => <SignleAttributeCard item={item} />}
-        />
+        <View style={{ gap: spacing.md }}>
+          {/* Split singles into rows of 2 */}
+          {Array.from(
+            { length: Math.ceil(singles.length / 2) },
+            (_, rowIndex) => (
+              <View
+                key={`row-${rowIndex}`}
+                style={{
+                  flexDirection: "row",
+                  gap: spacing.md,
+                  marginBottom: spacing.md,
+                }}
+              >
+                {singles
+                  .slice(rowIndex * 2, rowIndex * 2 + 2)
+                  .map((item, colIndex) => (
+                    <View
+                      key={`single-${rowIndex}-${colIndex}`}
+                      style={{ flex: 1 }}
+                    >
+                      <SignleAttributeCard item={item} />
+                    </View>
+                  ))}
+              </View>
+            )
+          )}
+        </View>
       )}
 
       {/* lists vertical */}
@@ -82,16 +98,17 @@ export default function ProductAttributesSection({ ad }: { ad?: Ad }) {
           <AppText variant="md" style={{ marginBottom: 8 }}>
             {l.label}
           </AppText>
-          <FlatList
-            data={l.values}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(v, i) => `${idx}-${i}`}
-            renderItem={({ item }) => <Pill item={item} />}
-            ItemSeparatorComponent={() => (
-              <View style={{ width: spacing.sm }} />
-            )}
-          />
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: spacing.sm,
+            }}
+          >
+            {l.values.map((item, i) => (
+              <Pill key={`${idx}-${i}`} item={item} />
+            ))}
+          </View>
         </View>
       ))}
     </AppView>

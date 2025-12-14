@@ -18,6 +18,8 @@ import { SelectButton } from "../ui/SelectButton";
 
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
 
+const blurhash = "LKO2?U%2Tw=w]~RBVZRi};RPxuwH";
+
 export default function ProductCard({
   ad,
   style,
@@ -88,11 +90,7 @@ export default function ProductCard({
         },
         style,
       ]}
-      onPress={
-        selectMode
-          ? () => onSelectToggle?.(!isSelected)
-          : onPress
-      }
+      onPress={selectMode ? () => onSelectToggle?.(!isSelected) : onPress}
     >
       {/* IMAGE */}
       <Image
@@ -106,6 +104,7 @@ export default function ProductCard({
             backgroundColor: undefined,
           },
         ]}
+        placeholder={{ blurhash }}
       />
       {selectMode && (
         <SelectButton

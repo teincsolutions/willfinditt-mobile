@@ -11,6 +11,8 @@ interface ProductCardSmallProps {
   onPress?: () => void;
 }
 
+const blurhash = "LKO2?U%2Tw=w]~RBVZRi};RPxuwH";
+
 export function ProductCardSmall({ ad, onPress }: ProductCardSmallProps) {
   const { radius, card } = useTheme();
   return (
@@ -28,6 +30,8 @@ export function ProductCardSmall({ ad, onPress }: ProductCardSmallProps) {
       <Image
         source={{ uri: ad.images?.[0] }}
         style={{ width: 120, height: 90, borderRadius: radius.md }}
+        contentFit="cover"
+        placeholder={{ blurhash }}
       />
       {ad.price > 0 && (
         <AppText variant="sm" style={{ marginTop: 4 }}>

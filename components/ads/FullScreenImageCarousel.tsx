@@ -23,6 +23,7 @@ interface FullScreenImageCarouselProps {
   onClose: () => void;
 }
 
+const blurhash = "LEHV6nWB2yk8pyo0adR*.7kCMdnj";
 export function FullScreenImageCarousel({
   visible,
   images,
@@ -50,6 +51,7 @@ export function FullScreenImageCarousel({
       animationType="fade"
       onRequestClose={onClose}
       statusBarTranslucent
+      style={{ zIndex: 1000 }}
     >
       <AppView
         style={{
@@ -88,6 +90,7 @@ export function FullScreenImageCarousel({
                   source={{ uri: item }}
                   style={{ width: width, height: height * 0.7 }}
                   contentFit="contain"
+                  placeholder={{ blurhash }}
                 />
               </AppView>
             )}
@@ -105,24 +108,24 @@ export function FullScreenImageCarousel({
           >
             <DotPagination index={index} total={images.length} />
           </AppView>
+          {/* Close Button */}
+          <View
+            style={{
+              position: "absolute",
+              top: spacing.md + inserts.top,
+              right: spacing.md,
+            }}
+          >
+            <Pressable style={{ padding: spacing.xs }} onPress={onClose}>
+              <CloseCircle
+                size={icons.xl}
+                color={colors.iconWhite}
+                variant="Bold"
+              />
+            </Pressable>
+          </View>
         </AppView>
       </AppView>
-      {/* Close Button */}
-      <View
-        style={{
-          position: "absolute",
-          top: spacing.md + inserts.top,
-          right: spacing.md,
-        }}
-      >
-        <Pressable style={{ padding: spacing.xs }} onPress={onClose}>
-          <CloseCircle
-            size={icons.xl}
-            color={colors.iconWhite}
-            variant="Bold"
-          />
-        </Pressable>
-      </View>
     </Modal>
   );
 }

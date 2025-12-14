@@ -13,7 +13,9 @@
       "bundleIdentifier": "com.willfinditt.willfinditt",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "GIDClientID": "679415897594-dm2231pgajnh7id1ft1t6qts1tvdkkbs.apps.googleusercontent.com"
+        "GIDClientID": "679415897594-dm2231pgajnh7id1ft1t6qts1tvdkkbs.apps.googleusercontent.com",
+        "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your camera for face verification and posting ads.",
+        "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your microphone for video recording."
       }
     },
     "android": {
@@ -26,9 +28,10 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
-        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "package": "com.willfinditt.willfinditt"
     },
     "web": {
       "output": "static",
@@ -60,7 +63,24 @@
           "cameraPermission": "$(PRODUCT_NAME) would like to use your camera to share image in posts and messages.",
           "photosPermission": "$(PRODUCT_NAME) would like to use your device gallery to attach image in a posts and messages."
         }
-      ]
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "$(PRODUCT_NAME) needs access to your camera for face verification.",
+          "enableFrameProcessors": true,
+          "enableCodeScanner": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.5"
+          }
+        }
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

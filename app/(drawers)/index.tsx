@@ -20,10 +20,25 @@ import { ToggleAction } from "@/components/ui/ToggleAction";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useInfiniteSearchAds } from "@/hooks/useAds";
 import { useParentCategories } from "@/hooks/useCategories";
-import { Ad, AdSearchRequest } from "@/types";
+import { Ad, AdSearchRequest, Promo } from "@/types";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MasonryList from "reanimated-masonry-list";
+
+const promo: Promo[] = [
+  {
+    source: require("@/assets/images/woman-with-shopping-bags.png"),
+    title: "Independence Sale is Here!",
+    subtitle: "Get more for less from our sellers.",
+    color: "#FFE5E5",
+  },
+  {
+    source: require("@/assets/images/independence-square.png"),
+    title: "Find products anywhere in Ghana",
+    positionRight: true,
+    subtitle: "Choose your location to find items near you.",
+  },
+];
 
 export default function HomeScreen() {
   const insert = useSafeAreaInsets();
@@ -150,22 +165,7 @@ export default function HomeScreen() {
           )}
         />
         {/* SLIDER */}
-        <PromoSlider
-          data={[
-            {
-              source: require("@/assets/images/woman-with-shopping-bags.png"),
-              title: "Independence Sale is Here!",
-              subtitle: "Get more for less from our sellers.",
-              color: colors.text,
-            },
-            {
-              source: require("@/assets/images/independence-square.png"),
-              title: "Find products anywhere in Ghana",
-              positionRight: true,
-              subtitle: "Choose your location to find items near you.",
-            },
-          ]}
-        />
+        <PromoSlider data={promo} />
         <AppView
           style={{
             backgroundColor: colors.background,

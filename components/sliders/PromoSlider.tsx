@@ -1,12 +1,15 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
+import { Promo } from "@/types";
+import { ImageBackground } from "expo-image";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, ImageBackground, ScrollView, View } from "react-native";
+import { Dimensions, ScrollView, View } from "react-native";
 import { DotPagination } from "./DotPagination";
 
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
+const blurhash = "LKO2?U%2Tw=w]~RBVZRi};RPxuwH";
 
-export function PromoSlider({ data }: { data: any[] }) {
+export function PromoSlider({ data }: { data: Promo[] }) {
   const { spacing, radius, colors } = useTheme();
   const scrollRef = useRef<ScrollView>(null);
 
@@ -25,63 +28,67 @@ export function PromoSlider({ data }: { data: any[] }) {
   }, [index, data.length]);
 
   return (
-    <View style={{ marginTop: spacing.lg, marginBottom:-100, zIndex:100 }}>
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={(e) => {
-          const newIndex = Math.round(
-            e.nativeEvent.contentOffset.x / DEVICE_WIDTH
-          );
-          setIndex(newIndex);
-        }}
-        scrollEventThrottle={16}
-        contentContainerStyle={{
-          gap: spacing.md,
-          paddingHorizontal: spacing.md,
-        }}
-      >
-        {data.map((item, i) => (
-          <ImageBackground
-            key={i}
-            source={item.source || { uri: item.image }}
-            style={{
-              width,
-              height: 180,
-              marginHorizontal: "auto",
-              justifyContent: "center",
-              paddingHorizontal: spacing.lg,
-              alignItems: item.positionRight ? "flex-end" : "flex-start",
-            }}
-            imageStyle={{ borderRadius: radius.lg }}
-          >
-            <AppText
-              variant="lg"
+    data.length > 0 && (
+      <View style={{ marginTop: spacing.lg, marginBottom: -100, zIndex: 100 }}>
+        <ScrollView
+          ref={scrollRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={(e) => {
+            const newIndex = Math.round(
+              e.nativeEvent.contentOffset.x / DEVICE_WIDTH
+            );
+            setIndex(newIndex);
+          }}
+          scrollEventThrottle={16}
+          contentContainerStyle={{
+            gap: spacing.md,
+            paddingHorizontal: spacing.md,
+          }}
+        >
+          {data.map((item, i) => (
+            <ImageBackground
+              key={i}
+              source={item.source || { uri: item.image }}
               style={{
-                color: item?.color || colors.textWhite,
-                fontWeight: "bold",
-                width: "60%",
+                width,
+                height: 180,
+                marginHorizontal: "auto",
+                justifyContent: "center",
+                paddingHorizontal: spacing.lg,
+                alignItems: item.positionRight ? "flex-end" : "flex-start",
               }}
+              imageStyle={{ borderRadius: radius.lg }}
+              placeholder={{ blurhash }}
+              contentFit="cover"
             >
-              {item.title}
-            </AppText>
-            <AppText
-              variant="sm"
-              style={{
-                color: item?.color || colors.textWhite,
-                width: "60%",
-                marginTop: 6,
-              }}
-            >
-              {item.subtitle}
-            </AppText>
-          </ImageBackground>
-        ))}
-      </ScrollView>
+              <AppText
+                variant="lg"
+                style={{
+                  color: item?.color || colors.textWhite,
+                  fontWeight: "bold",
+                  width: "60%",
+                }}
+              >
+                {item.title}
+              </AppText>
+              <AppText
+                variant="sm"
+                style={{
+                  color: item?.color || colors.textWhite,
+                  width: "60%",
+                  marginTop: 6,
+                }}
+              >
+                {item.subtitle}
+              </AppText>
+            </ImageBackground>
+          ))}
+        </ScrollView>
 
-      <DotPagination index={index} total={data.length} />
-    </View>
+        <DotPagination index={index} total={data.length} />
+      </View>
+    )
   );
 }
