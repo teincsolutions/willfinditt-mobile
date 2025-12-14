@@ -38,11 +38,12 @@ export default function AuthScreen() {
     loginError,
     socialAuthAsync,
     isSocialAuthLoading,
-    requires2FA,
-    twoFAUserId,
   } = useAuth();
 
-  const handleLogin = async (values: { indentifier: string; password: string }) => {
+  const handleLogin = async (values: {
+    indentifier: string;
+    password: string;
+  }) => {
     try {
       // Determine if input is email or phone
       const indentifier = values.indentifier.trim();
@@ -55,13 +56,13 @@ export default function AuthScreen() {
         password: values.password,
       };
 
-      await loginAsync(loginData);
+      const { requires2FA, user } = await loginAsync(loginData);
 
       // Check if 2FA is required
-      if (requires2FA && twoFAUserId) {
+      if (requires2FA && user?.id) {
         router.push({
           pathname: "/verify-otp",
-          params: { userId: twoFAUserId, type: "2fa" },
+          params: { userId: user.id, type: "2fa" },
         });
         return;
       }
@@ -84,11 +85,11 @@ export default function AuthScreen() {
       await GoogleSignin.hasPlayServices();
 
       // Clear any cached tokens
-      const currentUser = GoogleSignin.getCurrentUser();
+      const currentUser = await GoogleSignin.getCurrentUser();
       if (currentUser?.idToken) {
         await GoogleSignin.clearCachedAccessToken(currentUser.idToken);
+        await GoogleSignin.signOut();
       }
-      await GoogleSignin.signOut();
 
       // Start sign-in flow
       const signInResponse = await GoogleSignin.signIn();
@@ -101,15 +102,14 @@ export default function AuthScreen() {
         };
 
         // Send to backend API
-        await socialAuthAsync(socialAuthData);
-
+        const { requires2FA, user } = await socialAuthAsync(socialAuthData);
         toast.success("Google Sign-In Successful!");
 
         // Check if 2FA is required
-        if (requires2FA && twoFAUserId) {
+        if (requires2FA && user?.id) {
           router.push({
             pathname: "/verify-otp",
-            params: { userId: twoFAUserId, type: "2fa" },
+            params: { userId: user.id, type: "2fa" },
           });
           return;
         }

@@ -1,51 +1,46 @@
+import queryClient from "@/lib/query-client";
 import { authService } from "@/services/authService";
-import type { LoginRequest, RegisterRequest, SocialData, User } from "@/types";
-import { mmkvStorage } from "@/utils/mmkvStorage";
-import { tokenManager } from "@/utils/tokenManager";
+import type {
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+  SocialData,
+  User,
+} from "@/types";
+import { mmkvStorage, storage } from "@/utils/mmkvStorage";
+import * as tokenManager from "@/utils/tokenManager";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMMKVBoolean } from "react-native-mmkv";
+import { toast } from "sonner-native";
 
 // ============================================
 // MMKV Storage Keys
 // ============================================
 
 const AUTH_KEYS = {
-  USER: "auth_user",
-  REQUIRES_2FA: "auth_requires_2fa",
-  TWO_FA_USER_ID: "auth_2fa_user_id",
+  IS_AUTHENTICATED: "auth_is_authenticated",
 } as const;
+
+const AUTH_QUERY_KEYS = {
+  AUTH_USER: ["auth", "user"] as const,
+  AUTH: ["auth"] as const,
+};
 
 // ============================================
 // Storage Helpers (Using MMKV native JSON support)
 // ============================================
 
-function getStoredUser(): User | null {
-  return mmkvStorage.getJSON<User>(AUTH_KEYS.USER);
-}
-
-function setStoredUser(user: User | null): void {
-  if (user) {
-    mmkvStorage.setJSON(AUTH_KEYS.USER, user);
-  } else {
-    mmkvStorage.removeItem(AUTH_KEYS.USER);
+async function clearAuthState(): Promise<void> {
+  try {
+    const currentUser = await GoogleSignin.getCurrentUser();
+    if (currentUser) await GoogleSignin.signOut();
+  } catch (error) {
+    console.error("Error signing out from Google:", error);
   }
-}
-
-function get2FAState(): { requires2FA: boolean; userId: string | null } {
-  const requires2FA = mmkvStorage.getBoolean(AUTH_KEYS.REQUIRES_2FA) || false;
-  const userId = mmkvStorage.getItem(AUTH_KEYS.TWO_FA_USER_ID) || null;
-  return { requires2FA, userId };
-}
-
-function set2FAState(requires2FA: boolean, userId: string | null): void {
-  if (requires2FA && userId) {
-    mmkvStorage.setBoolean(AUTH_KEYS.REQUIRES_2FA, true);
-    mmkvStorage.setItem(AUTH_KEYS.TWO_FA_USER_ID, userId);
-  } else {
-    mmkvStorage.removeItem(AUTH_KEYS.REQUIRES_2FA);
-    mmkvStorage.removeItem(AUTH_KEYS.TWO_FA_USER_ID);
-  }
+  tokenManager.clearTokens();
+  mmkvStorage.removeItem(AUTH_KEYS.IS_AUTHENTICATED);
+  queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
 }
 
 // ============================================
@@ -53,66 +48,36 @@ function set2FAState(requires2FA: boolean, userId: string | null): void {
 // ============================================
 
 export function useAuth() {
-  const queryClient = useQueryClient();
-  const [error, setError] = useState<string | null>(null);
-  const [twoFAState, setTwoFAState] = useState(() => get2FAState());
+  // Global authentication state from MMKV (triggers re-renders automatically)
+  const [isAuthenticated, setIsAuthenticated] = useMMKVBoolean(
+    AUTH_KEYS.IS_AUTHENTICATED,
+    storage
+  );
 
   // Get user from React Query cache or storage
   const { data: user, isLoading } = useQuery<User | null>({
-    queryKey: ["auth", "user"],
-    queryFn: async () =>  await authService.getProfile(), 
+    queryKey: AUTH_QUERY_KEYS.AUTH_USER,
+    queryFn: async () => await authService.getProfile(),
+    enabled: isAuthenticated,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
 
-  // Helper to handle auth response
-  const handleAuthResponse = useCallback(
-    async (response: any) => {
-      console.log("Auth response received:", JSON.stringify(response, null, 2));
+  const handleSuccessfulLogin = (response: AuthResponse) => {
+    // Store tokens
+    tokenManager.setTokens(response.access_token, response.refresh_token);
 
-      // Check if 2FA is required
-      if (response.requires2FA) {
-        const userId = response.userId || response.user?.id || "";
-        set2FAState(true, userId);
-        setTwoFAState({ requires2FA: true, userId });
-        return { requires2FA: true, userId };
-      }
+    // Set user in React Query cache - MMKV handles persistence
+    queryClient.setQueryData(AUTH_QUERY_KEYS.AUTH_USER, response.user);
 
-      // Store tokens - check both snake_case and camelCase
-      const accessToken = response.access_token || response.accessToken;
-      const refreshToken = response.refresh_token || response.refreshToken;
+    // Set global auth state
+    setIsAuthenticated(true);
 
-      console.log("Token check:", {
-        hasAccessToken: !!accessToken,
-        hasRefreshToken: !!refreshToken,
-        accessTokenLength: accessToken?.length || 0,
-        refreshTokenLength: refreshToken?.length || 0,
-      });
+    // Fetch and store user profile in React Query cache
+    queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
 
-      if (accessToken && refreshToken) {
-        await tokenManager.setTokens(accessToken, refreshToken);
-        console.log("Tokens stored successfully");
-      } else {
-        console.warn("Missing tokens in response:", {
-          accessToken: !!accessToken,
-          refreshToken: !!refreshToken,
-        });
-      }
-
-      // Store user ID
-      if (response.user?.id) {
-        await tokenManager.setUserId(response.user.id);
-      }
-        queryClient.setQueryData(["auth", "user"], response.user);
-        queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
-      // Clear 2FA state
-      set2FAState(false, null);
-      setTwoFAState({ requires2FA: false, userId: null });
-
-      return { requires2FA: false, user: response.user };
-    },
-    [queryClient]
-  );
+    toast.success("Login Successful!");
+  };
 
   // ============================================
   // Authentication Mutations
@@ -123,12 +88,6 @@ export function useAuth() {
    */
   const registerMutation = useMutation({
     mutationFn: (data: RegisterRequest) => authService.register(data),
-    onSuccess: async (response) => {
-      await handleAuthResponse(response);
-    },
-    onError: (err: any) => {
-      setError(err.message || "Registration failed");
-    },
   });
 
   /**
@@ -137,10 +96,9 @@ export function useAuth() {
   const loginMutation = useMutation({
     mutationFn: (credentials: LoginRequest) => authService.login(credentials),
     onSuccess: async (response) => {
-      await handleAuthResponse(response);
-    },
-    onError: (err: any) => {
-      setError(err.message || "Login failed");
+      if (!response.requires2FA) {
+        handleSuccessfulLogin(response);
+      }
     },
   });
 
@@ -148,17 +106,11 @@ export function useAuth() {
    * Verify 2FA OTP code
    */
   const verify2FAMutation = useMutation({
-    mutationFn: (otpCode: string) => {
-      if (!twoFAState.userId) {
-        throw new Error("No 2FA session found");
-      }
-      return authService.verify2FAOTP(twoFAState.userId, otpCode);
+    mutationFn: ({ userId, otpCode }: { userId: string; otpCode: string }) => {
+      return authService.verify2FAOTP(userId, otpCode);
     },
-    onSuccess: async (response) => {
-      await handleAuthResponse(response);
-    },
-    onError: (err: any) => {
-      setError(err.message || "OTP verification failed");
+    onSuccess: (response) => {
+      handleSuccessfulLogin(response);
     },
   });
 
@@ -167,11 +119,9 @@ export function useAuth() {
    */
   const socialAuthMutation = useMutation({
     mutationFn: (socialData: SocialData) => authService.socialAuth(socialData),
-    onSuccess: async (response) => {
-      await handleAuthResponse(response);
-    },
-    onError: (err: any) => {
-      setError(err.message || "Social authentication failed");
+    onSuccess: (response) => {
+      console.log("Social Auth Response:", response);
+      handleSuccessfulLogin(response);
     },
   });
 
@@ -179,28 +129,13 @@ export function useAuth() {
    * Logout user
    */
   const logoutMutation = useMutation({
-    mutationFn: async () => {
-      // Clear all tokens
-      await tokenManager.clearAllTokens();
-
-      // Sign out from Google if applicable
-      try {
-        await GoogleSignin.signOut();
-      } catch (error) {
-        // Ignore Google sign out errors
-      }
+    mutationFn: async () => await authService.logout(),
+    onSuccess: async () => {
+      clearAuthState();
     },
-    onSuccess: () => {
-      // Clear all auth-related queries
-      queryClient.setQueryData(["auth", "user"], null);
-      queryClient.removeQueries({ queryKey: ["user"] });
-
-      // Clear 2FA state
-      set2FAState(false, null);
-      setTwoFAState({ requires2FA: false, userId: null });
-    },
-    onError: (err: any) => {
-      setError(err.message || "Logout failed");
+    onError: (error) => {
+      clearAuthState();
+      console.error("Error during logout:", error);
     },
   });
 
@@ -209,28 +144,28 @@ export function useAuth() {
   // ============================================
 
   const changePasswordMutation = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       currentPassword,
       newPassword,
     }: {
       currentPassword: string;
       newPassword: string;
-    }) => authService.changePassword(currentPassword, newPassword),
+    }) => await authService.changePassword(currentPassword, newPassword),
   });
 
   const forgotPasswordMutation = useMutation({
-    mutationFn: ({ email, phone }: { email?: string; phone?: string }) =>
-      authService.forgotPassword({ email, phone }),
+    mutationFn: async ({ email, phone }: { email?: string; phone?: string }) =>
+      await authService.forgotPassword({ email, phone }),
   });
 
   const resetPasswordMutation = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       token,
       newPassword,
     }: {
       token: string;
       newPassword: string;
-    }) => authService.resetPassword(token, newPassword),
+    }) => await authService.resetPassword(token, newPassword),
   });
 
   // ============================================
@@ -240,30 +175,27 @@ export function useAuth() {
   const verifyEmailMutation = useMutation({
     mutationFn: (token: string) => authService.verifyEmail(token),
     onSuccess: async () => {
-      // Refresh user data after email verification
       if (user) {
         const updatedUser = await authService.getProfile();
-        setStoredUser(updatedUser);
-        queryClient.setQueryData(["auth", "user"], updatedUser);
+        queryClient.setQueryData(AUTH_QUERY_KEYS.AUTH_USER, updatedUser);
       }
     },
   });
 
   const verifyPhoneMutation = useMutation({
-    mutationFn: (otp: string) => authService.verifyPhone(otp),
+    mutationFn: async (otp: string) => await authService.verifyPhone(otp),
     onSuccess: async () => {
-      // Refresh user data after phone verification
+      // Refresh user data after phone verification - TanStack Query + MMKV handles persistence
       if (user) {
         const updatedUser = await authService.getProfile();
-        setStoredUser(updatedUser);
-        queryClient.setQueryData(["auth", "user"], updatedUser);
+        queryClient.setQueryData(AUTH_QUERY_KEYS.AUTH_USER, updatedUser);
       }
     },
   });
 
   const resendVerificationMutation = useMutation({
-    mutationFn: (data: { email: string } | { phone: string }) =>
-      authService.resendVerification(data),
+    mutationFn: async (data: { email: string } | { phone: string }) =>
+      await authService.resendVerification(data),
   });
 
   const sendPhoneOTPMutation = useMutation({
@@ -293,11 +225,9 @@ export function useAuth() {
 
   const refreshTokenMutation = useMutation({
     mutationFn: () => authService.refreshToken(),
-    onSuccess: async (response) => {
-      await tokenManager.setTokens(
-        response.access_token,
-        response.refresh_token
-      );
+    onSuccess: (response) => {
+      tokenManager.setTokens(response.access_token, response.refresh_token);
+      setIsAuthenticated(true);
     },
     onError: async () => {
       // If refresh fails, logout user
@@ -308,7 +238,7 @@ export function useAuth() {
   const getProfileMutation = useMutation({
     mutationFn: () => authService.getProfile(),
     onSuccess: (userData) => {
-      setStoredUser(userData);
+      // TanStack Query + MMKV handles persistence automatically
       queryClient.setQueryData(["auth", "user"], userData);
     },
   });
@@ -316,8 +246,6 @@ export function useAuth() {
   const checkUserStatusMutation = useMutation({
     mutationFn: () => authService.getProfile(),
     onSuccess: async (updatedUser) => {
-      // Always update stored data with fresh data from server
-      setStoredUser(updatedUser);
       queryClient.setQueryData(["auth", "user"], updatedUser);
 
       // If user is no longer active, logout
@@ -335,7 +263,7 @@ export function useAuth() {
     // User State
     user,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated, // Global auth state from MMKV
 
     // Registration
     register: registerMutation.mutate,
@@ -354,8 +282,6 @@ export function useAuth() {
     verify2FAAsync: verify2FAMutation.mutateAsync,
     isVerifying2FA: verify2FAMutation.isPending,
     verify2FAError: verify2FAMutation.error,
-    requires2FA: get2FAState().requires2FA,
-    twoFAUserId: get2FAState().userId,
 
     // Social Auth
     socialAuth: socialAuthMutation.mutate,

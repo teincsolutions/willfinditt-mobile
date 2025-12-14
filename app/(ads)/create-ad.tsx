@@ -1,7 +1,7 @@
+import ImageUploader from "@/components/ads/AdImageUploader";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
-import ImageUploader, { ImageUploadItem } from "@/components/ui/ImageUploader";
 import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
 import RangeInput from "@/components/ui/RangeInput";
@@ -10,7 +10,6 @@ import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { TextButton } from "@/components/ui/TextButton";
 import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
-import BottomSheet from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import { KeyboardAvoidingView, ScrollView } from "react-native";
@@ -22,9 +21,8 @@ export default function AdDetailsScreen() {
   const [range, setRange] = useState({ low: 0, high: 100000 });
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const sheetRef = useRef<BottomSheet>(null);
   const richEditorRef = useRef<RichEditor>(null);
-  const [images, setImages] = useState<ImageUploadItem[]>([]);
+  const [images, setImages] = useState<string[]>([]);
 
   return (
     <AppView
@@ -38,7 +36,9 @@ export default function AdDetailsScreen() {
           <SecondaryTextButton
             variant="lg"
             title="Cancel"
-            onPress={() => { router.back(); }}
+            onPress={() => {
+              router.back();
+            }}
           />
         }
         right={
@@ -72,8 +72,8 @@ export default function AdDetailsScreen() {
             >
               <ImageUploader
                 label="Images"
-                images={images}
-                onImagesChange={setImages}
+                initialImages={images}
+                onImagesUploaded={(imgs: string[]) => setImages(imgs)}
               />
               <PlaceholderField
                 onPress={() => router.push("/categories")}

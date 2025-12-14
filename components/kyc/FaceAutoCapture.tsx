@@ -73,6 +73,8 @@ export default function FaceAutoCapture({
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
     null
   );
+  const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const captureTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Animation values
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -132,13 +134,23 @@ export default function FaceAutoCapture({
 
   // Camera switch handler
   const switchCamera = useCallback(() => {
-    setCameraPosition((prev) => (prev === "front" ? "back" : "front"));
-    setFaceDetected(false);
-    setCountdown(null);
+    // Clear all timeouts and intervals
     if (countdownIntervalRef.current) {
       clearInterval(countdownIntervalRef.current);
       countdownIntervalRef.current = null;
     }
+    if (captureTimeoutRef.current) {
+      clearTimeout(captureTimeoutRef.current);
+      captureTimeoutRef.current = null;
+    }
+    timeoutRefs.current.forEach((timeout) => clearTimeout(timeout));
+    timeoutRefs.current = [];
+
+    setCameraPosition((prev) => (prev === "front" ? "back" : "front"));
+    setFaceDetected(false);
+    setCountdown(null);
+    setCaptureStep("position");
+    setErrorMessage("");
   }, []);
 
   // Reset/Restart handler
@@ -160,16 +172,24 @@ export default function FaceAutoCapture({
         text: "Restart",
         style: "destructive",
         onPress: () => {
+          // Clear all timeouts and intervals
+          if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current);
+            countdownIntervalRef.current = null;
+          }
+          if (captureTimeoutRef.current) {
+            clearTimeout(captureTimeoutRef.current);
+            captureTimeoutRef.current = null;
+          }
+          timeoutRefs.current.forEach((timeout) => clearTimeout(timeout));
+          timeoutRefs.current = [];
+
           setCurrentPoseIndex(0);
           setCapturedPhotos([]);
           setCaptureStep("position");
           setFaceDetected(false);
           setCountdown(null);
           setErrorMessage("");
-          if (countdownIntervalRef.current) {
-            clearInterval(countdownIntervalRef.current);
-            countdownIntervalRef.current = null;
-          }
         },
       },
     ]);
@@ -192,16 +212,47 @@ export default function FaceAutoCapture({
 
   const capturePhoto = useCallback(async () => {
     if (!camera.current || captureStep === "verifying") return;
+
+    // Clear any existing capture timeout
+    if (captureTimeoutRef.current) {
+      clearTimeout(captureTimeoutRef.current);
+      captureTimeoutRef.current = null;
+    }
+
     setCaptureStep("verifying");
     setCountdown(null);
 
+    // Set a timeout to prevent hanging - 15 seconds max
+    captureTimeoutRef.current = setTimeout(() => {
+      console.warn("Capture timeout - resetting to position");
+      setCaptureStep("error");
+      setErrorMessage("Capture timeout. Please try again.");
+      const resetTimeout = setTimeout(() => setCaptureStep("position"), 2000);
+      timeoutRefs.current.push(resetTimeout);
+    }, 15000);
+
     try {
-      const photo = await camera.current.takePhoto();
+      // Add timeout wrapper for takePhoto
+      const photoPromise = camera.current.takePhoto();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Camera timeout")), 10000)
+      );
+
+      const photo = await Promise.race([photoPromise, timeoutPromise]);
       const photoUri = `file://${photo.path}`;
 
       // iOS: Verify face in captured photo using Apple Vision
       if (Platform.OS === "ios") {
-        const faces = await detectFacesInImage(photoUri);
+        // Add timeout for face detection
+        const faceDetectionPromise = detectFacesInImage(photoUri);
+        const faceTimeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Face detection timeout")), 8000)
+        );
+
+        const faces = await Promise.race([
+          faceDetectionPromise,
+          faceTimeoutPromise,
+        ]);
 
         if (faces.length === 0) {
           setCaptureStep("error");
@@ -210,7 +261,11 @@ export default function FaceAutoCapture({
               currentPose === "CENTER" ? "" : currentPose.toLowerCase()
             } face detected. Please try again.`
           );
-          setTimeout(() => setCaptureStep("position"), 2000);
+          const resetTimeout = setTimeout(
+            () => setCaptureStep("position"),
+            2000
+          );
+          timeoutRefs.current.push(resetTimeout);
           return;
         }
 
@@ -227,9 +282,19 @@ export default function FaceAutoCapture({
 
           setCaptureStep("error");
           setErrorMessage(`Please ${poseInstruction}`);
-          setTimeout(() => setCaptureStep("position"), 2000);
+          const resetTimeout = setTimeout(
+            () => setCaptureStep("position"),
+            2000
+          );
+          timeoutRefs.current.push(resetTimeout);
           return;
         }
+      }
+
+      // Clear the capture timeout on success
+      if (captureTimeoutRef.current) {
+        clearTimeout(captureTimeoutRef.current);
+        captureTimeoutRef.current = null;
       }
 
       // Face verified - success!
@@ -246,22 +311,35 @@ export default function FaceAutoCapture({
       // Check if we need more poses
       if (currentPoseIndex < posesSequence.length - 1) {
         // Move to next pose
-        setTimeout(() => {
+        const nextPoseTimeout = setTimeout(() => {
           setCurrentPoseIndex((prev) => prev + 1);
           setCaptureStep("position");
           setFaceDetected(false);
         }, 1000);
+        timeoutRefs.current.push(nextPoseTimeout);
       } else {
         // All poses captured - complete!
-        setTimeout(() => {
+        const completeTimeout = setTimeout(() => {
           onCaptured(updatedPhotos);
         }, 500);
+        timeoutRefs.current.push(completeTimeout);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error taking picture:", error);
+
+      // Clear the capture timeout on error
+      if (captureTimeoutRef.current) {
+        clearTimeout(captureTimeoutRef.current);
+        captureTimeoutRef.current = null;
+      }
+
       setCaptureStep("error");
-      setErrorMessage("Failed to capture photo. Please try again.");
-      setTimeout(() => setCaptureStep("position"), 2000);
+      const errorMsg = error?.message?.includes("timeout")
+        ? "Operation timed out. Please try again."
+        : "Failed to capture photo. Please try again.";
+      setErrorMessage(errorMsg);
+      const resetTimeout = setTimeout(() => setCaptureStep("position"), 2000);
+      timeoutRefs.current.push(resetTimeout);
     }
   }, [
     captureStep,
@@ -330,11 +408,24 @@ export default function FaceAutoCapture({
     [onFacesDetected, faceDetector]
   );
 
+  // Cleanup effect - clear all timeouts and intervals on unmount
   useEffect(() => {
     return () => {
+      // Clear countdown interval
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
       }
+
+      // Clear capture timeout
+      if (captureTimeoutRef.current) {
+        clearTimeout(captureTimeoutRef.current);
+        captureTimeoutRef.current = null;
+      }
+
+      // Clear all other timeouts
+      timeoutRefs.current.forEach((timeout) => clearTimeout(timeout));
+      timeoutRefs.current = [];
     };
   }, []);
 
@@ -586,7 +677,7 @@ export default function FaceAutoCapture({
           </Animated.View>
         )}
 
-        {/* Verifying indicator */}
+        {/* Verifying indicator with cancel button */}
         {captureStep === "verifying" && (
           <Animated.View
             style={[styles.verifyingContainer, { opacity: fadeAnim }]}
@@ -595,6 +686,34 @@ export default function FaceAutoCapture({
             <AppText style={[styles.verifyingText, { marginTop: spacing.md }]}>
               Verifying face...
             </AppText>
+            <TouchableOpacity
+              onPress={() => {
+                // Emergency cancel - clear everything and reset
+                if (captureTimeoutRef.current) {
+                  clearTimeout(captureTimeoutRef.current);
+                  captureTimeoutRef.current = null;
+                }
+                if (countdownIntervalRef.current) {
+                  clearInterval(countdownIntervalRef.current);
+                  countdownIntervalRef.current = null;
+                }
+                setCaptureStep("position");
+                setFaceDetected(false);
+                setCountdown(null);
+                setErrorMessage("");
+              }}
+              style={{
+                marginTop: spacing.lg,
+                paddingHorizontal: spacing.lg,
+                paddingVertical: spacing.sm,
+                backgroundColor: "rgba(255, 0, 0, 0.8)",
+                borderRadius: 20,
+              }}
+            >
+              <AppText style={{ color: "#fff", fontWeight: "600" }}>
+                Cancel
+              </AppText>
+            </TouchableOpacity>
           </Animated.View>
         )}
 

@@ -49,10 +49,6 @@ export const chatsSerivce = {
     if (chats.length > 0) {
       return chats[0];
     }
-
-    // Get current user
-    const meResponse = await api.get<{ id: string }>("/api/v1/users/me");
-    const buyerId = meResponse.data.id;
     // Get ad to find seller
     const adResponse = await api.get<{ userId: string }>(`/api/v1/ads/${adId}`);
     const sellerId = adResponse.data.userId;
@@ -81,10 +77,16 @@ export const chatsSerivce = {
   },
 
   // Get chat stats for current user
-  getStats: async (): Promise<{ totalChats: number; activeChats: number; unreadMessages: number }> => {
-    const response = await api.get<{ totalChats: number; activeChats: number; unreadMessages: number }>(
-      `/api/v1/chat/stats`
-    );
+  getStats: async (): Promise<{
+    totalChats: number;
+    activeChats: number;
+    unreadMessages: number;
+  }> => {
+    const response = await api.get<{
+      totalChats: number;
+      activeChats: number;
+      unreadMessages: number;
+    }>(`/api/v1/chat/stats`);
     return response.data;
   },
 };

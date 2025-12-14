@@ -125,7 +125,9 @@ export const chatGatewaySerivce = {
       | "typing_start"
       | "typing_stop"
       | "message_delivered"
-      | 'message_read',
+      | "message_read"
+      | "user_online"
+      | "user_offline",
     handler: (...args: any[]) => void
   ) => {
     socket?.on(event, handler);
@@ -139,7 +141,9 @@ export const chatGatewaySerivce = {
       | "typing_start"
       | "typing_stop"
       | "message_delivered"
-      | 'message_read',
+      | "message_read"
+      | "user_online"
+      | "user_offline",
     handler?: (...args: any[]) => void
   ) => {
     if (handler) {

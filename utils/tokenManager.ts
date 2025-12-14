@@ -11,187 +11,136 @@ const TOKEN_KEYS = {
 } as const;
 
 /**
- * Token Manager
- * Handles secure storage and retrieval of authentication tokens using MMKV
- * Based on WillFind8 API authentication requirements
+ * Decode JWT token payload without verification
+ * @param token - JWT token string
+ * @returns Decoded payload or null if invalid
  */
-class TokenManager {
-  /**
-   * Store access token
-   * @param token - JWT access token from login/refresh response
-   */
-  async setToken(token: string): Promise<void> {
-    try {
-      mmkvStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, token);
-      
-      // Store timestamp for token expiry tracking (tokens typically valid for 1 hour)
-      const expiryTime = Date.now() + (60 * 60 * 1000); // 1 hour from now
-      mmkvStorage.setNumber(TOKEN_KEYS.TOKEN_EXPIRY, expiryTime);
-    } catch (error) {
-      console.error("Error storing access token:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Retrieve access token
-   * @returns Access token or null if not found
-   */
-  async getToken(): Promise<string | null> {
-    try {
-      const token = mmkvStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN);
-      return token || null;
-    } catch (error) {
-      console.error("Error retrieving access token:", error);
+function decodeJWT(token: string): any {
+  try {
+    // JWT format: header.payload.signature
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      console.error("Invalid JWT format");
       return null;
     }
-  }
 
-  /**
-   * Store refresh token
-   * @param token - JWT refresh token from login response
-   */
-  async setRefreshToken(token: string): Promise<void> {
-    try {
-      mmkvStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, token);
-    } catch (error) {
-      console.error("Error storing refresh token:", error);
-      throw error;
-    }
-  }
+    // Decode the payload (second part)
+    const payload = parts[1];
 
-  /**
-   * Retrieve refresh token
-   * @returns Refresh token or null if not found
-   */
-  async getRefreshToken(): Promise<string | null> {
-    try {
-      const token = mmkvStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN);
-      return token || null;
-    } catch (error) {
-      console.error("Error retrieving refresh token:", error);
-      return null;
-    }
-  }
+    // Base64 URL decode - replace URL-safe chars and pad if needed
+    let base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
 
-  /**
-   * Store both access and refresh tokens
-   * Typically called after successful login or token refresh
-   * @param accessToken - JWT access token
-   * @param refreshToken - JWT refresh token
-   */
-  async setTokens(accessToken: string, refreshToken: string): Promise<void> {
-    try {
-      await this.setToken(accessToken);
-      await this.setRefreshToken(refreshToken);
-    } catch (error) {
-      console.error("Error storing tokens:", error);
-      throw error;
+    // Add padding if needed
+    while (base64.length % 4) {
+      base64 += "=";
     }
-  }
 
-  /**
-   * Store user ID
-   * @param userId - User ID from authentication response
-   */
-  async setUserId(userId: string): Promise<void> {
-    try {
-      mmkvStorage.setItem(TOKEN_KEYS.USER_ID, userId);
-    } catch (error) {
-      console.error("Error storing user ID:", error);
-      throw error;
-    }
-  }
+    // Decode base64
+    const jsonPayload = atob(base64);
 
-  /**
-   * Retrieve user ID
-   * @returns User ID or null if not found
-   */
-  async getUserId(): Promise<string | null> {
-    try {
-      const userId = mmkvStorage.getItem(TOKEN_KEYS.USER_ID);
-      return userId || null;
-    } catch (error) {
-      console.error("Error retrieving user ID:", error);
-      return null;
-    }
-  }
-
-  /**
-   * Check if access token is expired
-   * @returns true if token is expired or expiry not set
-   */
-  isTokenExpired(): boolean {
-    try {
-      const expiryTime = mmkvStorage.getNumber(TOKEN_KEYS.TOKEN_EXPIRY);
-      if (!expiryTime) return true;
-      
-      // Add 5 minute buffer before actual expiry
-      const bufferTime = 5 * 60 * 1000; // 5 minutes
-      return Date.now() >= (expiryTime - bufferTime);
-    } catch (error) {
-      console.error("Error checking token expiry:", error);
-      return true;
-    }
-  }
-
-  /**
-   * Check if user is authenticated
-   * @returns true if access token exists and is not expired
-   */
-  async isAuthenticated(): Promise<boolean> {
-    try {
-      const token = await this.getToken();
-      return !!token && !this.isTokenExpired();
-    } catch (error) {
-      console.error("Error checking authentication status:", error);
-      return false;
-    }
-  }
-
-  /**
-   * Clear access token only
-   */
-  async clearToken(): Promise<void> {
-    try {
-      mmkvStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN);
-      mmkvStorage.removeItem(TOKEN_KEYS.TOKEN_EXPIRY);
-    } catch (error) {
-      console.error("Error clearing access token:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Clear all authentication tokens and user data
-   * Typically called on logout
-   */
-  async clearAllTokens(): Promise<void> {
-    try {
-      mmkvStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN);
-      mmkvStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN);
-      mmkvStorage.removeItem(TOKEN_KEYS.TOKEN_EXPIRY);
-      mmkvStorage.removeItem(TOKEN_KEYS.USER_ID);
-    } catch (error) {
-      console.error("Error clearing all tokens:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get authorization header value
-   * @returns Bearer token string or null
-   */
-  async getAuthorizationHeader(): Promise<string | null> {
-    try {
-      const token = await this.getToken();
-      return token ? `Bearer ${token}` : null;
-    } catch (error) {
-      console.error("Error getting authorization header:", error);
-      return null;
-    }
+    // Parse JSON
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Error decoding JWT:", error);
+    return null;
   }
 }
 
-// Export singleton instance
-export const tokenManager = new TokenManager();
+/**
+ * Store access token and extract expiration
+ */
+export const setAccessToken = (token: string): void => {
+  mmkvStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, token);
+
+  // Decode JWT to extract expiration time
+  const payload = decodeJWT(token);
+  if (payload?.exp) {
+    mmkvStorage.setNumber(TOKEN_KEYS.TOKEN_EXPIRY, payload.exp * 1000);
+  }
+};
+
+/**
+ * Get access token
+ */
+export const getAccessToken = (): string | null => {
+  return mmkvStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN) || null;
+};
+
+/**
+ * Store refresh token
+ */
+export const setRefreshToken = (token: string): void => {
+  mmkvStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, token);
+};
+
+/**
+ * Get refresh token
+ */
+export const getRefreshToken = (): string | null => {
+  return mmkvStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN) || null;
+};
+
+/**
+ * Store both tokens and extract user ID
+ */
+export const setTokens = (accessToken: string, refreshToken: string): void => {
+  setAccessToken(accessToken);
+  setRefreshToken(refreshToken);
+
+  // Extract and store user ID from JWT
+  const payload = decodeJWT(accessToken);
+  if (payload) {
+    const userId =
+      payload.sub ||
+      payload.userId ||
+      payload.id ||
+      payload.user_id ||
+      payload.uid;
+    if (userId) {
+      mmkvStorage.setItem(TOKEN_KEYS.USER_ID, String(userId));
+    }
+  }
+};
+
+/**
+ * Get user ID
+ */
+export const getUserId = (): string | null => {
+  return mmkvStorage.getItem(TOKEN_KEYS.USER_ID) || null;
+};
+
+/**
+ * Get token expiration timestamp
+ */
+export const getTokenExpiry = (): number | null => {
+  return mmkvStorage.getNumber(TOKEN_KEYS.TOKEN_EXPIRY) || null;
+};
+
+/**
+ * Check if token is expired (with 5 min buffer)
+ */
+export const isTokenExpired = (): boolean => {
+  const expiryTime = getTokenExpiry();
+  if (!expiryTime) return true;
+
+  const bufferTime = 5 * 60 * 1000; // 5 minutes
+  return Date.now() >= expiryTime - bufferTime;
+};
+
+/**
+ * Get authorization header
+ */
+export const getAuthHeader = (): string | null => {
+  const token = getAccessToken();
+  return token ? `Bearer ${token}` : null;
+};
+
+/**
+ * Clear all tokens
+ */
+export const clearTokens = (): void => {
+  mmkvStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN);
+  mmkvStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN);
+  mmkvStorage.removeItem(TOKEN_KEYS.TOKEN_EXPIRY);
+  mmkvStorage.removeItem(TOKEN_KEYS.USER_ID);
+};

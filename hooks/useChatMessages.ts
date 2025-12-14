@@ -1,8 +1,7 @@
-
 import { chatGatewaySerivce } from "@/services/chatGatewaySerivce";
 import { chatsSerivce, messagesSerivce } from "@/services/chatService";
 import { Message, MessageType } from "@/types";
-import { tokenManager } from "@/utils/tokenManager";
+import * as tokenManager from "@/utils/tokenManager";
 import {
   useInfiniteQuery,
   useMutation,
@@ -70,7 +69,7 @@ export const useChatMessages = (
     : null;
 
   // Track online status for the other participant (real-time)
-  const [isOtherOnline, setIsOtherOnline] = useState<boolean | undefined>(receiver?.isOnline);
+  const [isOtherOnline, setIsOtherOnline] = useState<boolean>(false);
 
   // Fetch messages with infinite scroll
   const {
@@ -104,129 +103,169 @@ export const useChatMessages = (
   const messages = messagesData?.pages.flatMap((page) => page.data) ?? [];
 
   // Send message via WebSocket only. Do not create optimistic temp messages.
-  const sendMessageMutation = useMutation<{ ok?: boolean; ack?: any }, unknown, { data: Partial<Message>; customChatId?: string }>(
-    {
-      // Optimistic update: insert a temp message immediately
-      onMutate: async ({ data, customChatId }: { data: Partial<Message>; customChatId?: string }) => {
-        if (user == null) return;
-        const actualChatId = customChatId || chatId;
-        if (!actualChatId) return { actualChatId: null };
+  const sendMessageMutation = useMutation<
+    { ok?: boolean; ack?: any },
+    unknown,
+    { data: Partial<Message>; customChatId?: string }
+  >({
+    // Optimistic update: insert a temp message immediately
+    onMutate: async ({
+      data,
+      customChatId,
+    }: {
+      data: Partial<Message>;
+      customChatId?: string;
+    }) => {
+      if (user == null) return;
+      const actualChatId = customChatId || chatId;
+      if (!actualChatId) return { actualChatId: null };
 
-        const receiverId = receiver?.id || options?.receiverId;
+      const receiverId = receiver?.id || options?.receiverId;
 
-        // Create a temp id and message
-        const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-        const tempMessage: Message = {
-          id: tempId,
-          chatId: actualChatId,
-          senderId: user.id,
-          receiverId: receiverId || "",
-          content: data.content,
-          type: data.type || MessageType.TEXT,
-          attachments: data.attachments || [],
-          isRead: false,
-          createdAt: new Date().toISOString(),
-          _tmpId: tempId,
-          readAt: null,
-          sender: {
-            id: user.id,
-            username: user.username,
-            firstName: user.firstName || "",
-            lastName: user.lastName || "",
-            avatar: user.avatar || null,
-          }
-        };
+      // Create a temp id and message
+      const tempId = `temp-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 9)}`;
+      const tempMessage: Message = {
+        id: tempId,
+        chatId: actualChatId,
+        senderId: user.id,
+        receiverId: receiverId || "",
+        content: data.content,
+        type: data.type || MessageType.TEXT,
+        attachments: data.attachments || [],
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        _tmpId: tempId,
+        readAt: null,
+        sender: {
+          id: user.id,
+          username: user.username,
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          avatar: user.avatar || null,
+        },
+      };
 
-        // Insert temp message at the start of pages (most recent)
-        const previous = queryClient.getQueryData(["chat-messages", actualChatId]);
-        queryClient.setQueryData(["chat-messages", actualChatId], (oldData: any) => {
-          const incomingPage = { data: [tempMessage], meta: { page: 1, totalPages: 1, total: 1 } };
+      // Insert temp message at the start of pages (most recent)
+      const previous = queryClient.getQueryData([
+        "chat-messages",
+        actualChatId,
+      ]);
+      queryClient.setQueryData(
+        ["chat-messages", actualChatId],
+        (oldData: any) => {
+          const incomingPage = {
+            data: [tempMessage],
+            meta: { page: 1, totalPages: 1, total: 1 },
+          };
           if (!oldData) return { pages: [incomingPage], pageParams: [1] };
 
-          const newPages = oldData.pages.map((p: any) => ({ ...p, data: [...p.data] }));
+          const newPages = oldData.pages.map((p: any) => ({
+            ...p,
+            data: [...p.data],
+          }));
           if (newPages.length > 0) newPages[0].data.push(tempMessage);
           else newPages.push(incomingPage);
           return { ...oldData, pages: newPages };
+        }
+      );
+
+      // Return context for rollback and to know tempId
+      return { previous, actualChatId, tempId };
+    },
+    onError: (_err, _vars, context: any) => {
+      // rollback optimistic update if present
+      if (!context || !context.actualChatId) return;
+      const { actualChatId, tempId, previous } = context;
+      if (previous) {
+        queryClient.setQueryData(["chat-messages", actualChatId], previous);
+      } else if (tempId) {
+        queryClient.setQueryData(
+          ["chat-messages", actualChatId],
+          (oldData: any) => {
+            if (!oldData) return oldData;
+            const newPages = oldData.pages.map((p: any) => ({
+              ...p,
+              data: p.data.filter((m: any) => m.id !== tempId),
+            }));
+            return { ...oldData, pages: newPages };
+          }
+        );
+      }
+    },
+    onSettled: (_data, _err, vars, context: any) => {
+      // Invalidate so the server authoritative messages replace the temp placeholder
+      const actualChatId =
+        (vars && (vars.customChatId || chatId)) || context?.actualChatId;
+      if (actualChatId) {
+        queryClient.invalidateQueries({
+          queryKey: ["chat-messages", actualChatId],
+        });
+        queryClient.invalidateQueries({ queryKey: ["chat", actualChatId] });
+        queryClient.invalidateQueries({ queryKey: ["chats"] });
+      }
+    },
+    mutationFn: async ({
+      data,
+      customChatId,
+    }: {
+      data: Partial<Message>;
+      customChatId?: string;
+    }) => {
+      const actualChatId = customChatId || chatId;
+      if (!actualChatId)
+        throw new Error("Cannot send message: no chat ID available");
+
+      const receiverId = receiver?.id || options?.receiverId;
+      if (!receiverId)
+        throw new Error("Cannot send message: receiver not found");
+
+      // Ensure socket is connected. If not, attempt to connect using stored token.
+      if (!chatGatewaySerivce.isConnected()) {
+        try {
+          const token = tokenManager.getAccessToken();
+          if (token) chatGatewaySerivce.connect(token);
+
+          // wait up to 2000ms for connection
+          const start = Date.now();
+          while (
+            !chatGatewaySerivce.isConnected() &&
+            Date.now() - start < 2000
+          ) {
+            // small delay
+            await new Promise((r) => setTimeout(r, 100));
+          }
+        } catch (err) {
+          console.warn(
+            "Failed to ensure chat socket connected before sending:",
+            err
+          );
+        }
+      }
+
+      // Join the chat room just in case
+      chatGatewaySerivce.joinChat(actualChatId);
+
+      // Emit the message. Await an ack (if the server provides one) so we can process
+      // an authoritative server message or fallback to invalidation when necessary.
+      try {
+        const ack: any = await chatGatewaySerivce.emit("send_message", {
+          chatId: actualChatId,
+          receiverId,
+          content: data.content,
+          type: data.type || "TEXT",
+          attachments: data.attachments,
         });
 
-        // Return context for rollback and to know tempId
-        return { previous, actualChatId, tempId };
-      },
-      onError: (_err, _vars, context: any) => {
-        // rollback optimistic update if present
-        if (!context || !context.actualChatId) return;
-        const { actualChatId, tempId, previous } = context;
-        if (previous) {
-          queryClient.setQueryData(["chat-messages", actualChatId], previous);
-        } else if (tempId) {
-          queryClient.setQueryData(["chat-messages", actualChatId], (oldData: any) => {
-            if (!oldData) return oldData;
-            const newPages = oldData.pages.map((p: any) => ({ ...p, data: p.data.filter((m: any) => m.id !== tempId) }));
-            return { ...oldData, pages: newPages };
-          });
-        }
-      },
-      onSettled: (_data, _err, vars, context: any) => {
-        // Invalidate so the server authoritative messages replace the temp placeholder
-        const actualChatId = (vars && (vars.customChatId || chatId)) || context?.actualChatId;
-        if (actualChatId) {
-          queryClient.invalidateQueries({ queryKey: ["chat-messages", actualChatId] });
-          queryClient.invalidateQueries({ queryKey: ["chat", actualChatId] });
-          queryClient.invalidateQueries({ queryKey: ["chats"] });
-        }
-      },
-      mutationFn: async ({ data, customChatId }: { data: Partial<Message>; customChatId?: string }) => {
-        const actualChatId = customChatId || chatId;
-        if (!actualChatId) throw new Error("Cannot send message: no chat ID available");
-
-        const receiverId = receiver?.id || options?.receiverId;
-        if (!receiverId) throw new Error("Cannot send message: receiver not found");
-
-        // Ensure socket is connected. If not, attempt to connect using stored token.
-        if (!chatGatewaySerivce.isConnected()) {
-          try {
-            const token = await tokenManager.getToken();
-            if (token) chatGatewaySerivce.connect(token);
-
-            // wait up to 2000ms for connection
-            const start = Date.now();
-            while (!chatGatewaySerivce.isConnected() && Date.now() - start < 2000) {
-              // small delay
-              // eslint-disable-next-line no-await-in-loop
-              await new Promise((r) => setTimeout(r, 100));
-            }
-          } catch (err) {
-            console.warn("Failed to ensure chat socket connected before sending:", err);
-          }
-        }
-
-        // Join the chat room just in case
-        try {
-          chatGatewaySerivce.joinChat(actualChatId);
-        } catch (e) {
-          // ignore
-        }
-
-        // Emit the message. Await an ack (if the server provides one) so we can process
-        // an authoritative server message or fallback to invalidation when necessary.
-        try {
-          const ack: any = await chatGatewaySerivce.emit("send_message", {
-            chatId: actualChatId,
-            receiverId,
-            content: data.content,
-            type: data.type || "TEXT",
-            attachments: data.attachments,
-          });
-
-          // Return ack to callers so they can handle it if needed
-          return { ok: true, ack } as any;
-        } catch (err) {
-          console.error("Failed to emit send_message:", err);
-          throw err;
-        }
-      },
-    }
-  );
+        // Return ack to callers so they can handle it if needed
+        return { ok: true, ack } as any;
+      } catch (err) {
+        console.error("Failed to emit send_message:", err);
+        throw err;
+      }
+    },
+  });
 
   // Mark as read mutation
   const markAsReadMutation = useMutation({
@@ -258,12 +297,20 @@ export const useChatMessages = (
 
       // Insert message into cache (defensive). Skip duplicates by message id.
       queryClient.setQueryData(["chat-messages", chatId], (oldData: any) => {
-        const incomingPage = { data: [message], meta: { page: 1, totalPages: 1, total: 1 } };
+        const incomingPage = {
+          data: [message],
+          meta: { page: 1, totalPages: 1, total: 1 },
+        };
         if (!oldData) return { pages: [incomingPage], pageParams: [1] };
 
-        const newPages = oldData.pages.map((p: any) => ({ ...p, data: [...p.data.filter((m: Message) => !m._tmpId)] }));
+        const newPages = oldData.pages.map((p: any) => ({
+          ...p,
+          data: [...p.data.filter((m: Message) => !m._tmpId)],
+        }));
         // If a message with same id already exists, skip adding
-        const exists = oldData.pages.some((page: any) => page.data.some((m: any) => m.id === message.id));
+        const exists = oldData.pages.some((page: any) =>
+          page.data.some((m: any) => m.id === message.id)
+        );
         if (exists) return oldData;
 
         // append to first page
@@ -313,7 +360,7 @@ export const useChatMessages = (
         if (!oldData) return oldData;
         const newPages = oldData.pages.map((p: any) => ({
           ...p,
-          data: p.data.map((m: any) => ({ ...m, _isDelivered: true }))
+          data: p.data.map((m: any) => ({ ...m, _isDelivered: true })),
         }));
         return { ...oldData, pages: newPages };
       });
@@ -340,38 +387,32 @@ export const useChatMessages = (
     chatGatewaySerivce.on("user_online", onUserOnline);
     chatGatewaySerivce.on("user_offline", onUserOffline);
 
-    // Connect and join asynchronously (doesn't affect cleanup registration)
-    (async () => {
-      try {
-        const token = await tokenManager.getToken();
-        if (token) {
-          chatGatewaySerivce.connect(token);
-        }
-
-        // Join the chat room
-        chatGatewaySerivce.joinChat(chatId);
-      } catch (err) {
-        console.error("Chat gateway setup failed:", err);
+    // Connect and join (synchronous token retrieval)
+    try {
+      const token = tokenManager.getAccessToken();
+      if (token) {
+        chatGatewaySerivce.connect(token);
       }
-    })();
+
+      // Join the chat room
+      chatGatewaySerivce.joinChat(chatId);
+    } catch (err) {
+      console.error("Chat gateway setup failed:", err);
+    }
 
     // cleanup
     return () => {
       mounted = false;
-      try {
-        chatGatewaySerivce.leaveChat(chatId);
-        chatGatewaySerivce.off("new_message", onNewMessage);
-        chatGatewaySerivce.off("typing_start", onTypingStart);
-        chatGatewaySerivce.off("typing_stop", onTypingStop);
-        chatGatewaySerivce.off("message_delivered", onMessageDelivered);
-        chatGatewaySerivce.off("message_read", onMessageRead);
-        chatGatewaySerivce.off("user_online", onUserOnline);
-        chatGatewaySerivce.off("user_offline", onUserOffline);
-      } catch (e) {
-        // ignore
-      }
+      chatGatewaySerivce.leaveChat(chatId);
+      chatGatewaySerivce.off("new_message", onNewMessage);
+      chatGatewaySerivce.off("typing_start", onTypingStart);
+      chatGatewaySerivce.off("typing_stop", onTypingStop);
+      chatGatewaySerivce.off("message_delivered", onMessageDelivered);
+      chatGatewaySerivce.off("message_read", onMessageRead);
+      chatGatewaySerivce.off("user_online", onUserOnline);
+      chatGatewaySerivce.off("user_offline", onUserOffline);
     };
-  }, [chatId, queryClient]);
+  }, [chatId, queryClient, receiver]);
 
   const markAsRead = () => {
     markAsReadMutation.mutate();

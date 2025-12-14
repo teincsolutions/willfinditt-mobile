@@ -1,3 +1,4 @@
+import { convertS3UrlToSignedRequest } from "@/lib/convertS3UrlsToSignedRequest";
 import { AxiosProgressEvent } from "axios";
 import api from "./api";
 
@@ -30,73 +31,14 @@ export const getSignedUrl = async (
   url: string,
   expiresIn: number = 259200
 ): Promise<string> => {
-  // TODO: Implement convertS3UrlToSignedRequest utility
-  // const path = convertS3UrlToSignedRequest(url);
-  const path = `/api/v1/signed-url?url=${encodeURIComponent(url)}`;
+  const requestUrl = convertS3UrlToSignedRequest(url);
+  const path = `/api/v1/signed-url?url=${encodeURIComponent(requestUrl)}`;
   const signedUrl = await api.get<SignedUrlResponse>(path, {
     params: {
       expiresIn,
     },
   });
   return signedUrl.data.url;
-};
-
-/**
- * Upload single file with bucket type
- */
-export const uploadSingle = async (
-  file: FormData,
-  bucketType: string = "PUBLIC_ASSETS",
-  onProgress?: UploadProgressCallback
-): Promise<UploadResponse> => {
-  file.append("bucketType", bucketType);
-  const response = await api.post<UploadResponse>(
-    "/api/v1/upload/single",
-    file,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          onProgress(percentage);
-        }
-      },
-    }
-  );
-  return response.data;
-};
-
-/**
- * Upload multiple files (max 10) with bucket type
- */
-export const uploadMultiple = async (
-  files: FormData,
-  bucketType: string = "PUBLIC_ASSETS",
-  onProgress?: UploadProgressCallback
-): Promise<UploadResponse> => {
-  files.append("bucketType", bucketType);
-  const response = await api.post<UploadResponse>(
-    "/api/v1/upload/multiple",
-    files,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          onProgress(percentage);
-        }
-      },
-    }
-  );
-  return response.data;
 };
 
 /**
@@ -205,21 +147,4 @@ export const uploadFacePhotos = async (
     }
   );
   return response.data;
-};
-
-/**
- * Helper function to upload a single image (alias for uploadSingle)
- */
-export const uploadImage = async (
-  imageUri: string,
-  onProgress?: UploadProgressCallback
-): Promise<UploadResponse> => {
-  const formData = new FormData();
-  formData.append("file", {
-    uri: imageUri,
-    type: "image/jpeg",
-    name: `image_${Date.now()}.jpg`,
-  } as any);
-
-  return uploadSingle(formData, "PUBLIC_ASSETS", onProgress);
 };

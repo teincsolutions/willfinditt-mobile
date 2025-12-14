@@ -3,10 +3,10 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    KeyboardAvoidingView,
-    ScrollView,
-    StyleSheet,
-    View,
+  KeyboardAvoidingView,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
 import { toast } from "sonner-native";
 
@@ -58,7 +58,10 @@ export default function VerifyOTPScreen() {
 
     try {
       if (params.type === "2fa" && params.userId) {
-        await verify2FAAsync(otp);
+        await verify2FAAsync({
+          userId: params.userId,
+          otpCode: otp,
+        });
         toast.success("Verification successful!");
         router.replace("/(drawers)");
       } else if (params.type === "password-reset" && params.phone) {
@@ -84,11 +87,11 @@ export default function VerifyOTPScreen() {
 
   const handleResendOTP = async () => {
     if (!canResend) return;
-    
+
     try {
       // Resend verification - this would need user's email/phone
       toast.success("OTP has been resent to your device");
-      
+
       // Reset countdown
       setCountdown(60);
       setCanResend(false);

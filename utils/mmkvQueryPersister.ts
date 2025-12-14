@@ -1,10 +1,13 @@
-import { PersistedClient, Persister } from "@tanstack/react-query-persist-client";
+import {
+  PersistedClient,
+  Persister,
+} from "@tanstack/react-query-persist-client";
 import { storage } from "./mmkvStorage";
 
 /**
  * MMKV Persister for TanStack Query
  * Provides persistent storage for React Query cache using MMKV
- * 
+ *
  * This is significantly faster than AsyncStorage and provides
  * synchronous access to cached query data
  */
@@ -41,3 +44,11 @@ export function createMMKVPersister(): Persister {
     },
   };
 }
+
+export const clearPersistedQueryCache = async () => {
+  try {
+    storage.remove(QUERY_CACHE_KEY);
+  } catch (error) {
+    console.error("Error clearing persisted query cache:", error);
+  }
+};

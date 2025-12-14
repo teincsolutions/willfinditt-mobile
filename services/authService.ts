@@ -68,6 +68,15 @@ export const authService = {
     }
   },
 
+  // Logout user
+  logout: async (): Promise<void> => {
+    try {
+      await api.post("/api/v1/auth/logout");
+    } catch (error) {
+      return handleAuthError(error);
+    }
+  },
+
   // Get current user profile
   getProfile: async (): Promise<User> => {
     try {

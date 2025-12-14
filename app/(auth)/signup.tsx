@@ -71,8 +71,6 @@ export default function RegisterScreen() {
     registerError,
     socialAuthAsync,
     isSocialAuthLoading,
-    requires2FA,
-    twoFAUserId,
   } = useAuth();
 
   const window = useWindowDimensions();
@@ -89,7 +87,10 @@ export default function RegisterScreen() {
       // Prepare registration data
       const registrationData = {
         email: formData.mode === "email" ? formData.email : undefined,
-        phone: formData.mode === "phone" ? formatPhoneNumber(formData.phone) : undefined,
+        phone:
+          formData.mode === "phone"
+            ? formatPhoneNumber(formData.phone)
+            : undefined,
         password: passwordData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -98,10 +99,10 @@ export default function RegisterScreen() {
       const result = await registerAsync(registrationData);
 
       // Check if 2FA is required
-      if (requires2FA && twoFAUserId) {
+      if (result.requires2FA && result.user) {
         router.push({
           pathname: "/verify-otp",
-          params: { userId: twoFAUserId, type: "2fa" },
+          params: { userId: result.user.id, type: "2fa" },
         });
         return;
       }
@@ -110,7 +111,9 @@ export default function RegisterScreen() {
       router.replace("/(drawers)");
     } catch (error: any) {
       toast.error(
-        error?.message || registerError?.message || "Registration failed. Please try again."
+        error?.message ||
+          registerError?.message ||
+          "Registration failed. Please try again."
       );
     }
   };
@@ -119,14 +122,14 @@ export default function RegisterScreen() {
     try {
       // Check Play Services availability
       await GoogleSignin.hasPlayServices();
-      
+
       // Clear any cached tokens
       const currentUser = GoogleSignin.getCurrentUser();
       if (currentUser?.idToken) {
         await GoogleSignin.clearCachedAccessToken(currentUser.idToken);
       }
       await GoogleSignin.signOut();
-      
+
       // Start sign-in flow
       const signInResponse = await GoogleSignin.signIn();
 
@@ -138,15 +141,15 @@ export default function RegisterScreen() {
         };
 
         // Send to backend API
-        await socialAuthAsync(socialAuthData);
+        const result = await socialAuthAsync(socialAuthData);
 
         toast.success("Google Sign-Up Successful!");
 
         // Check if 2FA is required
-        if (requires2FA && twoFAUserId) {
+        if (result.requires2FA && result.user) {
           router.push({
             pathname: "/verify-otp",
-            params: { userId: twoFAUserId, type: "2fa" },
+            params: { userId: result.user.id, type: "2fa" },
           });
           return;
         }
@@ -165,9 +168,9 @@ export default function RegisterScreen() {
 
   const handleBack = () => {
     if (step === "step2") {
-      setStep("step1"); 
+      setStep("step1");
     } else {
-      router.back(); 
+      router.back();
     }
   };
 

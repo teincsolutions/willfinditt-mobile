@@ -1,8 +1,8 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import { useImageUpload } from "@/hooks/useImageUpload";
+import { useUploadAdImages } from "@/hooks/useUpload";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -12,66 +12,152 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import AppText from "./AppText";
+import { toast } from "sonner-native";
+import AppText from "../ui/AppText";
+
+interface ImageItem {
+  id: string;
+  uri: string;
+  isUploading: boolean;
+  isError: boolean;
+  uploadedUrl?: string;
+}
 
 type Props = {
   maxImages?: number;
   label?: string;
-  aspectRatio?: number;
+  initialImages?: string[]; // Initial image URIs or URLs
   autoUpload?: boolean; // Automatically upload images after selection
   onImagesUploaded?: (uploadedUrls: string[]) => void; // Callback with uploaded URLs
 };
 
-export default function ImageUploader({
+export default function AdImageUploader({
   maxImages = 5,
   label,
-  aspectRatio = 1,
+  initialImages = [],
   autoUpload = true,
   onImagesUploaded,
 }: Props) {
   const { colors, spacing, radius, icons } = useTheme();
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [images, setImages] = useState<ImageItem[]>(
+    initialImages.map((uri) => ({
+      id: uri,
+      uri,
+      isUploading: false,
+      isError: false,
+      uploadedUrl: uri, // Assume initial images are already uploaded
+    }))
+  );
 
-  // Use the custom hook for image upload management
-  const {
-    images,
-    addImages,
-    removeImage: removeImageFromHook,
-    uploadAllImages,
-    uploadImage,
-  } = useImageUpload(maxImages);
+  const { mutateAsync: uploadAdImages, progress } = useUploadAdImages();
 
-  // Auto-upload images when autoUpload is enabled
-  useEffect(() => {
-    if (autoUpload && images.length > 0) {
-      const newImages = images.filter(
-        (img) => !img.isUploading && !img.uploadedData && !img.isError
+  const handleUploadImages = useCallback(
+    async (imagesToUpload: ImageItem[]) => {
+      // Mark images as uploading
+      setImages((prev) =>
+        prev.map((img) =>
+          imagesToUpload.find((pending) => pending.id === img.id)
+            ? { ...img, isUploading: true, isError: false }
+            : img
+        )
       );
 
-      if (newImages.length > 0) {
-        uploadAllImages();
-      }
-    }
-  }, [images, autoUpload, uploadAllImages]);
+      try {
+        // Create FormData
+        const formData = new FormData();
+        imagesToUpload.forEach((img, index) => {
+          const filename = `ad-image-${Date.now()}-${index}.jpg`;
+          formData.append("images", {
+            uri: img.uri,
+            type: "image/jpeg",
+            name: filename,
+          } as any);
+        });
 
-  // Notify parent component when all images are uploaded
+        // Upload
+        const response = await uploadAdImages(formData);
+
+        if (response.urls && response.urls.length > 0) {
+          // Update images with uploaded URLs
+          setImages((prev) =>
+            prev.map((img, index) => {
+              const uploadIndex = imagesToUpload.findIndex(
+                (pending) => pending.id === img.id
+              );
+              if (uploadIndex !== -1 && response.urls) {
+                return {
+                  ...img,
+                  isUploading: false,
+                  uploadedUrl: response.urls[uploadIndex],
+                };
+              }
+              return img;
+            })
+          );
+
+          toast.success("Images uploaded", {
+            description: `${response.urls.length} image${
+              response.urls.length > 1 ? "s" : ""
+            } uploaded successfully`,
+          });
+        }
+      } catch (error: any) {
+        console.error("Upload error:", error);
+
+        // Mark images as error
+        setImages((prev) =>
+          prev.map((img) =>
+            imagesToUpload.find((pending) => pending.id === img.id)
+              ? { ...img, isUploading: false, isError: true }
+              : img
+          )
+        );
+
+        toast.error("Upload failed", {
+          description:
+            error?.response?.data?.message ||
+            error?.message ||
+            "Failed to upload images",
+        });
+      }
+    },
+    [uploadAdImages]
+  );
+
+  // Auto-upload new images
   useEffect(() => {
-    const uploadedImages = images.filter((img) => img.uploadedData);
+    if (!autoUpload) return;
 
-    if (uploadedImages.length > 0 && onImagesUploaded) {
-      const urls = uploadedImages
-        .map((img) => img.uploadedData?.url || img.uploadedData?.urls?.[0])
-        .filter(Boolean) as string[];
+    const pendingImages = images.filter(
+      (img) => !img.isUploading && !img.uploadedUrl && !img.isError
+    );
 
-      if (urls.length > 0) {
-        onImagesUploaded(urls);
-      }
+    if (pendingImages.length > 0) {
+      handleUploadImages(pendingImages);
+    }
+  }, [images, autoUpload, handleUploadImages]);
+
+  // Notify parent when all images are uploaded
+  useEffect(() => {
+    const uploadedUrls = images
+      .filter((img) => img.uploadedUrl)
+      .map((img) => img.uploadedUrl!)
+      .filter(Boolean);
+
+    if (uploadedUrls.length > 0 && onImagesUploaded) {
+      onImagesUploaded(uploadedUrls);
     }
   }, [images, onImagesUploaded]);
 
   const pickImages = async () => {
     const remainingSlots = maxImages - images.length;
-    if (remainingSlots <= 0) return;
+    if (remainingSlots <= 0) {
+      toast.error("Maximum images reached", {
+        description: `You can only upload ${maxImages} images`,
+      });
+      return;
+    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -81,17 +167,26 @@ export default function ImageUploader({
     });
 
     if (!result.canceled) {
-      const imageUris = result.assets.map((asset: any) => asset.uri);
-      addImages(imageUris);
+      const newImages: ImageItem[] = result.assets.map((asset) => ({
+        id: `${Date.now()}-${Math.random()}`,
+        uri: asset.uri,
+        isUploading: false,
+        isError: false,
+      }));
+
+      setImages((prev) => [...prev, ...newImages]);
     }
   };
 
   const handleRemoveImage = (imageId: string) => {
-    removeImageFromHook(imageId);
+    setImages((prev) => prev.filter((img) => img.id !== imageId));
   };
 
   const handleRetryUpload = (imageId: string) => {
-    uploadImage(imageId);
+    const imageToRetry = images.find((img) => img.id === imageId);
+    if (imageToRetry) {
+      handleUploadImages([imageToRetry]);
+    }
   };
 
   const openFullscreen = (uri: string) => {
@@ -160,7 +255,7 @@ export default function ImageUploader({
                       style={[
                         styles.progressFill,
                         {
-                          width: `${image.progress}%`,
+                          width: `${progress.percentage}%`,
                           backgroundColor: colors.primary,
                           borderRadius: radius.sm,
                         },
@@ -171,7 +266,7 @@ export default function ImageUploader({
                     variant="xs"
                     style={{ color: colors.textWhite, marginTop: spacing.xs }}
                   >
-                    {image.progress}%
+                    {progress.percentage}%
                   </AppText>
                 </View>
               )}
@@ -204,7 +299,7 @@ export default function ImageUploader({
               )}
 
               {/* Success Indicator */}
-              {!image.isUploading && !image.isError && image.uploadedData && (
+              {!image.isUploading && !image.isError && image.uploadedUrl && (
                 <View
                   style={[
                     styles.successBadge,

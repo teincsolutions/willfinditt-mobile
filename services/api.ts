@@ -1,4 +1,4 @@
-import { tokenManager } from "@/utils/tokenManager";
+import * as tokenManager from "@/utils/tokenManager";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 // Create axios instance
@@ -11,10 +11,10 @@ const api = axios.create({
 
 // Flag to prevent multiple simultaneous refresh requests
 let isRefreshing = false;
-let failedQueue: Array<{
+let failedQueue: {
   resolve: (value?: any) => void;
   reject: (reason?: any) => void;
-}> = [];
+}[] = [];
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((prom) => {
@@ -29,21 +29,16 @@ const processQueue = (error: any, token: string | null = null) => {
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  async (config: InternalAxiosRequestConfig) => {
-    try {
-      // Get token from tokenManager
-      const authToken = await tokenManager.getToken();
+  (config: InternalAxiosRequestConfig) => {
+    // Get token from tokenManager (synchronous)
+    const authToken = tokenManager.getAccessToken();
 
-      // Add token to headers if it exists
-      if (authToken) {
-        config.headers["Authorization"] = `Bearer ${authToken}`;
-      }
-
-      return config;
-    } catch (error) {
-      console.error("Error getting auth token:", error);
-      return config;
+    // Add token to headers if it exists
+    if (authToken) {
+      config.headers["Authorization"] = `Bearer ${authToken}`;
     }
+
+    return config;
   },
   (error) => {
     return Promise.reject(error);
@@ -60,22 +55,22 @@ api.interceptors.response.use(
 
     // List of endpoints that should NOT trigger token refresh
     const authEndpoints = [
-      '/api/v1/auth/login',
-      '/api/v1/auth/register',
-      '/api/v1/auth/refresh',
-      '/api/v1/auth/forgot-password',
-      '/api/v1/auth/reset-password',
-      '/api/v1/auth/verify-email',
-      '/api/v1/auth/verify-phone',
-      '/api/v1/auth/social',
+      "/api/v1/auth/login",
+      "/api/v1/auth/register",
+      "/api/v1/auth/refresh",
+      "/api/v1/auth/forgot-password",
+      "/api/v1/auth/reset-password",
+      "/api/v1/auth/verify-email",
+      "/api/v1/auth/verify-phone",
+      "/api/v1/auth/social",
     ];
 
-    const isAuthEndpoint = authEndpoints.some(endpoint =>
+    const isAuthEndpoint = authEndpoints.some((endpoint) =>
       originalRequest.url?.includes(endpoint)
     );
 
-    // Get refresh token
-    const refreshToken = await tokenManager.getRefreshToken();
+    // Get refresh token (synchronous)
+    const refreshToken = tokenManager.getRefreshToken();
 
     if (!refreshToken) {
       // No refresh token, cannot refresh
@@ -83,7 +78,11 @@ api.interceptors.response.use(
     }
 
     // Check if error is 401 and we haven't retried yet, and it's not an auth endpoint
-    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthEndpoint
+    ) {
       if (isRefreshing) {
         // If already refreshing, queue this request
         return new Promise((resolve, reject) => {
@@ -104,7 +103,6 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-
         console.log("Attempting token refresh with refresh token");
 
         // Call refresh endpoint - send refresh token in body, not header
@@ -120,16 +118,18 @@ api.interceptors.response.use(
 
         console.log("Token refresh response:", response.data);
 
-        const accessToken = response.data.access_token || response.data.accessToken;
-        const newRefreshToken = response.data.refresh_token || response.data.refreshToken;
+        const accessToken =
+          response.data.access_token || response.data.accessToken;
+        const newRefreshToken =
+          response.data.refresh_token || response.data.refreshToken;
 
         if (!accessToken || !newRefreshToken) {
           console.error("Missing tokens in refresh response:", response.data);
           throw new Error("Invalid refresh response");
         }
 
-        // Store new tokens
-        await tokenManager.setTokens(accessToken, newRefreshToken);
+        // Store new tokens (synchronous)
+        tokenManager.setTokens(accessToken, newRefreshToken);
         console.log("New tokens stored successfully");
 
         // Update authorization header
@@ -144,8 +144,8 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
 
-        // Clear tokens on refresh failure
-        await tokenManager.clearAllTokens();
+        // Clear tokens on refresh failure (synchronous)
+        tokenManager.clearTokens();
 
         // Optionally redirect to login or trigger logout
         // You can emit an event here or use a store to handle logout
