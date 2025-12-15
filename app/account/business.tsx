@@ -1,297 +1,294 @@
-import FaceVerificationModal from "@/components/kyc/FaceVerificationModal";
+import { MyProductCardLandscape } from "@/components/ads/MyProductCardLandscape";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
+import BusinessProfileHeader from "@/components/ui/BusinessProfileHeader";
+import PrimaryButton from "@/components/ui/PrimaryButton";
+import StatsSection, { StatItem } from "@/components/ui/StatsSection";
+import SwipeableTabs, {
+  TabDataset,
+  TabItem,
+} from "@/components/ui/SwipeableTabs";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useInfiniteMyAds } from "@/hooks/useAds";
+import { useAuth } from "@/hooks/useAuth";
+import { useSeller, useSellerStats } from "@/hooks/useSeller";
+import { AdStatus } from "@/types";
+import { Ad } from "@/types/ad";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { router } from "expo-router";
+import React, { useState } from "react";
 import {
-  Alert,
+  ActivityIndicator,
+  RefreshControl,
   ScrollView,
-  StyleSheet,
-  TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 
-export default function BusinessScreen() {
+export default function BusinessProfileScreen() {
   const { colors, spacing } = useTheme();
-  const [showFaceModal, setShowFaceModal] = useState(false);
-  const [facePhotoUrls, setFacePhotoUrls] = useState<string[]>([]);
+  const insets = useSafeAreaInsets();
 
-  const handleFaceVerificationComplete = (urls: string[]) => {
-    console.log("Face photos uploaded successfully:", urls);
-    setFacePhotoUrls(urls);
+  const { user } = useAuth();
+  const { sellerProfile, isLoading: isLoadingProfile, refetch } = useSeller();
 
-    // Here you would typically submit to your backend
-    // Example:
-    // updateSellerVerification({
-    //   facePhotoUrls: urls,
-    //   status: "PENDING",
-    // });
+  const { data: stats, isLoading: isLoadingStats } = useSellerStats();
 
-    toast.success("Face verification completed!", {
-      description: `${urls.length} photos uploaded successfully`,
-    });
+  const [activeTab, setActiveTab] = useState<AdStatus>(AdStatus.ACTIVE);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Fetch all user ads
+  const {
+    data: adsData,
+    isLoading: isLoadingAds,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch: refetchAds,
+  } = useInfiniteMyAds({ limit: 20 });
+
+  const allAds = adsData?.pages.flatMap((page) => page.data) || [];
+  const activeAds = allAds.filter((ad) => ad.status === activeTab);
+  const soldAds = allAds.filter((ad) => ad.status === AdStatus.SOLD);
+  const draftAds = allAds.filter((ad) => ad.status === AdStatus.DRAFT);
+  const suspendedAds = allAds.filter((ad) => ad.status === AdStatus.SUSPENDED);
+
+  const dataset: TabDataset<Ad>[] = [
+    { key: AdStatus.ACTIVE, data: activeAds },
+    { key: AdStatus.SOLD, data: soldAds },
+    { key: AdStatus.DRAFT, data: draftAds },
+    { key: AdStatus.SUSPENDED, data: suspendedAds },
+  ];
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refetch(), refetchAds()]);
+    setRefreshing(false);
   };
 
-  const handleStartVerification = () => {
-    Alert.alert(
-      "Face Verification",
-      "You will be asked to capture your face from three angles: front, left, and right. Make sure you're in a well-lit area.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Start",
-          onPress: () => setShowFaceModal(true),
-        },
-      ]
+  const handleEditProfile = () => {
+    if (!sellerProfile) {
+    } else {
+    }
+  };
+
+  const handleShare = () => {
+    // TODO: Implement share functionality
+    toast.info("Share functionality coming soon");
+  };
+
+  if (isLoadingProfile) {
+    return (
+      <AppView style={{ flex: 1 }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </AppView>
     );
-  };
+  }
 
-  return (
-    <AppView style={{ flex: 1 }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{
-          padding: spacing.lg,
-        }}
-      >
-        {/* Header */}
-        <View style={{ marginBottom: spacing.xl }}>
-          <AppText variant="xxl" style={{ fontWeight: "700" }}>
-            Business Verification
+  if (!sellerProfile) {
+    return (
+      <AppView style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            padding: spacing.xl,
+          }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+        >
+          <Ionicons
+            name="briefcase-outline"
+            size={80}
+            color={colors.textGray}
+          />
+          <AppText
+            style={{
+              fontSize: 20,
+              fontWeight: "600",
+              marginTop: spacing.lg,
+              textAlign: "center",
+            }}
+          >
+            No Business Profile
           </AppText>
           <AppText
             style={{
+              fontSize: 14,
               color: colors.textGray,
               marginTop: spacing.sm,
+              textAlign: "center",
             }}
           >
-            Complete your business verification to unlock seller features
+            Create a business profile to start selling and showcase your
+            products.
           </AppText>
-        </View>
+          <PrimaryButton
+            title="Create Business Profile"
+            onPress={handleEditProfile}
+            style={{ marginTop: spacing.xl, minWidth: 200 }}
+          />
+        </ScrollView>
+      </AppView>
+    );
+  }
 
-        {/* Face Verification Section */}
-        <View
-          style={[
-            styles.section,
-            {
-              backgroundColor: colors.backgroundPrimary,
-              borderRadius: spacing.md,
-              padding: spacing.lg,
-              borderWidth: 1,
-              borderColor: colors.border,
-              marginBottom: spacing.lg,
-            },
-          ]}
-        >
-          <View style={styles.sectionHeader}>
-            <View
-              style={[
-                styles.iconContainer,
-                {
-                  backgroundColor:
-                    facePhotoUrls.length > 0
-                      ? colors.success + "20"
-                      : colors.primary + "20",
-                },
-              ]}
-            >
-              <Ionicons
-                name={facePhotoUrls.length > 0 ? "checkmark-circle" : "camera"}
-                size={24}
-                color={
-                  facePhotoUrls.length > 0 ? colors.success : colors.primary
-                }
-              />
-            </View>
-            <View style={{ flex: 1, marginLeft: spacing.md }}>
-              <AppText variant="lg" style={{ fontWeight: "600" }}>
-                Face Verification
-              </AppText>
-              <AppText
-                style={{
-                  color: colors.textGray,
-                  fontSize: 14,
-                  marginTop: spacing.xs,
-                }}
-              >
-                {facePhotoUrls.length > 0
-                  ? "Verification photos uploaded"
-                  : "Required for seller verification"}
-              </AppText>
-            </View>
-          </View>
+  // Prepare tabs
+  const tabs: TabItem[] = [
+    {
+      key: AdStatus.ACTIVE,
+      title: "Active",
+      count: stats?.activeAds || 0,
+    },
+    {
+      key: AdStatus.SOLD,
+      title: "Sold",
+      count: stats?.soldAds || 0,
+    },
+    {
+      key: AdStatus.SUSPENDED,
+      title: "Suspended",
+      count: stats?.suspendedAds || 0,
+    },
+    {
+      key: AdStatus.DRAFT,
+      title: "Draft",
+      count: stats?.draftAds || 0,
+    },
+  ];
 
-          {facePhotoUrls.length > 0 && (
-            <View
-              style={[
-                styles.statusBadge,
-                {
-                  backgroundColor: colors.success + "20",
-                  marginTop: spacing.md,
-                  padding: spacing.sm,
-                  borderRadius: spacing.sm,
-                },
-              ]}
-            >
-              <AppText
-                style={{
-                  color: colors.success,
-                  fontSize: 13,
-                  fontWeight: "600",
-                }}
-              >
-                ✓ {facePhotoUrls.length} photos uploaded
-              </AppText>
-            </View>
-          )}
+  // Prepare stats
+  const statsData: StatItem[] = [
+    {
+      label: "Total Ads",
+      value: stats?.totalAds || 0,
+      color: colors.primary,
+    },
+    {
+      label: "Active Ads",
+      value: stats?.activeAds || 0,
+      color: colors.success,
+    },
+    {
+      label: "Suspended Ads",
+      value: stats?.suspendedAds || 0,
+      color: colors.error,
+    },
+    {
+      label: "Total Views",
+      value: stats?.totalViews || 0,
+      color: colors.text,
+    },
+  ];
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              {
-                backgroundColor: colors.primary,
-                marginTop: spacing.lg,
-                padding: spacing.md,
-                borderRadius: spacing.md,
-                alignItems: "center",
-              },
-            ]}
-            onPress={handleStartVerification}
-          >
-            <AppText
-              style={{
-                color: colors.textWhite,
-                fontWeight: "600",
-                fontSize: 16,
-              }}
-            >
-              {facePhotoUrls.length > 0
-                ? "Retake Photos"
-                : "Start Face Verification"}
-            </AppText>
-          </TouchableOpacity>
-        </View>
+  return (
+    <AppView style={{ flex: 1, backgroundColor: colors.background }}>
+      <SwipeableTabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={(key) => setActiveTab(key as AdStatus)}
+        data={dataset}
+        keyExtractor={(item: Ad) => item.id}
+        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.md }}
+        renderItem={({ item }: { item: Ad }) => (
+          <MyProductCardLandscape
+            ad={item}
+            onPress={() => router.push(`/(ads)/${item.id}` as any)}
+            style={{ marginHorizontal: spacing.md, marginVertical: spacing.xs }}
+          />
+        )}
+        ListHeaderComponent={
+          <AppView>
+            {/* Business Profile Header */}
+            <BusinessProfileHeader
+              user={user || undefined}
+              sellerProfile={sellerProfile}
+              onEditProfile={handleEditProfile}
+              onShare={handleShare}
+            />
 
-        {/* Info Section */}
-        <View
-          style={[
-            styles.infoBox,
-            {
-              backgroundColor: colors.primary + "10",
-              padding: spacing.lg,
-              borderRadius: spacing.md,
-              borderLeftWidth: 4,
-              borderLeftColor: colors.primary,
-            },
-          ]}
-        >
-          <AppText
-            variant="lg"
-            style={{ fontWeight: "600", marginBottom: spacing.sm }}
-          >
-            What to expect:
-          </AppText>
-          <View style={styles.bulletPoint}>
-            <AppText style={{ color: colors.textGray }}>
-              • You&apos;ll capture 3 photos: front, left, and right face angles
-            </AppText>
-          </View>
-          <View style={styles.bulletPoint}>
-            <AppText style={{ color: colors.textGray }}>
-              • Make sure you&apos;re in a well-lit area
-            </AppText>
-          </View>
-          <View style={styles.bulletPoint}>
-            <AppText style={{ color: colors.textGray }}>
-              • Follow the on-screen instructions for each pose
-            </AppText>
-          </View>
-          <View style={styles.bulletPoint}>
-            <AppText style={{ color: colors.textGray }}>
-              • Photos will be automatically uploaded after capture
-            </AppText>
-          </View>
-        </View>
-
-        {/* Debug Info (Remove in production) */}
-        {facePhotoUrls.length > 0 && (
+            {/* Stats Section */}
+            <StatsSection
+              title="Statistics"
+              stats={statsData}
+              isLoading={isLoadingStats}
+              columns={2}
+            />
+          </AppView>
+        }
+        ListEmptyComponent={
           <View
             style={{
-              marginTop: spacing.xl,
-              padding: spacing.md,
-              backgroundColor: colors.backgroundGray,
-              borderRadius: spacing.sm,
+              padding: spacing.xl,
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <AppText
-              style={{
-                fontSize: 12,
-                fontFamily: "monospace",
-                color: colors.textGray,
-              }}
-            >
-              Uploaded URLs:{"\n"}
-              {facePhotoUrls.map((url, i) => `${i + 1}. ${url}`).join("\n")}
-            </AppText>
+            {isLoadingAds ? (
+              <ActivityIndicator size="large" color={colors.primary} />
+            ) : (
+              <>
+                <Ionicons
+                  name="albums-outline"
+                  size={60}
+                  color={colors.textGray}
+                />
+                <AppText
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "600",
+                    marginTop: spacing.md,
+                    color: colors.textGray,
+                  }}
+                >
+                  No {activeTab} ads
+                </AppText>
+                <AppText
+                  style={{
+                    fontSize: 14,
+                    color: colors.textGray,
+                    marginTop: spacing.xs,
+                    textAlign: "center",
+                  }}
+                >
+                  {activeTab === AdStatus.ACTIVE
+                    ? "You don't have any active listings yet"
+                    : activeTab === AdStatus.SOLD
+                    ? "You haven't sold any items yet"
+                    : "You don't have any draft listings"}
+                </AppText>
+              </>
+            )}
           </View>
-        )}
-      </ScrollView>
-
-      {/* Face Verification Modal */}
-      <FaceVerificationModal
-        visible={showFaceModal}
-        onClose={() => setShowFaceModal(false)}
-        onSuccess={handleFaceVerificationComplete}
-        requireAllPoses={true}
-        countdownSeconds={3}
-        allowCameraSwitch={true}
+        }
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <View style={{ padding: spacing.md }}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          ) : undefined
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+          />
+        }
       />
     </AppView>
   );
 }
-
-const styles = StyleSheet.create({
-  section: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  statusBadge: {
-    alignSelf: "flex-start",
-  },
-  button: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  infoBox: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  bulletPoint: {
-    marginTop: 8,
-  },
-});

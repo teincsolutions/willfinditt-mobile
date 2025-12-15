@@ -7,11 +7,11 @@ import {
   AdSuggestion,
   CreateAdRequest,
   PaginatedResponse,
-  UpdateAdRequest
-} from '@/types';
-import api from './api';
+  UpdateAdRequest,
+} from "@/types";
+import api from "./api";
 
-const baseUrl = '/api/v1/ads';
+const baseUrl = "/api/v1/ads";
 
 export const adService = {
   // Create a new ad
@@ -32,22 +32,29 @@ export const adService = {
     condition?: AdCondition;
     search?: string;
     sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
+    sortOrder?: "asc" | "desc";
   }): Promise<PaginatedResponse<Ad>> => {
     console.log("Get all ads with params:", params);
-    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}`, { params });
+    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}`, {
+      params,
+    });
     return response.data;
   },
 
   // Search ads with advanced filtering and facets (graph-like request)
   search: async (params: AdSearchRequest): Promise<PaginatedResponse<Ad>> => {
     console.log("Search params:", params);
-    const response = await api.post<PaginatedResponse<Ad>>(`${baseUrl}/search`, params);
+    const response = await api.post<PaginatedResponse<Ad>>(
+      `${baseUrl}/search`,
+      params
+    );
     return response.data;
   },
 
   // Search suggestions - lightweight endpoint for autocomplete and quick previews
-  searchSuggestions: async (params: AdSearchSuggestionsParams): Promise<PaginatedResponse<AdSuggestion>> => {
+  searchSuggestions: async (
+    params: AdSearchSuggestionsParams
+  ): Promise<PaginatedResponse<AdSuggestion>> => {
     console.log("Search suggestions params:", params);
     const response = await api.post<PaginatedResponse<AdSuggestion>>(
       `${baseUrl}/search/suggestions`,
@@ -78,8 +85,10 @@ export const adService = {
     page?: number;
     limit?: number;
     status?: AdStatus;
-  }): Promise<PaginatedResponse<Ad>> => {
-    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}/my-ads`, { params });
+  }) => {
+    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}/my-ads`, {
+      params,
+    });
     return response.data;
   },
 
@@ -98,7 +107,9 @@ export const adService = {
     page?: number;
     limit?: number;
   }): Promise<PaginatedResponse<Ad>> => {
-    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}/saved`, { params });
+    const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}/saved`, {
+      params,
+    });
     return response.data;
   },
 };

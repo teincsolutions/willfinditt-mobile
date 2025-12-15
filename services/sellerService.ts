@@ -1,17 +1,23 @@
-import api from "./api";
 import {
-  SellerProfile,
   CreateSellerProfileRequest,
-  UpdateSellerProfileRequest,
-  SellerVerification,
-  SellerReview,
   PaginatedResponse,
+  SellerProfile,
+  SellerReview,
+  SellerStats,
+  SellerVerification,
+  UpdateSellerProfileRequest,
 } from "@/types";
+import api from "./api";
 
 export const sellerService = {
   // Get current user's seller profile
   getMySellerProfile: async (): Promise<SellerProfile> => {
     const response = await api.get<SellerProfile>("/api/v1/sellers/my-profile");
+    return response.data;
+  },
+
+  getMySellerStats: async () => {
+    const response = await api.get<SellerStats>(`/api/v1/sellers/my-stats`);
     return response.data;
   },
 

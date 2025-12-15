@@ -54,6 +54,19 @@ export interface SellerProfile {
   verification?: SellerVerification | null;
 }
 
+export interface SellerStats {
+  totalAds: number;
+  activeAds: number;
+  pendingAds: number;
+  soldAds: number;
+  suspendedAds: number;
+  expiredAds: number;
+  draftAds: number;
+  totalViews: number;
+  rating: number;
+  totalReviews: number;
+}
+
 export interface SellerReview {
   id: string;
   sellerId: string;

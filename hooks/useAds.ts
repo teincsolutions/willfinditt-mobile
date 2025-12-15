@@ -5,7 +5,7 @@ import {
   AdSearchSuggestionsParams,
   AdStatus,
   CreateAdRequest,
-  UpdateAdRequest
+  UpdateAdRequest,
 } from "@/types";
 import {
   useInfiniteQuery,
@@ -56,7 +56,10 @@ export const useAd = (id: string, enabled: boolean = true) => {
 };
 
 // Hook for infinite scrolling advanced search results (/ads/search with graph-like request)
-export const useInfiniteSearchAds = (params: AdSearchRequest, enabled: boolean = true) => {
+export const useInfiniteSearchAds = (
+  params: AdSearchRequest,
+  enabled: boolean = true
+) => {
   return useInfiniteQuery({
     queryKey: ["ads-search-infinite", params],
     queryFn: ({ pageParam = 1 }: { pageParam: number }) =>
@@ -159,8 +162,8 @@ export const useInfiniteMyAds = (params?: {
 }) => {
   return useInfiniteQuery({
     queryKey: ["my-ads-infinite", params],
-    queryFn: ({ pageParam = 1 }) =>
-      adService.getMyAds({ ...params, page: pageParam }),
+    queryFn: async ({ pageParam = 1 }) =>
+      await adService.getMyAds({ ...params, page: pageParam }),
     getNextPageParam: (lastPage) => {
       if (!lastPage || !lastPage.meta) {
         return undefined;
