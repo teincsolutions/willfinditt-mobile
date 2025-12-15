@@ -1,6 +1,7 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { SellerProfile, User } from "@/types/user";
-import { Edit, Export } from "iconsax-react-nativejs";
+import { Feather } from "@expo/vector-icons";
+import { Edit } from "iconsax-react-nativejs";
 import React from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
 import AppText from "./AppText";
@@ -22,7 +23,7 @@ export default function BusinessProfileHeader({
   style,
   onShare,
 }: BusinessProfileHeaderProps) {
-  const { colors, spacing, radius, icons } = useTheme();
+  const { colors, spacing, icons } = useTheme();
 
   return (
     <View
@@ -70,7 +71,7 @@ export default function BusinessProfileHeader({
             onPress={onShare}
           />
           <IconButton
-            icon={<Export size={icons.md} color={colors.iconBlack} />}
+            icon={<Feather name="share-2" size={18} color={colors.iconBlack} />}
             onPress={onShare}
           />
         </View>

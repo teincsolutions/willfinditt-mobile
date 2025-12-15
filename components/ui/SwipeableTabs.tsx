@@ -5,9 +5,11 @@ import {
   Dimensions,
   FlatList,
   ScrollView,
+  StyleProp,
   StyleSheet,
   TouchableOpacity,
   View,
+  ViewStyle,
   ViewToken,
 } from "react-native";
 import AppText from "./AppText";
@@ -37,7 +39,9 @@ interface SwipeableTabsProps<T> {
   onEndReachedThreshold?: number;
   refreshControl?: any;
   ListHeaderComponent?: React.ReactElement;
-  contentContainerStyle?: any;
+  contentContainerStyle?: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>;
+  tabScrollStyle?: StyleProp<ViewStyle>;
 }
 
 export default function SwipeableTabs<T>({
@@ -54,8 +58,10 @@ export default function SwipeableTabs<T>({
   refreshControl,
   ListHeaderComponent,
   contentContainerStyle,
+  tabScrollStyle,
+  style,
 }: SwipeableTabsProps<T>) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radius } = useTheme();
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
   const [currentIndex, setCurrentIndex] = useState(
@@ -84,7 +90,7 @@ export default function SwipeableTabs<T>({
   // Memoized render function for tab content
   const renderTabContent = useCallback(
     ({ item: tabDataset }: { item: { key: string; data: T[] } }) => (
-      <View style={{ width: SCREEN_WIDTH, height: "100%" }}>
+      <View style={{ width: SCREEN_WIDTH }}>
         <FlatList
           data={tabDataset.data}
           keyExtractor={keyExtractor}
@@ -113,20 +119,17 @@ export default function SwipeableTabs<T>({
   );
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView style={[{ flex: 1, gap: spacing.md }, style]}>
       {/* Optional Header */}
       {ListHeaderComponent}
 
       {/* Tab Headers */}
       <ScrollView
         horizontal
-        style={[
-          styles.tabHeader,
-          {
-            backgroundColor: colors.background,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.border,
-          },
+        showsHorizontalScrollIndicator={false}
+        style={[styles.tabHeader, tabScrollStyle]}
+        contentContainerStyle={[
+          { columnGap: spacing.sm, paddingHorizontal: spacing.md },
         ]}
       >
         {tabs.map((tab, index) => {
@@ -134,13 +137,17 @@ export default function SwipeableTabs<T>({
           return (
             <TouchableOpacity
               key={tab.key}
+              activeOpacity={0.5}
               style={[
                 styles.tab,
                 {
                   flex: 1,
-                  padding: spacing.md,
-                  borderBottomWidth: isActive ? 2 : 0,
-                  borderBottomColor: colors.primary,
+                  paddingVertical: spacing.sm,
+                  paddingHorizontal: spacing.md,
+                  backgroundColor: isActive ? colors.yellow : "transparent",
+                  borderRadius: radius.xl,
+                  borderWidth: 1,
+                  borderColor: isActive ? colors.yellow : colors.border,
                 },
               ]}
               onPress={() => handleTabPress(index)}
@@ -149,7 +156,6 @@ export default function SwipeableTabs<T>({
                 style={{
                   fontSize: 14,
                   fontWeight: isActive ? "600" : "400",
-                  color: isActive ? colors.primary : colors.textGray,
                   textAlign: "center",
                 }}
               >
@@ -163,6 +169,8 @@ export default function SwipeableTabs<T>({
 
       {/* Swipeable Content */}
       <FlatList
+        style={{ marginTop: spacing.md }}
+        contentContainerStyle={{ flexGrow: 1 }}
         ref={flatListRef}
         data={data}
         keyExtractor={(item) => item.key}
@@ -186,6 +194,7 @@ export default function SwipeableTabs<T>({
 const styles = StyleSheet.create({
   tabHeader: {
     flexDirection: "row",
+    flex: 1,
   },
   tab: {
     alignItems: "center",

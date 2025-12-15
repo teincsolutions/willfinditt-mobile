@@ -1,6 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
-import { StyleProp, Switch, View, ViewStyle } from "react-native";
+import { StyleProp, Switch, TextStyle, View, ViewStyle } from "react-native";
 import AppText from "./AppText";
 
 type Props = {
@@ -10,6 +10,10 @@ type Props = {
   onValueChange: (value: boolean) => void;
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
+  ios_backgroundColor?: string;
+  textStyle?: StyleProp<TextStyle>;
+  trackColor?: { false: string; true: string };
+  getActiveThumbColor?: (active: boolean) => string;
 };
 
 export default function ToggleSwitch({
@@ -19,9 +23,12 @@ export default function ToggleSwitch({
   onValueChange,
   style,
   disabled = false,
+  ios_backgroundColor,
+  trackColor,
+  textStyle,
+  getActiveThumbColor,
 }: Props) {
   const { colors, spacing } = useTheme();
-
   return (
     <View
       style={[
@@ -36,14 +43,17 @@ export default function ToggleSwitch({
     >
       <View style={{ flex: 1, marginRight: spacing.md }}>
         {label && (
-          <AppText variant="md" style={{ marginBottom: spacing.xs }}>
+          <AppText
+            variant="md"
+            style={[{ marginBottom: spacing.xs }, textStyle]}
+          >
             {label}
           </AppText>
         )}
         {description && (
           <AppText
             variant="sm"
-            style={{ opacity: 0.6, color: colors.textGray }}
+            style={[{ opacity: 0.6, color: colors.textGray }, textStyle]}
           >
             {description}
           </AppText>
@@ -53,12 +63,22 @@ export default function ToggleSwitch({
         value={value}
         onValueChange={onValueChange}
         disabled={disabled}
-        trackColor={{
-          false: colors.border,
-          true: colors.primary,
-        }}
-        thumbColor={value ? colors.textWhite : colors.iconGray}
-        ios_backgroundColor={colors.border}
+        trackColor={
+          trackColor || {
+            false: colors.border,
+            true: colors.primary,
+          }
+        }
+        thumbColor={
+          value
+            ? getActiveThumbColor
+              ? getActiveThumbColor(true)
+              : colors.iconWhite
+            : getActiveThumbColor
+            ? getActiveThumbColor(false)
+            : colors.iconWhite
+        }
+        ios_backgroundColor={ios_backgroundColor || colors.border}
       />
     </View>
   );

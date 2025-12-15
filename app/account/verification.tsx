@@ -81,7 +81,7 @@ export default function VerificationScreen() {
 
       // Reset state
       setDocumentData(null);
-      
+
       // Navigate back to business profile
       router.push("/account/business");
     } catch (error: any) {
@@ -121,11 +121,15 @@ export default function VerificationScreen() {
             header: () => <Header left={<BackButton />} title="Verification" />,
           }}
         />
-        <AppText variant="lg" style={{ textAlign: "center", marginBottom: spacing.md }}>
+        <AppText
+          variant="lg"
+          style={{ textAlign: "center", marginBottom: spacing.md }}
+        >
           No Seller Profile Found
         </AppText>
         <AppText style={{ textAlign: "center", color: colors.textGray }}>
-          You need to create a business profile before you can submit a verification request.
+          You need to create a business profile before you can submit a
+          verification request.
         </AppText>
         <PrimaryButton
           title="Create Business Profile"
@@ -234,7 +238,7 @@ export default function VerificationScreen() {
                 <AppText style={{ fontWeight: "600" }}>1.</AppText>
                 <AppText style={{ flex: 1 }}>
                   Upload clear photos of your identification document (National
-                  ID, Driver's License, or Passport)
+                  ID, Driver&apos;s License, or Passport)
                 </AppText>
               </AppView>
               <AppView style={{ flexDirection: "row", gap: spacing.sm }}>
@@ -321,7 +325,7 @@ export default function VerificationScreen() {
           onPress={() => setShowDocumentModal(true)}
           disabled={
             isSubmittingVerification ||
-            (sellerProfile.verification?.status === "PENDING")
+            sellerProfile.verification?.status === "PENDING"
           }
         />
       </AppView>

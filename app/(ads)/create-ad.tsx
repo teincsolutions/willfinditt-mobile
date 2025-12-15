@@ -8,6 +8,7 @@ import RangeInput from "@/components/ui/RangeInput";
 import RichTextArea from "@/components/ui/RichTextArea";
 import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { TextButton } from "@/components/ui/TextButton";
+import ToggleSwitch from "@/components/ui/ToggleSwitch";
 import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -156,6 +157,12 @@ export default function AdDetailsScreen() {
                 onMaxChange={(value) =>
                   setRange((prev) => ({ ...prev, high: Number(value) }))
                 }
+              />
+
+              <ToggleSwitch
+                label="Negotiable Price"
+                value={true}
+                onValueChange={() => {}}
               />
             </AppView>
           </KeyboardAvoidingView>

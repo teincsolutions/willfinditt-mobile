@@ -3,7 +3,6 @@ import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import BusinessProfileHeader from "@/components/ui/BusinessProfileHeader";
 import { Header } from "@/components/ui/Header";
-import PrimaryButton from "@/components/ui/PrimaryButton";
 import StatsSection, { StatItem } from "@/components/ui/StatsSection";
 import SwipeableTabs, {
   TabDataset,
@@ -16,14 +15,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSeller, useSellerStats } from "@/hooks/useSeller";
 import { AdStatus } from "@/types";
 import { Ad } from "@/types/ad";
-import { Ionicons } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { router, Stack } from "expo-router";
 import { AddCircle } from "iconsax-react-nativejs";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
-  ScrollView,
+  StyleSheet,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -78,67 +79,80 @@ export default function BusinessProfileScreen() {
     toast.info("Share functionality coming soon");
   };
 
-  if (isLoadingProfile) {
-    return (
-      <AppView style={{ flex: 1 }}>
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </AppView>
-    );
-  }
-
   if (!sellerProfile) {
     return (
       <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
-        <ScrollView
-          contentContainerStyle={{
-            padding: spacing.xl,
-          }}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
-        >
-          <AppView
-            style={{
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={[{ width: "100%" }]}>
+          <Image
+            style={{ width: "100%", height: "100%" }}
+            source={require("@/assets/images/woman-running-small-business.png")}
+            contentFit="cover"
+          />
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.3)", "rgba(0,0,0,0.9)"]}
+            style={StyleSheet.absoluteFill}
+          />
+          <View
+            style={[
+              {
+                position: "absolute",
+                alignItems: "center",
+                gap: spacing.sm,
+                bottom: insets.bottom + 120,
+                paddingHorizontal: spacing.md,
+              },
+            ]}
+          >
+            <AppText
+              variant="xxl"
+              style={{
+                fontWeight: "bold",
+                color: colors.textWhite,
+                textAlign: "center",
+              }}
+            >
+              Become a Seller
+            </AppText>
+            <AppText
+              variant="lg"
+              style={{ color: colors.textWhite, textAlign: "center" }}
+            >
+              Create your shop on WillFindItt and start selling your products.
+            </AppText>
+          </View>
+        </View>
+        <View
+          style={[
+            {
+              flexDirection: "row",
+              position: "absolute",
+              justifyContent: "flex-end",
               alignItems: "center",
-              justifyContent: "center",
-              flex: 1,
-              gap: spacing.lg,
+              left: 0,
+              right: 0,
+              zIndex: 10,
+              bottom: insets.bottom + 50,
+              paddingHorizontal: spacing.md,
+            },
+          ]}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing.md,
             }}
           >
-            <Ionicons
-              name="briefcase-outline"
-              size={80}
-              color={colors.textGray}
+            <Feather
+              onPress={() => router.back()}
+              name="arrow-left-circle"
+              size={icons.md}
+              color={colors.iconWhite}
             />
-            <AppText
-              style={{
-                fontSize: 20,
-                fontWeight: "600",
-                textAlign: "center",
-              }}
-            >
-              No Business Profile
-            </AppText>
-            <AppText
-              style={{
-                fontSize: 14,
-                color: colors.textGray,
-                textAlign: "center",
-              }}
-            >
-              Create a business profile to start selling and showcase your
-              products.
-            </AppText>
-            <PrimaryButton
-              title="Create Business Profile"
-              onPress={handleEditBusiness}
-            />
-          </AppView>
-        </ScrollView>
+            <TextButton title={"Get Started"} onPress={handleEditBusiness} />
+          </View>
+        </View>
       </AppView>
     );
   }
@@ -195,6 +209,7 @@ export default function BusinessProfileScreen() {
     <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <Stack.Screen
         options={{
+          headerShown: true,
           header: () => (
             <Header
               backgroundColor={colors.yellow}
@@ -207,6 +222,7 @@ export default function BusinessProfileScreen() {
                 <TextButton
                   icon={<AddCircle size={icons.md} color={colors.iconBlack} />}
                   title="Create Ad"
+                  onPress={() => router.push({ pathname: "/(ads)/create-ad" })}
                 />
               }
             />
@@ -219,7 +235,12 @@ export default function BusinessProfileScreen() {
         onTabChange={(key) => setActiveTab(key as AdStatus)}
         data={dataset}
         keyExtractor={(item: Ad) => item.id}
-        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.md }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: insets.bottom + spacing.md,
+          backgroundColor: colors.backgroundPrimary,
+        }}
+        tabScrollStyle={{ paddingTop: 45 + spacing.md }}
         renderItem={({ item }: { item: Ad }) => (
           <MyProductCardLandscape
             ad={item}
@@ -239,10 +260,10 @@ export default function BusinessProfileScreen() {
 
             {/* Stats Section */}
             <StatsSection
-              title="Statistics"
               stats={statsData}
               isLoading={isLoadingStats}
               columns={2}
+              style={{ marginBottom: -50 }}
             />
           </AppView>
         }

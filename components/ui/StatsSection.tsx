@@ -1,6 +1,12 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from "react-native";
 import AppText from "./AppText";
 
 export interface StatItem {
@@ -14,6 +20,7 @@ interface StatsSectionProps {
   stats: StatItem[];
   isLoading?: boolean;
   columns?: 2 | 3 | 4;
+  style?: StyleProp<ViewStyle>;
 }
 
 export default function StatsSection({
@@ -21,6 +28,7 @@ export default function StatsSection({
   stats,
   isLoading = false,
   columns = 2,
+  style,
 }: StatsSectionProps) {
   const { colors, spacing, radius } = useTheme();
 
@@ -30,22 +38,14 @@ export default function StatsSection({
         styles.statsSection,
         {
           padding: spacing.lg,
-          borderRadius: radius.lg,
+          borderRadius: radius.xl,
+          backgroundColor: colors.brown,
+          marginHorizontal: spacing.md,
+          zIndex: 1,
         },
+        style,
       ]}
     >
-      {title && (
-        <AppText
-          style={{
-            fontSize: 16,
-            fontWeight: "600",
-            marginBottom: spacing.md,
-          }}
-        >
-          {title}
-        </AppText>
-      )}
-
       {isLoading ? (
         <ActivityIndicator size="small" color={colors.primary} />
       ) : (
@@ -59,27 +59,29 @@ export default function StatsSection({
                   flex: 1,
                   width: `${100 / columns - 2}%`,
                   alignItems: "center",
+                  justifyContent: "space-between",
                 },
               ]}
             >
               <AppText
+                variant="sm"
                 style={{
-                  fontSize: 24,
-                  fontWeight: "700",
-                  color: stat.color || colors.text,
-                }}
-              >
-                {stat.value}
-              </AppText>
-              <AppText
-                style={{
-                  fontSize: 12,
-                  color: colors.textGray,
+                  color: colors.textWhite,
                   marginTop: 4,
                   textAlign: "center",
                 }}
               >
                 {stat.label}
+              </AppText>
+
+              <AppText
+                variant="xl"
+                style={{
+                  fontWeight: "700",
+                  color: colors.textWhite,
+                }}
+              >
+                {stat.value}
               </AppText>
             </View>
           ))}

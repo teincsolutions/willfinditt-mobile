@@ -33,7 +33,12 @@ export default function MySellerRating({ rating, totalReviews, style }: Props) {
         );
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
-          <Ionicons name="star-half" size={icons.xs} color={colors.primary} />
+          <Ionicons
+            key={i}
+            name="star-half"
+            size={icons.xs}
+            color={colors.primary}
+          />
         );
       } else {
         stars.push(
@@ -66,7 +71,7 @@ export default function MySellerRating({ rating, totalReviews, style }: Props) {
         style={{
           flexDirection: "row",
           alignItems: "center",
-          gap:2,
+          gap: 2,
         }}
       >
         <View

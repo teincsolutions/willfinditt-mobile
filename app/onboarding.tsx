@@ -9,11 +9,11 @@ import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
 import Animated, {
-    Extrapolation,
-    interpolate,
-    useAnimatedScrollHandler,
-    useAnimatedStyle,
-    useSharedValue,
+  Extrapolation,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -122,48 +122,47 @@ export default function OnboardingScreen() {
     );
   };
 
+  const PaginationDot = ({ index }: { index: number }) => {
+    const inputRange = [
+      (index - 1) * SCREEN_WIDTH,
+      index * SCREEN_WIDTH,
+      (index + 1) * SCREEN_WIDTH,
+    ];
+
+    const dotStyle = useAnimatedStyle(() => {
+      const width = interpolate(
+        scrollX.value,
+        inputRange,
+        [8, 24, 8],
+        Extrapolation.CLAMP
+      );
+
+      const opacity = interpolate(
+        scrollX.value,
+        inputRange,
+        [0.3, 1, 0.3],
+        Extrapolation.CLAMP
+      );
+
+      return {
+        width,
+        opacity,
+      };
+    });
+
+    return (
+      <Animated.View
+        style={[styles.dot, { backgroundColor: colors.iconWhite }, dotStyle]}
+      />
+    );
+  };
+
   const Pagination = () => {
     return (
       <View style={styles.paginationContainer}>
-        {onboardingData.map((_, index) => {
-          const inputRange = [
-            (index - 1) * SCREEN_WIDTH,
-            index * SCREEN_WIDTH,
-            (index + 1) * SCREEN_WIDTH,
-          ];
-
-          const dotStyle = useAnimatedStyle(() => {
-            const width = interpolate(
-              scrollX.value,
-              inputRange,
-              [8, 24, 8],
-              Extrapolation.CLAMP
-            );
-
-            const opacity = interpolate(
-              scrollX.value,
-              inputRange,
-              [0.3, 1, 0.3],
-              Extrapolation.CLAMP
-            );
-
-            return {
-              width,
-              opacity,
-            };
-          });
-
-          return (
-            <Animated.View
-              key={index}
-              style={[
-                styles.dot,
-                { backgroundColor: colors.iconWhite },
-                dotStyle,
-              ]}
-            />
-          );
-        })}
+        {onboardingData.map((_, index) => (
+          <PaginationDot key={index} index={index} />
+        ))}
       </View>
     );
   };
@@ -184,11 +183,15 @@ export default function OnboardingScreen() {
         {currentIndex < onboardingData.length - 1 && (
           <TextButton
             title="Skip"
-            style={{  paddingEnd:spacing.xs, height: 40, borderRadius:radius.xl }}
+            style={{
+              paddingEnd: spacing.xs,
+              height: 40,
+              borderRadius: radius.xl,
+            }}
             onPress={handleSkip}
             icon={
               <Feather
-                name="arrow-right-circle"   
+                name="arrow-right-circle"
                 size={icons.md}
                 color={colors.iconBlack}
               />

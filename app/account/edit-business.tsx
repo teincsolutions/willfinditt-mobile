@@ -15,12 +15,11 @@ import { Stack, useRouter } from "expo-router";
 import { useFormik } from "formik";
 import { useRef } from "react";
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
@@ -51,7 +50,7 @@ const BusinessProfileSchema = Yup.object().shape({
 export default function SetupBusinessProfileScreen() {
   const { icons, spacing, colors, radius } = useTheme();
   const insets = useSafeAreaInsets();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user } = useAuth();
   const {
     createSellerProfileAsync,
     isCreating,
@@ -65,12 +64,6 @@ export default function SetupBusinessProfileScreen() {
 
   const businessTypeRef = useRef<TextInput>(null);
   const descriptionRef = useRef<TextInput>(null);
-  const streetRef = useRef<TextInput>(null);
-  const cityRef = useRef<TextInput>(null);
-  const stateRef = useRef<TextInput>(null);
-  const countryRef = useRef<TextInput>(null);
-  const postalCodeRef = useRef<TextInput>(null);
-
   const {
     values,
     handleChange,
@@ -128,21 +121,6 @@ export default function SetupBusinessProfileScreen() {
     },
   });
 
-  if (isAuthLoading || !user) {
-    return (
-      <AppView
-        style={{
-          flex: 1,
-          backgroundColor: colors.background,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <ActivityIndicator size="large" color={colors.primary} />
-      </AppView>
-    );
-  }
-
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen
@@ -175,7 +153,7 @@ export default function SetupBusinessProfileScreen() {
                     right: 0,
                     bottom: 0,
                     paddingVertical: spacing.md,
-                    paddingHorizontal: spacing.xxl,
+                    paddingHorizontal: spacing.xl,
                     gap: spacing.sm,
                     height: 150,
                     zIndex: 10,
@@ -194,6 +172,7 @@ export default function SetupBusinessProfileScreen() {
                       : "Set up your Business"}
                   </AppText>
                   <AppText
+                    variant="xs"
                     style={{
                       color: colors.textWhite,
                       textAlign: "center",
