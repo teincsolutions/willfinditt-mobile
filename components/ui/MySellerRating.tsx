@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/useTheme";
-import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
 import AppText from "./AppText";
@@ -9,19 +9,11 @@ import { TextButton } from "./TextButton";
 type Props = {
   rating: number;
   totalReviews: number;
-  onSeeReviews?: () => void;
-  showReviewButton?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export default function MySellerRating({
-  rating,
-  totalReviews,
-  onSeeReviews,
-  showReviewButton = true,
-  style,
-}: Props) {
-  const { colors, spacing, icons } = useTheme();
+export default function MySellerRating({ rating, totalReviews, style }: Props) {
+  const { colors, spacing, icons, fontSizes } = useTheme();
 
   // Render stars (5 total)
   const renderStars = () => {
@@ -32,47 +24,24 @@ export default function MySellerRating({
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
         stars.push(
-          <Feather
+          <Ionicons
             key={i}
             name="star"
-            size={icons.md}
-            color={colors.secondary}
-            fill={colors.secondary}
+            size={icons.xs}
+            color={colors.primary}
           />
         );
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
-          <View key={i} style={{ position: "relative" }}>
-            <Feather
-              name="star"
-              size={icons.md}
-              color={colors.iconLightGray}
-              fill={colors.iconLightGray}
-            />
-            <View
-              style={{
-                position: "absolute",
-                overflow: "hidden",
-                width: icons.md / 2,
-              }}
-            >
-              <Feather
-                name="star"
-                size={icons.md}
-                color={colors.secondary}
-                fill={colors.secondary}
-              />
-            </View>
-          </View>
+          <Ionicons name="star-half" size={icons.xs} color={colors.primary} />
         );
       } else {
         stars.push(
-          <Feather
+          <Ionicons
             key={i}
-            name="star"
-            size={icons.md}
-            color={colors.iconLightGray}
-            fill={colors.iconLightGray}
+            name="star-outline"
+            size={icons.xs}
+            color={colors.primary}
           />
         );
       }
@@ -87,7 +56,7 @@ export default function MySellerRating({
         {
           flexDirection: "row",
           alignItems: "center",
-          gap: spacing.md,
+          gap: spacing.sm,
         },
         style,
       ]}
@@ -97,53 +66,40 @@ export default function MySellerRating({
         style={{
           flexDirection: "row",
           alignItems: "center",
-          gap: spacing.sm,
+          gap:2,
         }}
       >
-        <AppView style={{ gap: spacing.sm }}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: spacing.xs,
-            }}
-          >
-            {renderStars()}
-          </View>
-
-          <AppView
-            style={{
-              gap: spacing.xs,
-              flexDirection: "row",
-              alignItems: "baseline",
-            }}
-          >
-            <AppText
-              variant="md"
-              fontWeight="medium"
-              style={{ color: colors.text }}
-            >
-              {rating.toFixed(1)}
-            </AppText>
-
-            <AppText variant="sm" style={{ color: colors.textGray }}>
-              ({totalReviews} {totalReviews === 1 ? "review" : "reviews"})
-            </AppText>
-          </AppView>
-        </AppView>
-      </View>
-
-      {/* Right Side - See Reviews Button */}
-      {showReviewButton && totalReviews > 0 && (
-        <TextButton
-          title="My Reviews"
-          onPress={onSeeReviews}
-          gradientColors={[colors.primary, colors.accent]}
-          titleStyle={{
-            color: colors.textWhite,
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 1,
           }}
+        >
+          {renderStars()}
+        </View>
+      </View>
+      <AppView
+        style={{
+          gap: spacing.sm,
+          flexDirection: "row",
+          alignItems: "baseline",
+        }}
+      >
+        <AppText
+          variant="sm"
+          fontWeight="medium"
+          style={{ color: colors.text }}
+        >
+          {rating.toFixed(1)}
+        </AppText>
+
+        <TextButton
+          titleStyle={{ fontSize: fontSizes.xs }}
+          style={{ height: 32, paddingHorizontal: spacing.xs }}
+          title={`(${totalReviews}) My Reviews`}
         />
-      )}
+      </AppView>
     </View>
   );
 }

@@ -22,17 +22,15 @@ export default function StatsSection({
   isLoading = false,
   columns = 2,
 }: StatsSectionProps) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radius } = useTheme();
 
   return (
     <View
       style={[
         styles.statsSection,
         {
-          backgroundColor: colors.background,
           padding: spacing.lg,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          borderRadius: radius.lg,
         },
       ]}
     >

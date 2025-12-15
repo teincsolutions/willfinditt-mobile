@@ -28,14 +28,13 @@ export default function SubCategoriesScreen() {
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen
         options={{
+          headerShown: true,
           header: () => (
             <Header
               left={<BackButton label="Cancel" showIcon={false} />}
               navRowStyle={{ marginHorizontal: spacing.md }}
               title={parentCategory?.name || "Categories"}
-              containerStyle={{
-                paddingBottom: spacing.sm,
-              }}
+              containerStyle={{ paddingBottom: spacing.sm, paddingTop:spacing.md }}
             >
               <SearchBar
                 style={{ marginHorizontal: spacing.md }}
@@ -64,6 +63,7 @@ export default function SubCategoriesScreen() {
           <CategoryCardLandscape
             category={item}
             onPress={() => {
+              router.dismiss();
               router.push({
                 pathname: "/(search)/results",
                 params: { categoryId: item.id, query: item.name },

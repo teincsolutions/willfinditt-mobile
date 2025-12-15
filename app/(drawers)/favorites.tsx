@@ -130,6 +130,7 @@ export default function FavoritesScreen() {
           gap: spacing.sm,
           paddingHorizontal: spacing.md,
           paddingTop: spacing.md,
+          paddingBottom: inserts.bottom + spacing.md,
           flexGrow: 1,
         }}
         data={showSkeletons ? Array(6).fill({}) : filteredAds}
@@ -149,6 +150,11 @@ export default function FavoritesScreen() {
               onPress={() =>
                 router.push({ pathname: "/[adId]", params: { adId: item.id } })
               }
+              showFavoriteButton={false}
+              onLongPress={()=>{
+                handleToggleSelection(item.id, true);
+                setSelection(true); 
+              }}
               ad={item}
             />
           );

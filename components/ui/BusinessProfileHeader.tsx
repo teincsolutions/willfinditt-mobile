@@ -1,16 +1,17 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { SellerProfile, User } from "@/types/user";
-import { Ionicons } from "@expo/vector-icons";
+import { Edit, Export } from "iconsax-react-nativejs";
 import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { toast } from "sonner-native";
+import { StyleProp, View, ViewStyle } from "react-native";
 import AppText from "./AppText";
 import { Avatar } from "./Avatar";
+import IconButton from "./IconButton";
 import MySellerRating from "./MySellerRating";
 
 interface BusinessProfileHeaderProps {
   user?: User;
   sellerProfile: SellerProfile;
+  style?: StyleProp<ViewStyle>;
   onEditProfile: () => void;
   onShare: () => void;
 }
@@ -18,241 +19,62 @@ interface BusinessProfileHeaderProps {
 export default function BusinessProfileHeader({
   user,
   sellerProfile,
-  onEditProfile,
+  style,
   onShare,
 }: BusinessProfileHeaderProps) {
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing, radius, icons } = useTheme();
 
   return (
     <View
       style={[
-        styles.header,
         {
-          backgroundColor: colors.background,
+          gap: spacing.sm,
           padding: spacing.md,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
         },
+        style,
       ]}
     >
       {/* Avatar & Basic Info */}
-      <View style={styles.headerTop}>
+      <View style={{ flexDirection: "row" }}>
         <Avatar
+          backgroundColor={colors.iconWhite}
           uri={user?.avatar}
           verified={sellerProfile.isVerified}
-          size="xl"
+          size="lg"
         />
 
-        <View style={{ flex: 1, marginLeft: spacing.md }}>
-          <AppText style={{ fontSize: 20, fontWeight: "700" }}>
+        <View style={{ flex: 1, marginLeft: spacing.sm }}>
+          <AppText variant="lg" style={{ fontWeight: "700" }}>
             {sellerProfile.businessName}
           </AppText>
-          <AppText
-            style={{
-              fontSize: 14,
-              color: colors.textGray,
-              marginTop: 2,
-            }}
-          >
-            {sellerProfile.businessType}
-          </AppText>
+          <AppText variant="md">{sellerProfile.businessType}</AppText>
 
           {/* Rating */}
           <View style={{ marginTop: spacing.xs }}>
             <MySellerRating
-              rating={sellerProfile.rating}
+              rating={sellerProfile.rating || 2.5}
               totalReviews={sellerProfile.totalReviews || 1}
-              showReviewButton={true}
-              onSeeReviews={() => {}}
               style={{ paddingRight: spacing.md }}
             />
           </View>
-
-          {/* Verification Badge */}
-          {sellerProfile.isVerified && (
-            <View
-              style={[
-                styles.verifiedBadge,
-                {
-                  backgroundColor: colors.success + "20",
-                  paddingHorizontal: spacing.sm,
-                  paddingVertical: 4,
-                  borderRadius: radius.sm,
-                  marginTop: spacing.xs,
-                  alignSelf: "flex-start",
-                },
-              ]}
-            >
-              <Ionicons
-                name="checkmark-circle"
-                size={14}
-                color={colors.success}
-              />
-              <AppText
-                style={{
-                  color: colors.success,
-                  fontSize: 12,
-                  fontWeight: "600",
-                  marginLeft: 4,
-                }}
-              >
-                Verified Seller
-              </AppText>
-            </View>
-          )}
         </View>
-      </View>
-
-      {/* Action Buttons */}
-      <View
-        style={[
-          styles.actionButtons,
-          { marginTop: spacing.md, gap: spacing.sm },
-        ]}
-      >
-        <TouchableOpacity
-          style={[
-            styles.actionButton,
-            {
-              backgroundColor: colors.primary,
-              flex: 1,
-              padding: spacing.sm,
-              borderRadius: radius.md,
-              alignItems: "center",
-            },
-          ]}
-          onPress={onEditProfile}
-        >
-          <Ionicons name="pencil" size={18} color="#fff" />
-          <AppText
-            style={{
-              color: "#fff",
-              fontSize: 14,
-              fontWeight: "600",
-              marginLeft: 6,
-            }}
-          >
-            Edit Profile
-          </AppText>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.actionButton,
-            {
-              backgroundColor: colors.backgroundGray,
-              flex: 1,
-              padding: spacing.sm,
-              borderRadius: radius.md,
-              alignItems: "center",
-            },
-          ]}
-          onPress={onShare}
-        >
-          <Ionicons name="share-social" size={18} color={colors.text} />
-          <AppText
-            style={{
-              color: colors.text,
-              fontSize: 14,
-              fontWeight: "600",
-              marginLeft: 6,
-            }}
-          >
-            Share
-          </AppText>
-        </TouchableOpacity>
-      </View>
-
-      {/* Description */}
-      {sellerProfile.description && (
-        <View style={{ marginTop: spacing.md }}>
-          <AppText
-            style={{
-              fontSize: 14,
-              color: colors.textGray,
-              lineHeight: 20,
-            }}
-          >
-            {sellerProfile.description}
-          </AppText>
-        </View>
-      )}
-
-      {/* Location */}
-      {sellerProfile.city && (
         <View
-          style={[
-            styles.locationRow,
-            {
-              marginTop: spacing.sm,
-              flexDirection: "row",
-              alignItems: "center",
-            },
-          ]}
-        >
-          <Ionicons name="location" size={16} color={colors.textGray} />
-          <AppText
-            style={{
-              fontSize: 14,
-              color: colors.textGray,
-              marginLeft: 4,
-            }}
-          >
-            {sellerProfile.city.name}
-          </AppText>
-        </View>
-      )}
-
-      {/* Website */}
-      {sellerProfile.website && (
-        <TouchableOpacity
-          style={[
-            styles.websiteRow,
-            {
-              marginTop: spacing.xs,
-              flexDirection: "row",
-              alignItems: "center",
-            },
-          ]}
-          onPress={() => {
-            // TODO: Open website
-            toast.info("Opening website");
+          style={{
+            flexDirection: "row",
+            gap: spacing.sm,
+            paddingBottom: spacing.md,
           }}
         >
-          <Ionicons name="globe" size={16} color={colors.primary} />
-          <AppText
-            style={{
-              fontSize: 14,
-              color: colors.primary,
-              marginLeft: 4,
-            }}
-          >
-            {sellerProfile.website}
-          </AppText>
-        </TouchableOpacity>
-      )}
+          <IconButton
+            icon={<Edit size={icons.md} color={colors.iconBlack} />}
+            onPress={onShare}
+          />
+          <IconButton
+            icon={<Export size={icons.md} color={colors.iconBlack} />}
+            onPress={onShare}
+          />
+        </View>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {},
-  headerTop: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  verifiedBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  actionButtons: {
-    flexDirection: "row",
-  },
-  actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  locationRow: {},
-  websiteRow: {},
-});

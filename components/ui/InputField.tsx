@@ -31,6 +31,7 @@ type Props = {
   rightIconStyle?: StyleProp<ViewStyle>;
   returnKeyLabel?: string;
   autoFocus?: boolean;
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
   returnKeyType?: import("react-native").ReturnKeyTypeOptions;
   blurOnSubmit?: boolean;
 };
@@ -46,6 +47,7 @@ const InputField = forwardRef<TextInput, Props>(function InputField(
     onBlur,
     placeholder,
     secure,
+    autoCapitalize,
     keyboardType,
     leftIcon,
     rightIcon,
@@ -120,6 +122,7 @@ const InputField = forwardRef<TextInput, Props>(function InputField(
           onSubmitEditing={onSubmit}
           onBlur={onBlur}
           autoFocus={autoFocus}
+          autoCapitalize={autoCapitalize}
         />
 
         {rightIcon && (

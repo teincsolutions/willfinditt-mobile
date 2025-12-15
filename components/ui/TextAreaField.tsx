@@ -31,6 +31,7 @@ type Props = {
   leftIconStyle?: StyleProp<ViewStyle>;
   rightIconStyle?: StyleProp<ViewStyle>;
   returnKeyLabel?: string;
+  numberOfLines?: number;
   autoFocus?: boolean;
   returnKeyType?: import("react-native").ReturnKeyTypeOptions;
   blurOnSubmit?: boolean;
@@ -45,6 +46,7 @@ const TextAreaField = forwardRef<TextInput, Props>(function TextAreaField(
     onSubmit,
     onBlur,
     placeholder,
+    numberOfLines,
     secure,
     keyboardType,
     leftIcon,
@@ -106,7 +108,7 @@ const TextAreaField = forwardRef<TextInput, Props>(function TextAreaField(
           returnKeyLabel={returnKeyLabel}
           returnKeyType={returnKeyType}
           multiline
-          numberOfLines={3}
+          numberOfLines={numberOfLines || 3}
           blurOnSubmit={blurOnSubmit}
           style={[
             styles.input,

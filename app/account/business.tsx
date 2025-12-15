@@ -2,12 +2,14 @@ import { MyProductCardLandscape } from "@/components/ads/MyProductCardLandscape"
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import BusinessProfileHeader from "@/components/ui/BusinessProfileHeader";
+import { Header } from "@/components/ui/Header";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import StatsSection, { StatItem } from "@/components/ui/StatsSection";
 import SwipeableTabs, {
   TabDataset,
   TabItem,
 } from "@/components/ui/SwipeableTabs";
+import { TextButton } from "@/components/ui/TextButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useInfiniteMyAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,7 +17,8 @@ import { useSeller, useSellerStats } from "@/hooks/useSeller";
 import { AdStatus } from "@/types";
 import { Ad } from "@/types/ad";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
+import { AddCircle } from "iconsax-react-nativejs";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -27,12 +30,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 
 export default function BusinessProfileScreen() {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, icons } = useTheme();
   const insets = useSafeAreaInsets();
 
   const { user } = useAuth();
   const { sellerProfile, isLoading: isLoadingProfile, refetch } = useSeller();
-
   const { data: stats, isLoading: isLoadingStats } = useSellerStats();
 
   const [activeTab, setActiveTab] = useState<AdStatus>(AdStatus.ACTIVE);
@@ -67,10 +69,8 @@ export default function BusinessProfileScreen() {
     setRefreshing(false);
   };
 
-  const handleEditProfile = () => {
-    if (!sellerProfile) {
-    } else {
-    }
+  const handleEditBusiness = () => {
+    router.push("/account/edit-business");
   };
 
   const handleShare = () => {
@@ -92,49 +92,52 @@ export default function BusinessProfileScreen() {
 
   if (!sellerProfile) {
     return (
-      <AppView style={{ flex: 1 }}>
+      <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
         <ScrollView
           contentContainerStyle={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
             padding: spacing.xl,
           }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
         >
-          <Ionicons
-            name="briefcase-outline"
-            size={80}
-            color={colors.textGray}
-          />
-          <AppText
+          <AppView
             style={{
-              fontSize: 20,
-              fontWeight: "600",
-              marginTop: spacing.lg,
-              textAlign: "center",
+              alignItems: "center",
+              justifyContent: "center",
+              flex: 1,
+              gap: spacing.lg,
             }}
           >
-            No Business Profile
-          </AppText>
-          <AppText
-            style={{
-              fontSize: 14,
-              color: colors.textGray,
-              marginTop: spacing.sm,
-              textAlign: "center",
-            }}
-          >
-            Create a business profile to start selling and showcase your
-            products.
-          </AppText>
-          <PrimaryButton
-            title="Create Business Profile"
-            onPress={handleEditProfile}
-            style={{ marginTop: spacing.xl, minWidth: 200 }}
-          />
+            <Ionicons
+              name="briefcase-outline"
+              size={80}
+              color={colors.textGray}
+            />
+            <AppText
+              style={{
+                fontSize: 20,
+                fontWeight: "600",
+                textAlign: "center",
+              }}
+            >
+              No Business Profile
+            </AppText>
+            <AppText
+              style={{
+                fontSize: 14,
+                color: colors.textGray,
+                textAlign: "center",
+              }}
+            >
+              Create a business profile to start selling and showcase your
+              products.
+            </AppText>
+            <PrimaryButton
+              title="Create Business Profile"
+              onPress={handleEditBusiness}
+            />
+          </AppView>
         </ScrollView>
       </AppView>
     );
@@ -189,7 +192,27 @@ export default function BusinessProfileScreen() {
   ];
 
   return (
-    <AppView style={{ flex: 1, backgroundColor: colors.background }}>
+    <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+      <Stack.Screen
+        options={{
+          header: () => (
+            <Header
+              backgroundColor={colors.yellow}
+              containerStyle={{
+                paddingBottom: spacing.md,
+                paddingHorizontal: spacing.md,
+                paddingTop: insets.top + spacing.md,
+              }}
+              right={
+                <TextButton
+                  icon={<AddCircle size={icons.md} color={colors.iconBlack} />}
+                  title="Create Ad"
+                />
+              }
+            />
+          ),
+        }}
+      />
       <SwipeableTabs
         tabs={tabs}
         activeTab={activeTab}
@@ -205,12 +228,12 @@ export default function BusinessProfileScreen() {
           />
         )}
         ListHeaderComponent={
-          <AppView>
+          <AppView style={{ backgroundColor: colors.yellow }}>
             {/* Business Profile Header */}
             <BusinessProfileHeader
               user={user || undefined}
               sellerProfile={sellerProfile}
-              onEditProfile={handleEditProfile}
+              onEditProfile={handleEditBusiness}
               onShare={handleShare}
             />
 

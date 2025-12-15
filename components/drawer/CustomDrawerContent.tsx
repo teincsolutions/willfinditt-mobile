@@ -164,7 +164,6 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Business Profile"
-        active={props.state.index === 1}
         onPress={() => {
           if (!isAuthenticated) {
             handleLogin();

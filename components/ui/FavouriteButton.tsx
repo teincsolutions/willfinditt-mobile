@@ -11,7 +11,7 @@ export function FavouriteButton({
   active?: boolean;
   onToggle?: (active: boolean) => void;
 }) {
-  const { icons } = useTheme();
+  const { icons, colors } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {

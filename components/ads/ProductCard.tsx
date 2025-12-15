@@ -25,15 +25,19 @@ export default function ProductCard({
   style,
   selectMode,
   isSelected,
+  showFavoriteButton = true,
   onSelectToggle,
   onPress,
+  onLongPress,
 }: {
   ad: Ad;
   style?: StyleProp<ViewStyle>;
   selectMode?: boolean;
   isSelected?: boolean;
+  showFavoriteButton?: boolean;
   onSelectToggle?: (selected: boolean) => void;
   onPress?: () => void;
+  onLongPress?: () => void;
 }) {
   const { spacing, radius, colors } = useTheme();
   const width = (DEVICE_WIDTH - spacing.md * 2 - spacing.xs) / 2;
@@ -78,6 +82,7 @@ export default function ProductCard({
   };
   return (
     <Pressable
+    onLongPress={onLongPress}
       style={[
         styles.card,
         {
@@ -139,7 +144,9 @@ export default function ProductCard({
             ) : null}
           </AppView>
           {/* SAVE HEART */}
-          <FavouriteButton active={isSaved} onToggle={handleToggleSave} />
+          {showFavoriteButton && (
+            <FavouriteButton active={isSaved} onToggle={handleToggleSave} />
+          )}
         </AppView>
       </View>
     </Pressable>

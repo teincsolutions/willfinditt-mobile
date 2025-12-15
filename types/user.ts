@@ -4,7 +4,7 @@ import type {
   UserRole,
   VerificationStatus,
 } from "./enums";
-import type { City } from "./location";
+import { City } from "./location";
 
 // Core User Types
 export interface User {
@@ -16,6 +16,8 @@ export interface User {
   phone?: string;
   avatar?: string;
   countryId?: string;
+  cityId?: string;
+  city?: City;
   isActive: boolean;
   isVerified: boolean;
   emailVerified: boolean;
@@ -35,9 +37,6 @@ export interface SellerProfile {
   businessName: string;
   businessType: string;
   description?: string | null;
-  address?: string | null;
-  cityId?: string;
-  city?: City;
   isVerified: boolean;
   rating: number;
   totalReviews: number;
@@ -131,15 +130,7 @@ export interface CreateSellerProfileRequest {
   businessName: string;
   businessType: string;
   description?: string;
-  contactPhone?: string;
-  contactEmail?: string;
-  address?: {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    postalCode?: string;
-  };
+  website?: string;
   socialMedia?: {
     facebook?: string;
     instagram?: string;
@@ -148,25 +139,19 @@ export interface CreateSellerProfileRequest {
   };
 }
 
-export interface UpdateSellerProfileRequest {
-  businessName?: string;
-  businessType?: string;
-  description?: string;
-  contactPhone?: string;
-  contactEmail?: string;
-  address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-    postalCode?: string;
-  };
-  socialMedia?: {
-    facebook?: string;
-    instagram?: string;
-    twitter?: string;
-    linkedin?: string;
-  };
+export interface UpdateSellerProfileRequest extends Partial<CreateSellerProfileRequest> { }
+
+export interface CreateVerificationRequest {
+  sellerProfileId: string;
+  documentType: DocumentType;
+  documentNumber: string;
+  fullName?: string;
+  documentIssueDate?: string;
+  documentExpiryDate?: string;
+  address: string;
+  documents: string[];
+  facePhoto: string[];
+  additionalNotes?: string;
 }
 
 // Response Types

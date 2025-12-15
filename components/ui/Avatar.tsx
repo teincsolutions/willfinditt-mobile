@@ -13,6 +13,7 @@ interface AvatarProps {
   uri?: string;
   size?: AvatarSizeKey;
   borderSize?: 2 | 4;
+  backgroundColor?: string;
 }
 
 export function Avatar({
@@ -21,13 +22,18 @@ export function Avatar({
   verified,
   uri,
   borderSize = 2,
+  backgroundColor,
   size,
 }: AvatarProps) {
   const { colors, avatarSize } = useTheme();
   return (
     <AppView style={[styles.avatarWrapper, styleContainer]}>
       <LinearGradient
-        colors={[colors.primary, colors.secondary]}
+        colors={
+          backgroundColor
+            ? [backgroundColor, backgroundColor]
+            : [colors.primary, colors.secondary]
+        }
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{

@@ -16,6 +16,7 @@ type Props = {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
+  backgroundColor?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -24,6 +25,7 @@ export default function PrimaryButton({
   onPress,
   style,
   disabled,
+  backgroundColor,
   loading,
 }: Props) {
   const { colors, button, spacing } = useTheme();
@@ -31,7 +33,11 @@ export default function PrimaryButton({
 
   return (
     <LinearGradient
-      colors={[colors.primary, colors.accent]}
+      colors={
+        backgroundColor
+          ? [backgroundColor, backgroundColor]
+          : [colors.primary, colors.accent]
+      }
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={[
@@ -39,6 +45,7 @@ export default function PrimaryButton({
         {
           height: button.height,
           borderRadius: button.radius,
+          paddingHorizontal: button.paddingHorizontal,
           opacity: isDisabled ? 0.6 : 1,
         },
         style,
@@ -72,8 +79,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   btn: {
-    width: "100%",
-    height: "100%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

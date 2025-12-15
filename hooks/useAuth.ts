@@ -13,16 +13,17 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMMKVBoolean } from "react-native-mmkv";
 import { toast } from "sonner-native";
+import { SELLER_QUERY_KEYS } from "./useSeller";
 
 // ============================================
 // MMKV Storage Keys
 // ============================================
 
-const AUTH_KEYS = {
+export const AUTH_KEYS = {
   IS_AUTHENTICATED: "auth_is_authenticated",
 } as const;
 
-const AUTH_QUERY_KEYS = {
+export const AUTH_QUERY_KEYS = {
   AUTH_USER: ["auth", "user"] as const,
   AUTH: ["auth"] as const,
 };
@@ -74,8 +75,8 @@ export function useAuth() {
     setIsAuthenticated(true);
 
     // Fetch and store user profile in React Query cache
-    queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
-
+    queryClient.refetchQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
+    queryClient.invalidateQueries({ queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE });
     toast.success("Login Successful!");
   };
 
@@ -135,7 +136,7 @@ export function useAuth() {
     },
     onError: (error) => {
       clearAuthState();
-      console.error("Error during logout:", error);
+      console.log("Error during logout:", error);
     },
   });
 

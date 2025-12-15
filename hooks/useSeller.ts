@@ -5,13 +5,21 @@ import type {
   UpdateSellerProfileRequest,
 } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AUTH_QUERY_KEYS } from "./useAuth";
+
+export const SELLER_QUERY_KEYS = {
+  SELLER_MY_PROFILE: ["seller", "my-profile"] as const,
+  SELLER_PROFILE: (sellerId: string) => ["seller", sellerId] as const,
+  SELLER_STATS: (sellerId: string) => ["seller", sellerId, "stats"] as const,
+  SELLER_MY_STATS: ["seller", "my-stats"] as const,
+};
 
 export const useSeller = (sellerId?: string) => {
   const queryClient = useQueryClient();
 
   // Get my seller profile
   const mySellerProfileQuery = useQuery({
-    queryKey: ["seller", "my-profile"],
+    queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
     queryFn: () => sellerService.getMySellerProfile(),
     enabled: !sellerId, // Only fetch if no sellerId is provided
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -19,7 +27,7 @@ export const useSeller = (sellerId?: string) => {
 
   // Get seller profile by ID
   const sellerProfileQuery = useQuery({
-    queryKey: ["seller", sellerId],
+    queryKey: SELLER_QUERY_KEYS.SELLER_PROFILE(sellerId!),
     queryFn: () => {
       if (!sellerId) throw new Error("Seller ID is required");
       return sellerService.getSellerProfile(sellerId);
@@ -30,7 +38,7 @@ export const useSeller = (sellerId?: string) => {
 
   // Get seller stats
   const sellerStatsQuery = useQuery({
-    queryKey: ["seller", sellerId || "my-profile", "stats"],
+    queryKey: SELLER_QUERY_KEYS.SELLER_STATS(sellerId || mySellerProfileQuery.data?.id!),
     queryFn: async () => {
       const id = sellerId || mySellerProfileQuery.data?.id;
       if (!id) throw new Error("Seller ID is required");
@@ -62,10 +70,13 @@ export const useSeller = (sellerId?: string) => {
     }) => sellerService.updateSellerProfile(sellerId, data),
     onSuccess: (sellerProfile: SellerProfile) => {
       // Update cache
-      queryClient.setQueryData(["seller", "my-profile"], sellerProfile);
-      queryClient.setQueryData(["seller", sellerProfile.id], sellerProfile);
-      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
+      queryClient.setQueryData(SELLER_QUERY_KEYS.SELLER_MY_PROFILE, sellerProfile);
+      queryClient.setQueryData(SELLER_QUERY_KEYS.SELLER_PROFILE(sellerProfile.id), sellerProfile);
+      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
     },
+    onError: (error:any) => {
+      console.log("Failed to update seller profile:", error.response?.data || error.message);
+    }
   });
 
   // Delete seller profile mutation
@@ -73,8 +84,27 @@ export const useSeller = (sellerId?: string) => {
     mutationFn: (sellerId: string) =>
       sellerService.deleteSellerProfile(sellerId),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ["seller", "my-profile"] });
-      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
+      queryClient.removeQueries({ queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE });
+      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
+    },
+  });
+
+  // Submit verification mutation
+  const submitVerificationMutation = useMutation({
+    mutationFn: (data: any) => sellerService.submitVerification(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE });
+      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
+    },
+  });
+
+  // Update verification mutation
+  const updateVerificationMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      sellerService.updateMyVerification(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE });
+      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
     },
   });
 
@@ -108,6 +138,15 @@ export const useSeller = (sellerId?: string) => {
     deleteSellerProfileAsync: deleteSellerProfileMutation.mutateAsync,
     isDeleting: deleteSellerProfileMutation.isPending,
 
+    // Verification Mutations
+    submitVerification: submitVerificationMutation.mutate,
+    submitVerificationAsync: submitVerificationMutation.mutateAsync,
+    isSubmittingVerification: submitVerificationMutation.isPending,
+
+    updateVerification: updateVerificationMutation.mutate,
+    updateVerificationAsync: updateVerificationMutation.mutateAsync,
+    isUpdatingVerification: updateVerificationMutation.isPending,
+
     // Refetch
     refetch: sellerId
       ? sellerProfileQuery.refetch
@@ -117,7 +156,7 @@ export const useSeller = (sellerId?: string) => {
 
 export const useSellerStats = () =>
   useQuery({
-    queryKey: ["seller", "my-stats"],
+    queryKey: SELLER_QUERY_KEYS.SELLER_MY_STATS,
     queryFn: async () => {
       return sellerService.getMySellerStats();
     },
