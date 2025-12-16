@@ -13,7 +13,7 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMMKVBoolean } from "react-native-mmkv";
 import { toast } from "sonner-native";
-import { SELLER_QUERY_KEYS } from "./useSeller";
+import { AUTH_QUERY_KEYS, SELLER_QUERY_KEYS } from "./queryKeys";
 
 // ============================================
 // MMKV Storage Keys
@@ -22,11 +22,6 @@ import { SELLER_QUERY_KEYS } from "./useSeller";
 export const AUTH_KEYS = {
   IS_AUTHENTICATED: "auth_is_authenticated",
 } as const;
-
-export const AUTH_QUERY_KEYS = {
-  AUTH_USER: ["auth", "user"] as const,
-  AUTH: ["auth"] as const,
-};
 
 // ============================================
 // Storage Helpers (Using MMKV native JSON support)

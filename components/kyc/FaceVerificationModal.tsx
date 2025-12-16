@@ -233,7 +233,13 @@ export default function FaceVerificationModal({
             <View style={styles.previewContainer}>
               <View style={styles.photosGrid}>
                 {capturedPhotos.map((photo, index) => (
-                  <View key={photo.pose} style={styles.photoCard}>
+                  <View
+                    key={photo.pose}
+                    style={[
+                      styles.photoCard,
+                      { backgroundColor: colors.background },
+                    ]}
+                  >
                     <Image
                       source={{ uri: photo.uri }}
                       style={styles.previewImage}
@@ -432,7 +438,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     position: "relative",
-    backgroundColor: "#f0f0f0",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

@@ -102,7 +102,7 @@ export function Avatar({
         >
           <MaterialIcons
             name="verified"
-            size={VERIFIED_BADGE_SIZES[size || "lg"]}
+            size={avatarSize[size || "lg"] / 5}
             color={colors.blue}
           />
         </View>

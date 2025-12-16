@@ -9,8 +9,9 @@ export default function AdsLayout() {
       }}
     >
       <Stack.Screen name="[adId]/index" />
-      <Stack.Screen name="create-ad" />
-      <Stack.Screen name="seller/[sellerId]" />
+      <Stack.Screen name="create" />
+      <Stack.Screen name="[adId]/edit" />
+      <Stack.Screen name="seller" />
     </Stack>
   );
 }

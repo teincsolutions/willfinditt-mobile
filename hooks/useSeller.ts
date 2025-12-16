@@ -5,14 +5,7 @@ import type {
   UpdateSellerProfileRequest,
 } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AUTH_QUERY_KEYS } from "./useAuth";
-
-export const SELLER_QUERY_KEYS = {
-  SELLER_MY_PROFILE: ["seller", "my-profile"] as const,
-  SELLER_PROFILE: (sellerId: string) => ["seller", sellerId] as const,
-  SELLER_STATS: (sellerId: string) => ["seller", sellerId, "stats"] as const,
-  SELLER_MY_STATS: ["seller", "my-stats"] as const,
-};
+import { AUTH_QUERY_KEYS, SELLER_QUERY_KEYS } from "./queryKeys";
 
 export const useMySeller = () => {
   const queryClient = useQueryClient();
@@ -56,13 +49,22 @@ export const useMySeller = () => {
     }) => sellerService.updateSellerProfile(sellerId, data),
     onSuccess: (sellerProfile: SellerProfile) => {
       // Update cache
-      queryClient.setQueryData(SELLER_QUERY_KEYS.SELLER_MY_PROFILE, sellerProfile);
-      queryClient.setQueryData(SELLER_QUERY_KEYS.SELLER_PROFILE(sellerProfile.id), sellerProfile);
+      queryClient.setQueryData(
+        SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
+        sellerProfile
+      );
+      queryClient.setQueryData(
+        SELLER_QUERY_KEYS.SELLER_PROFILE(sellerProfile.id),
+        sellerProfile
+      );
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
     },
     onError: (error: any) => {
-      console.log("Failed to update seller profile:", error.response?.data || error.message);
-    }
+      console.log(
+        "Failed to update seller profile:",
+        error.response?.data || error.message
+      );
+    },
   });
 
   // Delete seller profile mutation
@@ -70,7 +72,9 @@ export const useMySeller = () => {
     mutationFn: (sellerId: string) =>
       sellerService.deleteSellerProfile(sellerId),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE });
+      queryClient.removeQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
+      });
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
     },
   });
@@ -79,7 +83,9 @@ export const useMySeller = () => {
   const submitVerificationMutation = useMutation({
     mutationFn: (data: any) => sellerService.submitVerification(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE });
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
+      });
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
     },
   });
@@ -89,7 +95,9 @@ export const useMySeller = () => {
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       sellerService.updateMyVerification(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE });
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
+      });
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
     },
   });
@@ -166,5 +174,3 @@ export const useSeller = (sellerId: string) => {
     refetch: sellerProfileQuery.refetch,
   };
 };
-
-

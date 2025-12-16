@@ -1,7 +1,6 @@
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import InputField from "@/components/ui/InputField";
-import PrimaryButton from "@/components/ui/PrimaryButton";
 import { useTheme } from "@/hooks/useTheme";
 import { useUploadDocuments } from "@/hooks/useUpload";
 import { DocumentType } from "@/types/enums";
@@ -9,16 +8,12 @@ import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useFormik } from "formik";
 import { useRef, useState } from "react";
-import {
-    Modal,
-    Pressable,
-    ScrollView,
-    TextInput
-} from "react-native";
+import { Modal, Pressable, ScrollView, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 import * as Yup from "yup";
 import TextAreaField from "../ui/TextAreaField";
+import { TextButton } from "../ui/TextButton";
 
 const DocumentUploadSchema = Yup.object().shape({
   documentType: Yup.string()
@@ -112,7 +107,7 @@ export default function DocumentUploadModal({
           documentIssueDate: values.documentIssueDate || undefined,
           documentExpiryDate: values.documentExpiryDate || undefined,
           address: values.address,
-          documents: uploadResponse.urls||[],
+          documents: uploadResponse.urls || [],
           additionalNotes: values.additionalNotes || undefined,
         });
 
@@ -291,72 +286,84 @@ export default function DocumentUploadModal({
               </AppText>
             )}
           </AppView>
+          <AppView style={{ gap: spacing.md }}>
+            {/* Document Number */}
+            <InputField
+              ref={documentNumberRef}
+              leftIcon={
+                <Feather
+                  name="file-text"
+                  color={colors.iconGray}
+                  size={icons.md}
+                />
+              }
+              label="Document Number *"
+              placeholder="Enter document number"
+              value={formik.values.documentNumber}
+              onChangeText={formik.handleChange("documentNumber")}
+              onBlur={formik.handleBlur("documentNumber")}
+              error={
+                formik.touched.documentNumber && formik.errors.documentNumber
+              }
+              returnKeyType="next"
+              onSubmit={() => fullNameRef.current?.focus()}
+            />
 
-          {/* Document Number */}
-          <InputField
-            ref={documentNumberRef}
-            leftIcon={
-              <Feather name="file-text" color={colors.iconGray} size={icons.md} />
-            }
-            label="Document Number *"
-            placeholder="Enter document number"
-            value={formik.values.documentNumber}
-            onChangeText={formik.handleChange("documentNumber")}
-            onBlur={formik.handleBlur("documentNumber")}
-            error={
-              formik.touched.documentNumber && formik.errors.documentNumber
-            }
-            returnKeyType="next"
-            onSubmit={() => fullNameRef.current?.focus()}
-          />
+            {/* Full Name */}
+            <InputField
+              ref={fullNameRef}
+              leftIcon={
+                <Feather name="user" color={colors.iconGray} size={icons.md} />
+              }
+              label="Full Name (Optional)"
+              placeholder="Full name as on document"
+              value={formik.values.fullName}
+              onChangeText={formik.handleChange("fullName")}
+              onBlur={formik.handleBlur("fullName")}
+              returnKeyType="next"
+              onSubmit={() => addressRef.current?.focus()}
+            />
 
-          {/* Full Name */}
-          <InputField
-            ref={fullNameRef}
-            leftIcon={
-              <Feather name="user" color={colors.iconGray} size={icons.md} />
-            }
-            label="Full Name (Optional)"
-            placeholder="Full name as on document"
-            value={formik.values.fullName}
-            onChangeText={formik.handleChange("fullName")}
-            onBlur={formik.handleBlur("fullName")}
-            returnKeyType="next"
-            onSubmit={() => addressRef.current?.focus()}
-          />
+            {/* Address */}
+            <InputField
+              ref={addressRef}
+              leftIcon={
+                <Feather
+                  name="map-pin"
+                  color={colors.iconGray}
+                  size={icons.md}
+                />
+              }
+              label="Address *"
+              placeholder="Your physical address"
+              value={formik.values.address}
+              onChangeText={formik.handleChange("address")}
+              onBlur={formik.handleBlur("address")}
+              error={formik.touched.address && formik.errors.address}
+              returnKeyType="next"
+              onSubmit={() => notesRef.current?.focus()}
+            />
 
-          {/* Address */}
-          <InputField
-            ref={addressRef}
-            leftIcon={
-              <Feather name="map-pin" color={colors.iconGray} size={icons.md} />
-            }
-            label="Address *"
-            placeholder="Your physical address"
-            value={formik.values.address}
-            onChangeText={formik.handleChange("address")}
-            onBlur={formik.handleBlur("address")}
-            error={formik.touched.address && formik.errors.address}
-            returnKeyType="next"
-            onSubmit={() => notesRef.current?.focus()}
-          />
-
-          {/* Additional Notes */}
-          <TextAreaField
-            ref={notesRef}
-            leftIcon={
-              <Feather name="message-square" color={colors.iconGray} size={icons.md} />
-            }
-            label="Additional Notes (Optional)"
-            placeholder="Any additional information"
-            value={formik.values.additionalNotes}
-            onChangeText={formik.handleChange("additionalNotes")}
-            onBlur={formik.handleBlur("additionalNotes")}
-            numberOfLines={3}
-          />
-
+            {/* Additional Notes */}
+            <TextAreaField
+              ref={notesRef}
+              leftIcon={
+                <Feather
+                  name="message-square"
+                  color={colors.iconGray}
+                  size={icons.md}
+                />
+              }
+              label="Additional Notes (Optional)"
+              placeholder="Any additional information"
+              value={formik.values.additionalNotes}
+              onChangeText={formik.handleChange("additionalNotes")}
+              onBlur={formik.handleBlur("additionalNotes")}
+              numberOfLines={3}
+            />
+          </AppView>
           {/* Document Upload Section */}
-          <AppView style={{ marginTop: spacing.md }}>
+          <AppView style={{ marginTop: spacing.md, gap: spacing.md }}>
             <AppText
               variant="md"
               style={{ fontWeight: "600", marginBottom: spacing.sm }}
@@ -435,11 +442,7 @@ export default function DocumentUploadModal({
                     flex: 1,
                   }}
                 >
-                  <Feather
-                    name="file"
-                    size={icons.md}
-                    color={colors.primary}
-                  />
+                  <Feather name="file" size={icons.md} color={colors.primary} />
                   <AppText
                     variant="sm"
                     numberOfLines={1}
@@ -449,7 +452,11 @@ export default function DocumentUploadModal({
                   </AppText>
                 </AppView>
                 <Pressable onPress={() => removeDocument(index)}>
-                  <Feather name="trash-2" size={icons.md} color={colors.error} />
+                  <Feather
+                    name="trash-2"
+                    size={icons.md}
+                    color={colors.error}
+                  />
                 </Pressable>
               </AppView>
             ))}
@@ -465,11 +472,11 @@ export default function DocumentUploadModal({
             borderTopColor: colors.border,
           }}
         >
-          <PrimaryButton
-            title={
-              isUploading ? "Uploading..." : "Continue to Face Verification"
-            }
+          <TextButton
+            title={isUploading ? "Uploading..." : "Submit & Continue"}
             onPress={() => formik.handleSubmit()}
+            backgroundColor={colors.black}
+            style={{ width: 300, alignSelf: "center", height: 50 }}
             disabled={isUploading || selectedDocuments.length === 0}
           />
         </AppView>

@@ -431,7 +431,9 @@ export default function FaceAutoCapture({
 
   if (!hasPermission) {
     return (
-      <View style={styles.centerContainer}>
+      <View
+        style={[styles.centerContainer, { backgroundColor: colors.background }]}
+      >
         <AppText style={{ marginBottom: spacing.md }}>
           We need camera permission for face verification
         </AppText>
@@ -489,7 +491,7 @@ export default function FaceAutoCapture({
         </AppText>
         <View
           style={{
-            backgroundColor: "#f0f0f0",
+            backgroundColor: colors.background,
             padding: spacing.md,
             borderRadius: 8,
           }}
@@ -620,7 +622,7 @@ export default function FaceAutoCapture({
               ]}
               onPress={resetCapture}
             >
-              <Ionicons name="refresh" size={24} color="#fff" />
+              <Ionicons name="refresh" size={24} color={colors.iconWhite} />
             </TouchableOpacity>
           )}
 
@@ -640,7 +642,11 @@ export default function FaceAutoCapture({
               ]}
               onPress={switchCamera}
             >
-              <Ionicons name="camera-reverse" size={28} color="#fff" />
+              <Ionicons
+                name="camera-reverse"
+                size={28}
+                color={colors.iconWhite}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -682,7 +688,7 @@ export default function FaceAutoCapture({
           <Animated.View
             style={[styles.verifyingContainer, { opacity: fadeAnim }]}
           >
-            <ActivityIndicator size="large" color="#fff" />
+            <ActivityIndicator size="large" color={colors.iconWhite} />
             <AppText style={[styles.verifyingText, { marginTop: spacing.md }]}>
               Verifying face...
             </AppText>
@@ -710,7 +716,7 @@ export default function FaceAutoCapture({
                 borderRadius: 20,
               }}
             >
-              <AppText style={{ color: "#fff", fontWeight: "600" }}>
+              <AppText style={{ color: colors.textWhite, fontWeight: "600" }}>
                 Cancel
               </AppText>
             </TouchableOpacity>
@@ -780,8 +786,8 @@ export default function FaceAutoCapture({
                 style={({ pressed }) => [
                   {
                     backgroundColor: pressed
-                      ? "rgba(250, 250, 250, 0.9)"
-                      : "rgba(250, 250, 250, 0.7)",
+                      ? colors.backgroundGray
+                      : colors.background,
                     padding: spacing.sm,
                     borderRadius: spacing.xl + spacing.sm,
                   },
@@ -791,7 +797,7 @@ export default function FaceAutoCapture({
                   style={{
                     padding: spacing.xl,
                     borderRadius: spacing.xl,
-                    backgroundColor: "#2f2f2f62",
+                    backgroundColor: colors.iconWhite,
                   }}
                 />
               </Pressable>
@@ -821,7 +827,7 @@ export default function FaceAutoCapture({
               <Ionicons
                 name="refresh"
                 size={18}
-                color="#fff"
+                color={colors.iconWhite}
                 style={{ marginRight: 8 }}
               />
               <AppText style={styles.retakeButtonText}>
@@ -933,7 +939,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   verifyingText: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "600",
   },

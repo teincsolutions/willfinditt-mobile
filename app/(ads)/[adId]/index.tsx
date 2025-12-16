@@ -13,9 +13,10 @@ import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { TextButton } from "@/components/ui/TextButton";
 import { useAd, useInfiniteAds } from "@/hooks/useAds";
+import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { useUser } from "@/hooks/useUser";
-import { Entypo } from "@expo/vector-icons";
+import { Entypo, Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { formatDistanceToNow } from "date-fns";
 import { router, useLocalSearchParams } from "expo-router";
@@ -30,6 +31,7 @@ export default function AdDetailsScreen() {
   const inserts = useSafeAreaInsets();
 
   const { data: ad, isLoading } = useAd(adId, !!adId);
+  const { user: currentUser } = useAuth();
   const { data: ads } = useInfiniteAds({
     limit: 10,
     userId: ad?.userId,
@@ -38,6 +40,9 @@ export default function AdDetailsScreen() {
 
   const reviewSheetRef = useRef<BottomSheet>(null);
   const { data: user } = useUser(ad?.userId);
+
+  // Check if current user is the owner of this ad
+  const isOwner = currentUser?.id === ad?.userId;
 
   // Animation values for header
   const lastScrollY = useRef(0);
@@ -155,13 +160,34 @@ export default function AdDetailsScreen() {
             />
           }
           right={
-            <TextButton
-              backgroundColor={colors.backgroundGray}
-              isLeft
-              icon={<Eye size={icons.sm} color={colors.iconBlack} />}
-              titleStyle={{ color: colors.text }}
-              title={String(ad?.views)}
-            />
+            <AppView
+              style={{
+                flexDirection: "row",
+                gap: spacing.sm,
+                alignItems: "center",
+              }}
+            >
+              {isOwner && (
+                <IconButton
+                  onPress={() => router.push(`/(ads)/${adId}/edit`)}
+                  icon={
+                    <Feather
+                      name="edit"
+                      color={colors.iconBlack}
+                      size={icons.sm}
+                    />
+                  }
+                  style={{ backgroundColor: colors.backgroundGray }}
+                />
+              )}
+              <TextButton
+                backgroundColor={colors.backgroundGray}
+                isLeft
+                icon={<Eye size={icons.sm} color={colors.iconBlack} />}
+                titleStyle={{ color: colors.text }}
+                title={String(ad?.views)}
+              />
+            </AppView>
           }
           containerStyle={{
             backgroundColor: "transparent",

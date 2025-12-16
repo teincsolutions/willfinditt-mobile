@@ -118,7 +118,13 @@ export default function VerificationScreen() {
       >
         <Stack.Screen
           options={{
-            header: () => <Header left={<BackButton />} title="Verification" />,
+            header: () => (
+              <Header
+                backgroundColor={colors.background}
+                navRowStyle={{ paddingHorizontal: spacing.md }}
+                left={<BackButton />}
+              />
+            ),
           }}
         />
         <AppText
@@ -144,7 +150,13 @@ export default function VerificationScreen() {
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen
         options={{
-          header: () => <Header left={<BackButton />} title="Verification" />,
+          header: () => (
+            <Header
+              backgroundColor={colors.background}
+              navRowStyle={{ paddingHorizontal: spacing.md }}
+              left={<BackButton />}
+            />
+          ),
         }}
       />
 
