@@ -11,6 +11,17 @@ import {
 import { useEffect, useState } from "react";
 import { useAuth } from "./useAuth";
 
+export const CHAT_MESSAGES_QUERY_KEYS = {
+  all: ["chat-messages"] as const,
+  chats: ["chats"] as const,
+  lists: () => [...CHAT_MESSAGES_QUERY_KEYS.all, "list"] as const,
+  list: (chatId: string) =>
+    [...CHAT_MESSAGES_QUERY_KEYS.lists(), { chatId }] as const,
+  details: () => [...CHAT_MESSAGES_QUERY_KEYS.all, "detail"] as const,
+  detail: (chatId: string) =>
+    [...CHAT_MESSAGES_QUERY_KEYS.details(), { chatId }] as const,
+};
+
 // Hook for creating chats
 export const useCreateChat = () => {
   const queryClient = useQueryClient();
@@ -56,7 +67,7 @@ export const useChatMessages = (
 
   // Get chat info to determine receiver
   const { data: chat } = useQuery({
-    queryKey: ["chat", chatId || ""],
+    queryKey: CHAT_MESSAGES_QUERY_KEYS.detail(chatId || ""),
     queryFn: () => chatsSerivce.getChat(chatId || ""),
     enabled: !!chatId,
   });
@@ -80,7 +91,7 @@ export const useChatMessages = (
     isFetchingNextPage,
     isRefetching,
   } = useInfiniteQuery({
-    queryKey: ["chat-messages", chatId || ""],
+    queryKey: CHAT_MESSAGES_QUERY_KEYS.list(chatId || ""),
     queryFn: ({ pageParam = 1 }) =>
       messagesSerivce.listMessages(chatId || "", {
         page: pageParam,
@@ -179,10 +190,13 @@ export const useChatMessages = (
       if (!context || !context.actualChatId) return;
       const { actualChatId, tempId, previous } = context;
       if (previous) {
-        queryClient.setQueryData(["chat-messages", actualChatId], previous);
+        queryClient.setQueryData(
+          CHAT_MESSAGES_QUERY_KEYS.list(actualChatId),
+          previous
+        );
       } else if (tempId) {
         queryClient.setQueryData(
-          ["chat-messages", actualChatId],
+          CHAT_MESSAGES_QUERY_KEYS.list(actualChatId),
           (oldData: any) => {
             if (!oldData) return oldData;
             const newPages = oldData.pages.map((p: any) => ({
@@ -200,9 +214,11 @@ export const useChatMessages = (
         (vars && (vars.customChatId || chatId)) || context?.actualChatId;
       if (actualChatId) {
         queryClient.invalidateQueries({
-          queryKey: ["chat-messages", actualChatId],
+          queryKey: CHAT_MESSAGES_QUERY_KEYS.list(actualChatId),
         });
-        queryClient.invalidateQueries({ queryKey: ["chat", actualChatId] });
+        queryClient.invalidateQueries({
+          queryKey: CHAT_MESSAGES_QUERY_KEYS.detail(actualChatId),
+        });
         queryClient.invalidateQueries({ queryKey: ["chats"] });
       }
     },
@@ -276,7 +292,9 @@ export const useChatMessages = (
     onSuccess: () => {
       // Update chat unread count in cache
       queryClient.invalidateQueries({ queryKey: ["chats"] });
-      queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_MESSAGES_QUERY_KEYS.detail(chatId || ""),
+      });
     },
   });
 
@@ -296,33 +314,40 @@ export const useChatMessages = (
       if (!message || !message.chatId || message.chatId !== chatId) return;
 
       // Insert message into cache (defensive). Skip duplicates by message id.
-      queryClient.setQueryData(["chat-messages", chatId], (oldData: any) => {
-        const incomingPage = {
-          data: [message],
-          meta: { page: 1, totalPages: 1, total: 1 },
-        };
-        if (!oldData) return { pages: [incomingPage], pageParams: [1] };
+      queryClient.setQueryData(
+        CHAT_MESSAGES_QUERY_KEYS.list(chatId),
+        (oldData: any) => {
+          const incomingPage = {
+            data: [message],
+            meta: { page: 1, totalPages: 1, total: 1 },
+          };
+          if (!oldData) return { pages: [incomingPage], pageParams: [1] };
 
-        const newPages = oldData.pages.map((p: any) => ({
-          ...p,
-          data: [...p.data.filter((m: Message) => !m._tmpId)],
-        }));
-        // If a message with same id already exists, skip adding
-        const exists = oldData.pages.some((page: any) =>
-          page.data.some((m: any) => m.id === message.id)
-        );
-        if (exists) return oldData;
+          const newPages = oldData.pages.map((p: any) => ({
+            ...p,
+            data: [...p.data.filter((m: Message) => !m._tmpId)],
+          }));
+          // If a message with same id already exists, skip adding
+          const exists = oldData.pages.some((page: any) =>
+            page.data.some((m: any) => m.id === message.id)
+          );
+          if (exists) return oldData;
 
-        // append to first page
-        if (newPages.length > 0) newPages[0].data.push(message);
-        else newPages.push(incomingPage);
+          // append to first page
+          if (newPages.length > 0) newPages[0].data.push(message);
+          else newPages.push(incomingPage);
 
-        return { ...oldData, pages: newPages };
-      });
+          return { ...oldData, pages: newPages };
+        }
+      );
 
       // Update chat summary and unread counts
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
-      queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_MESSAGES_QUERY_KEYS.chats,
+      });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_MESSAGES_QUERY_KEYS.detail(chatId || ""),
+      });
     };
 
     const onTypingStart = (data: any) => {
@@ -356,26 +381,39 @@ export const useChatMessages = (
       if (d?.chatId !== chatId) return;
       // up message to delivered
       // Update message status in cache
-      queryClient.setQueryData(["chat-messages", chatId], (oldData: any) => {
-        if (!oldData) return oldData;
-        const newPages = oldData.pages.map((p: any) => ({
-          ...p,
-          data: p.data.map((m: any) => ({ ...m, _isDelivered: true })),
-        }));
-        return { ...oldData, pages: newPages };
-      });
+      queryClient.setQueryData(
+        CHAT_MESSAGES_QUERY_KEYS.list(chatId || ""),
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          const newPages = oldData.pages.map((p: any) => ({
+            ...p,
+            data: p.data.map((m: any) => ({ ...m, _isDelivered: true })),
+          }));
+          return { ...oldData, pages: newPages };
+        }
+      );
 
       // so the UI can refetch authoritative state if needed.
-      queryClient.invalidateQueries({ queryKey: ["chat-messages", chatId] });
-      queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_MESSAGES_QUERY_KEYS.list(chatId || ""),
+      });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_MESSAGES_QUERY_KEYS.detail(chatId || ""),
+      });
     };
 
     const onMessageRead = (d: any) => {
       if (!mounted) return;
       if (d?.chatId !== chatId) return;
-      queryClient.invalidateQueries({ queryKey: ["chat-messages", chatId] });
-      queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_MESSAGES_QUERY_KEYS.list(chatId || ""),
+      });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_MESSAGES_QUERY_KEYS.detail(chatId || ""),
+      });
+      queryClient.invalidateQueries({
+        queryKey: CHAT_MESSAGES_QUERY_KEYS.chats,
+      });
     };
 
     // Register handlers now

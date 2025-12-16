@@ -17,13 +17,12 @@ type Props = {
 };
 
 export default function ChatListItem({ chat, onPress }: Props) {
-  const { colors, spacing, radius, icons } = useTheme();
+  const { colors, spacing, icons } = useTheme();
   const { user } = useAuth();
   // adTitle from adId
-  const {data: ad} =useAd(chat?.adId||"");
+  const { data: ad } = useAd(chat?.adId || "");
   // Determine the other participant (not current user)
-  const otherUser =
-    chat.senderId === user?.id ? chat.receiver : chat.sender;
+  const otherUser = chat.senderId === user?.id ? chat.receiver : chat.sender;
   const displayName =
     [otherUser.firstName, otherUser.lastName].filter(Boolean).join(" ") ||
     otherUser.username;

@@ -16,7 +16,7 @@ export const Colors = {
     accentRed: "#FF383C",
     accentBlue: "#1B1A57",
     brown: "#312920",
-    purple: "#5A3D8B",  
+    purple: "#5A3D8B",
     blue: "#3B82F6",
     green: "#4BB543",
     success: "#4BB543",
@@ -51,7 +51,7 @@ export const Colors = {
     accent: "#FFD84A", // Added accent color for dark mode
     yellow: "#F8BD3C",
     accentRed: "#FF6B6B",
-    accentBlue: "#1B1A57",
+    accentBlue: "#FEFEFE",
     brown: "#5C4B43",
     blue: "#60A5FA",
     purple: "#9D7CD8",

@@ -140,7 +140,13 @@ export default function MessagesScreen() {
               right={
                 <IconButton
                   onPress={() => setShowSearch(!showSearch)}
-                  icon={<Feather name="search" size={icons.md} />}
+                  icon={
+                    <Feather
+                      name="search"
+                      size={icons.md}
+                      color={colors.iconBlack}
+                    />
+                  }
                 />
               }
               title={"Messages"}

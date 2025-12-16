@@ -43,7 +43,7 @@ export default function ChatScreen() {
     if (chat && !isLoading) {
       markAsRead();
     }
-  }, [chat, isLoading]);
+  }, [chat, isLoading, markAsRead]);
 
   // Determine the other participant
   const otherUser = chat
@@ -135,7 +135,9 @@ export default function ChatScreen() {
       <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
         <Stack.Screen
           options={{
-            header: () => <ChatHeader isOnline={isOtherOnline} name={displayName} />,
+            header: () => (
+              <ChatHeader isOnline={isOtherOnline} name={displayName} />
+            ),
           }}
         />
         <AppView>
@@ -148,7 +150,7 @@ export default function ChatScreen() {
             flexGrow: 1,
             paddingBottom: spacing.lg + insets.bottom,
           }}
-          stickyHeaderIndices={chat?.adId?[0]:undefined}
+          stickyHeaderIndices={chat?.adId ? [0] : undefined}
           showsVerticalScrollIndicator={false}
           data={messages.reverse()}
           keyExtractor={(item) => item.id}

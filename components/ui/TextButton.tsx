@@ -48,57 +48,61 @@ export function TextButton({
   const { colors, textButton, spacing, icons } = useTheme();
   return (
     <Pressable disabled={disabled} onPress={onPress}>
-       <LinearGradient
-      colors={gradientColors || [colors.background, colors.background]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={[
-        {
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: textButton.borderRadius,
-        },
-        style,
-      ]}
-    >
-      <View
+      <LinearGradient
+        colors={gradientColors || [colors.background, colors.background]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={[
-          styles.row,
-          textButton,
           {
-            backgroundColor: gradientColors
-              ? undefined
-              : backgroundColor || colors.background,
-            gap: spacing.sm,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: textButton.borderRadius,
           },
           style,
         ]}
       >
-        {!!isLeft && icon}
-        <AppText
-          variant="md"
-          numberOfLines={numberOfLines}
-          style={[{textAlign:"center"},underline && { textDecorationLine: "underline" }, titleStyle]}
+        <View
+          style={[
+            styles.row,
+            textButton,
+            {
+              backgroundColor: gradientColors
+                ? undefined
+                : backgroundColor || colors.background,
+              gap: spacing.sm,
+            },
+            style,
+          ]}
         >
-          {title}
-        </AppText>
+          {!!isLeft && icon}
+          <AppText
+            variant="md"
+            numberOfLines={numberOfLines}
+            style={[
+              { textAlign: "center" },
+              underline && { textDecorationLine: "underline" },
+              titleStyle,
+            ]}
+          >
+            {title}
+          </AppText>
 
-        {!isLeft && loading ? (
-          <ActivityIndicator
-            size={icons.sm}
-            color={accentColor || colors.accent}
-          />
-        ) : (
-          !isLeft && icon
-        )}
-        {isLeft && loading && (
-          <ActivityIndicator
-            size={icons.sm}
-            color={accentColor || colors.accent}
-          />
-        )}
-      </View>
-    </LinearGradient>
+          {!isLeft && loading ? (
+            <ActivityIndicator
+              size={icons.sm}
+              color={accentColor || colors.accent}
+            />
+          ) : (
+            !isLeft && icon
+          )}
+          {isLeft && loading && (
+            <ActivityIndicator
+              size={icons.sm}
+              color={accentColor || colors.accent}
+            />
+          )}
+        </View>
+      </LinearGradient>
     </Pressable>
   );
 }

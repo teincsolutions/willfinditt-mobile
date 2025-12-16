@@ -41,7 +41,7 @@ async function clearAuthState(): Promise<void> {
   }
   tokenManager.clearTokens();
   mmkvStorage.removeItem(AUTH_KEYS.IS_AUTHENTICATED);
-  queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
+  queryClient.clear();
 }
 
 // ============================================
@@ -76,7 +76,9 @@ export function useAuth() {
 
     // Fetch and store user profile in React Query cache
     queryClient.refetchQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
-    queryClient.invalidateQueries({ queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE });
+    queryClient.invalidateQueries({
+      queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
+    });
     toast.success("Login Successful!");
   };
 
