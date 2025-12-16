@@ -462,7 +462,7 @@ export const useChatMessages = (
     },
   });
 
-  return {
+  return {    
     messages,
     chat,
     isLoading,
