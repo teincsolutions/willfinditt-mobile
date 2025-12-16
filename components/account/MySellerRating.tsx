@@ -1,18 +1,26 @@
 import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleProp, View, ViewStyle } from "react-native";
-import AppText from "./AppText";
-import AppView from "./AppView";
-import { TextButton } from "./TextButton";
+import { Pressable, StyleProp, View, ViewStyle } from "react-native";
+import AppText from "../ui/AppText";
+import AppView from "../ui/AppView";
+import { TextButton } from "../ui/TextButton";
 
 type Props = {
   rating: number;
   totalReviews: number;
   style?: StyleProp<ViewStyle>;
+  title?: string | React.ReactNode;
+  onPress?: () => void;
 };
 
-export default function MySellerRating({ rating, totalReviews, style }: Props) {
+export default function MySellerRating({
+  rating,
+  totalReviews,
+  style,
+  title,
+  onPress,
+}: Props) {
   const { colors, spacing, icons, fontSizes } = useTheme();
 
   // Render stars (5 total)
@@ -56,7 +64,8 @@ export default function MySellerRating({ rating, totalReviews, style }: Props) {
   };
 
   return (
-    <View
+    <Pressable
+      onPress={onPress}
       style={[
         {
           flexDirection: "row",
@@ -91,20 +100,31 @@ export default function MySellerRating({ rating, totalReviews, style }: Props) {
           alignItems: "baseline",
         }}
       >
-        <AppText
-          variant="sm"
-          fontWeight="medium"
-          style={{ color: colors.text }}
-        >
-          {rating.toFixed(1)}
-        </AppText>
-
+        {title ? (
+          <AppText variant="xs" style={{ fontWeight: "600" }}>
+            {rating.toFixed(1)} <AppText variant="xs">({totalReviews})</AppText>
+          </AppText>
+        ) : null}
         <TextButton
+          onPress={onPress}
           titleStyle={{ fontSize: fontSizes.xs }}
-          style={{ height: 32, paddingHorizontal: spacing.xs }}
-          title={`(${totalReviews}) My Reviews`}
+          style={{
+            height: icons.md,
+            paddingHorizontal: spacing.xs,
+            minWidth: 50,
+          }}
+          title={
+            title || (
+              <>
+                {rating.toFixed(1)}
+                <AppText style={{ fontWeight: "400", fontSize: fontSizes.xs }}>
+                  ({totalReviews})
+                </AppText>
+              </>
+            )
+          }
         />
       </AppView>
-    </View>
+    </Pressable>
   );
 }

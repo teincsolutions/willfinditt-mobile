@@ -7,7 +7,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import AppText from "./AppText";
+import AppText from "../ui/AppText";
 
 export interface StatItem {
   label: string;
@@ -16,7 +16,6 @@ export interface StatItem {
 }
 
 interface StatsSectionProps {
-  title?: string;
   stats: StatItem[];
   isLoading?: boolean;
   columns?: 2 | 3 | 4;
@@ -24,7 +23,6 @@ interface StatsSectionProps {
 }
 
 export default function StatsSection({
-  title = "Statistics",
   stats,
   isLoading = false,
   columns = 2,
@@ -60,6 +58,7 @@ export default function StatsSection({
                   width: `${100 / columns - 2}%`,
                   alignItems: "center",
                   justifyContent: "space-between",
+                  gap: spacing.sm
                 },
               ]}
             >

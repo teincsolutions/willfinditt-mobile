@@ -1,5 +1,5 @@
 import { userService } from "@/services/userService";
-import type { UpdateProfileRequest, User } from "@/types";
+import type { User } from "@/types";
 import { mmkvStorage } from "@/utils/mmkvStorage";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -15,20 +15,6 @@ export const useUser = (userId?: string) => {
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  // Update profile mutation
-  const updateProfileMutation = useMutation({
-    mutationFn: (data: UpdateProfileRequest) => userService.updateProfile(data),
-    onSuccess: (updatedUser: User) => {
-      // Update auth user in storage
-      mmkvStorage.setJSON("auth_user", updatedUser);
-      // Update React Query cache
-      queryClient.setQueryData(["auth", "user"], updatedUser);
-      if (userId) {
-        queryClient.setQueryData(["user", userId], updatedUser);
-      }
-    },
   });
 
   // Request email change mutation
@@ -92,13 +78,6 @@ export const useUser = (userId?: string) => {
   return {
     // Query
     ...userQuery,
-
-    // Profile update
-    updateProfile: updateProfileMutation.mutate,
-    updateProfileAsync: updateProfileMutation.mutateAsync,
-    isUpdatingProfile: updateProfileMutation.isPending,
-    updateProfileError: updateProfileMutation.error,
-
     // Email change
     requestEmailChange: requestEmailChangeMutation.mutate,
     requestEmailChangeAsync: requestEmailChangeMutation.mutateAsync,

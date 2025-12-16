@@ -2,9 +2,9 @@ import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
-import AppText from "./AppText";
-import AppView from "./AppView";
-import { TextButton } from "./TextButton";
+import AppText from "../ui/AppText";
+import AppView from "../ui/AppView";
+import { TextButton } from "../ui/TextButton";
 
 type Props = {
   rating: number;
@@ -21,7 +21,7 @@ export default function SellerRating({
   showReviewButton = true,
   style,
 }: Props) {
-  const { colors, spacing, icons } = useTheme();
+  const { colors, spacing, icons, fontSizes } = useTheme();
 
   // Render stars (5 total)
   const renderStars = () => {
@@ -35,7 +35,7 @@ export default function SellerRating({
           <Feather
             key={i}
             name="star"
-            size={icons.md}
+            size={icons.sm}
             color={colors.secondary}
             fill={colors.secondary}
           />
@@ -45,7 +45,7 @@ export default function SellerRating({
           <View key={i} style={{ position: "relative" }}>
             <Feather
               name="star"
-              size={icons.md}
+              size={icons.sm}
               color={colors.iconLightGray}
               fill={colors.iconLightGray}
             />
@@ -53,12 +53,12 @@ export default function SellerRating({
               style={{
                 position: "absolute",
                 overflow: "hidden",
-                width: icons.md / 2,
+                width: icons.sm / 2,
               }}
             >
               <Feather
                 name="star"
-                size={icons.md}
+                size={icons.sm}
                 color={colors.secondary}
                 fill={colors.secondary}
               />
@@ -70,7 +70,7 @@ export default function SellerRating({
           <Feather
             key={i}
             name="star"
-            size={icons.md}
+            size={icons.sm}
             color={colors.iconLightGray}
             fill={colors.iconLightGray}
           />
@@ -86,7 +86,7 @@ export default function SellerRating({
       style={[
         {
           flexDirection: "row",
-          alignItems: "center",
+          alignItems: "flex-end",
           gap: spacing.md,
         },
         style,
@@ -133,9 +133,9 @@ export default function SellerRating({
           title="Write Review"
           onPress={onReviewPress}
           gradientColors={[colors.primary, colors.accent]}
-          titleStyle={{
-            color: colors.textWhite,
-          }}
+          style={{ height: 32 }}
+          titleStyle={{ fontSize: fontSizes.sm, color: colors.textWhite, fontWeight: "600" }}
+    
         />
       )}
     </View>

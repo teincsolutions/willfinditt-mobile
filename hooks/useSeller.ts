@@ -14,38 +14,24 @@ export const SELLER_QUERY_KEYS = {
   SELLER_MY_STATS: ["seller", "my-stats"] as const,
 };
 
-export const useSeller = (sellerId?: string) => {
+export const useMySeller = () => {
   const queryClient = useQueryClient();
 
   // Get my seller profile
   const mySellerProfileQuery = useQuery({
     queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
     queryFn: () => sellerService.getMySellerProfile(),
-    enabled: !sellerId, // Only fetch if no sellerId is provided
     staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
   });
 
-  // Get seller profile by ID
-  const sellerProfileQuery = useQuery({
-    queryKey: SELLER_QUERY_KEYS.SELLER_PROFILE(sellerId!),
-    queryFn: () => {
-      if (!sellerId) throw new Error("Seller ID is required");
-      return sellerService.getSellerProfile(sellerId);
-    },
-    enabled: !!sellerId,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Get seller stats
-  const sellerStatsQuery = useQuery({
-    queryKey: SELLER_QUERY_KEYS.SELLER_STATS(sellerId || mySellerProfileQuery.data?.id!),
-    queryFn: async () => {
-      const id = sellerId || mySellerProfileQuery.data?.id;
-      if (!id) throw new Error("Seller ID is required");
-      return sellerService.getSellerStats(id);
-    },
-    enabled: !!sellerId || !!mySellerProfileQuery.data?.id,
+  // Get my seller stats
+  const mySellerStatsQuery = useQuery({
+    queryKey: SELLER_QUERY_KEYS.SELLER_MY_STATS,
+    queryFn: () => sellerService.getMySellerStats(),
     staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
   });
 
   // Create seller profile mutation
@@ -74,7 +60,7 @@ export const useSeller = (sellerId?: string) => {
       queryClient.setQueryData(SELLER_QUERY_KEYS.SELLER_PROFILE(sellerProfile.id), sellerProfile);
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.AUTH_USER });
     },
-    onError: (error:any) => {
+    onError: (error: any) => {
       console.log("Failed to update seller profile:", error.response?.data || error.message);
     }
   });
@@ -110,20 +96,14 @@ export const useSeller = (sellerId?: string) => {
 
   return {
     // Queries
-    sellerProfile: sellerId
-      ? sellerProfileQuery.data
-      : mySellerProfileQuery.data,
-    isLoading: sellerId
-      ? sellerProfileQuery.isLoading
-      : mySellerProfileQuery.isLoading,
-    isError: sellerId
-      ? sellerProfileQuery.isError
-      : mySellerProfileQuery.isError,
-    error: sellerId ? sellerProfileQuery.error : mySellerProfileQuery.error,
+    sellerProfile: mySellerProfileQuery.data,
+    isLoading: mySellerProfileQuery.isLoading,
+    isError: mySellerProfileQuery.isError,
+    error: mySellerProfileQuery.error,
 
     // Stats
-    stats: sellerStatsQuery.data,
-    isLoadingStats: sellerStatsQuery.isLoading,
+    stats: mySellerStatsQuery.data,
+    isLoadingStats: mySellerStatsQuery.isLoading,
 
     // Mutations
     createSellerProfile: createSellerProfileMutation.mutate,
@@ -148,17 +128,43 @@ export const useSeller = (sellerId?: string) => {
     isUpdatingVerification: updateVerificationMutation.isPending,
 
     // Refetch
-    refetch: sellerId
-      ? sellerProfileQuery.refetch
-      : mySellerProfileQuery.refetch,
+    refetch: mySellerProfileQuery.refetch,
   };
 };
 
-export const useSellerStats = () =>
-  useQuery({
-    queryKey: SELLER_QUERY_KEYS.SELLER_MY_STATS,
-    queryFn: async () => {
-      return sellerService.getMySellerStats();
-    },
+export const useSeller = (sellerId: string) => {
+  const queryClient = useQueryClient();
+
+  // Get seller profile by ID
+  const sellerProfileQuery = useQuery({
+    queryKey: SELLER_QUERY_KEYS.SELLER_PROFILE(sellerId),
+    queryFn: () => sellerService.getSellerProfile(sellerId),
+    enabled: !!sellerId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Get seller stats by ID
+  const sellerStatsQuery = useQuery({
+    queryKey: SELLER_QUERY_KEYS.SELLER_STATS(sellerId),
+    queryFn: () => sellerService.getSellerStats(sellerId),
+    enabled: !!sellerId,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  return {
+    // Queries
+    sellerProfile: sellerProfileQuery.data,
+    isLoading: sellerProfileQuery.isLoading,
+    isError: sellerProfileQuery.isError,
+    error: sellerProfileQuery.error,
+
+    // Stats
+    stats: sellerStatsQuery.data,
+    isLoadingStats: sellerStatsQuery.isLoading,
+
+    // Refetch
+    refetch: sellerProfileQuery.refetch,
+  };
+};
+
+

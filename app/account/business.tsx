@@ -1,9 +1,10 @@
+import BusinessProfileSkeleton from "@/components/account/BusinessProfileSkeleton";
+import MySellerProfileHeader from "@/components/account/MySellerProfileHeader";
+import StatsSection, { StatItem } from "@/components/account/StatsSection";
 import { MyProductCardLandscape } from "@/components/ads/MyProductCardLandscape";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
-import BusinessProfileHeader from "@/components/ui/BusinessProfileHeader";
 import { Header } from "@/components/ui/Header";
-import StatsSection, { StatItem } from "@/components/ui/StatsSection";
 import SwipeableTabs, {
   TabDataset,
   TabItem,
@@ -12,7 +13,7 @@ import { TextButton } from "@/components/ui/TextButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useInfiniteMyAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
-import { useSeller, useSellerStats } from "@/hooks/useSeller";
+import { useMySeller } from "@/hooks/useSeller";
 import { AdStatus } from "@/types";
 import { Ad } from "@/types/ad";
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -24,19 +25,27 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
+  Share,
   StyleSheet,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { toast } from "sonner-native";
+
+const frontendUrl =
+  process.env.EXPO_PUBLIC_FRONTEND_URL || "https://willfinditt.com";
 
 export default function BusinessProfileScreen() {
   const { colors, spacing, icons } = useTheme();
   const insets = useSafeAreaInsets();
 
   const { user } = useAuth();
-  const { sellerProfile, isLoading: isLoadingProfile, refetch } = useSeller();
-  const { data: stats, isLoading: isLoadingStats } = useSellerStats();
+  const {
+    sellerProfile,
+    isLoading: isLoadingProfile,
+    stats,
+    isLoadingStats,
+    refetch,
+  } = useMySeller();
 
   const [activeTab, setActiveTab] = useState<AdStatus>(AdStatus.ACTIVE);
   const [refreshing, setRefreshing] = useState(false);
@@ -75,9 +84,21 @@ export default function BusinessProfileScreen() {
   };
 
   const handleShare = () => {
-    // TODO: Implement share functionality
-    toast.info("Share functionality coming soon");
+    const businessUrl = `${frontendUrl}/seller/${sellerProfile?.id}`;
+    Share.share({
+      message: `Check out my business on WillFindItt: ${businessUrl}`,
+      url: businessUrl,
+      title: "My Business on WillFindItt",
+    });
   };
+
+  const handleReviewPress = () => {
+    router.push("/account/my-reviews");
+  };
+
+  if (isLoadingProfile) {
+    return <BusinessProfileSkeleton />;
+  }
 
   if (!sellerProfile) {
     return (
@@ -194,7 +215,7 @@ export default function BusinessProfileScreen() {
       color: colors.success,
     },
     {
-      label: "Suspended Ads",
+      label: "Suspended",
       value: stats?.suspendedAds || 0,
       color: colors.error,
     },
@@ -240,7 +261,7 @@ export default function BusinessProfileScreen() {
           paddingBottom: insets.bottom + spacing.md,
           backgroundColor: colors.backgroundPrimary,
         }}
-        tabScrollStyle={{ paddingTop: 45 + spacing.md }}
+        tabScrollStyle={{ paddingTop: 45 +  spacing.md }}
         renderItem={({ item }: { item: Ad }) => (
           <MyProductCardLandscape
             ad={item}
@@ -251,11 +272,12 @@ export default function BusinessProfileScreen() {
         ListHeaderComponent={
           <AppView style={{ backgroundColor: colors.yellow }}>
             {/* Business Profile Header */}
-            <BusinessProfileHeader
+            <MySellerProfileHeader
               user={user || undefined}
               sellerProfile={sellerProfile}
               onEditProfile={handleEditBusiness}
               onShare={handleShare}
+              onReviewsPress={handleReviewPress}
             />
 
             {/* Stats Section */}
@@ -263,7 +285,7 @@ export default function BusinessProfileScreen() {
               stats={statsData}
               isLoading={isLoadingStats}
               columns={2}
-              style={{ marginBottom: -50 }}
+              style={{ marginBottom: -45 }}
             />
           </AppView>
         }
@@ -325,6 +347,7 @@ export default function BusinessProfileScreen() {
             </View>
           ) : undefined
         }
+        onRefresh={handleRefresh}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

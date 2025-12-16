@@ -5,12 +5,12 @@ import ChatInputBar from "@/components/chat/ChatInputBar";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { useAuth } from "@/hooks/useAuth";
-import { useChatMessages } from "@/hooks/useChatMessages";
+import { useChatMessages, useCreateChat } from "@/hooks/useChatMessages";
 import { useTheme } from "@/hooks/useTheme";
 import { formatTime } from "@/lib/formatTime";
 import { Message } from "@/types/chat";
 import { Stack, useLocalSearchParams } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -20,11 +20,13 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ChatScreen() {
-  const { chatId } = useLocalSearchParams<{ chatId: string }>();
+  const { chatId: initialChatId, userId, adId } = useLocalSearchParams<{ chatId: string, userId: string, adId: string }>();
   const { spacing, colors } = useTheme();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
 
+  const [chatId, setChatId] = useState<string>(initialChatId);
+  const {createChat, isCreating} = useCreateChat();
   const {
     messages,
     chat,

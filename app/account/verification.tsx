@@ -6,7 +6,7 @@ import { BackButton } from "@/components/ui/BackButton";
 import { Header } from "@/components/ui/Header";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import { useAuth } from "@/hooks/useAuth";
-import { useSeller } from "@/hooks/useSeller";
+import { useMySeller } from "@/hooks/useSeller";
 import { useTheme } from "@/hooks/useTheme";
 import { DocumentType } from "@/types/enums";
 import { Image } from "expo-image";
@@ -21,7 +21,7 @@ export default function VerificationScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { submitVerificationAsync, isSubmittingVerification } = useSeller();
+  const { submitVerificationAsync, isSubmittingVerification } = useMySeller();
 
   const [showDocumentModal, setShowDocumentModal] = useState(false);
   const [showFaceModal, setShowFaceModal] = useState(false);

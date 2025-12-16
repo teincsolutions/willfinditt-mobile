@@ -212,34 +212,16 @@ function MyProductCardContent({
       case "SOLD":
         return colors.textGray;
       case "EXPIRED":
-        return colors.error;
+        return colors.warning;
       case "SUSPENDED":
         return colors.error;
       case "DELETED":
         return colors.textGray;
       default:
-        return colors.textGray;
+        return colors.iconLightGray;
     }
   };
 
-  const getStatusLabel = () => {
-    switch (ad.status) {
-      case "ACTIVE":
-        return "Active";
-      case "DRAFT":
-        return "Draft";
-      case "SOLD":
-        return "Sold";
-      case "EXPIRED":
-        return "Expired";
-      case "SUSPENDED":
-        return "Suspended";
-      case "DELETED":
-        return "Deleted";
-      default:
-        return ad.status || "Unknown";
-    }
-  };
 
   return (
     <TouchableOpacity
@@ -248,7 +230,7 @@ function MyProductCardContent({
         styles.wrap,
         {
           backgroundColor: colors.background,
-          padding: spacing.md,
+          padding: spacing.sm,
           borderRadius: radius.lg,
           borderWidth: 1,
           borderColor: colors.border,
@@ -258,18 +240,42 @@ function MyProductCardContent({
       activeOpacity={0.9}
     >
       {/* Image */}
-      <Image
-        source={{ uri: ad.images?.[0] || "" }}
-        style={[
-          styles.image,
-          {
-            borderRadius: radius.md,
-            marginRight: spacing.md,
-          },
-        ]}
-        placeholder={{ blurhash }}
-      />
+      <View>
+        <Image
+          source={{ uri: ad.images?.[0] || "" }}
+          style={[
+            styles.image,
+            {
+              borderRadius: radius.md,
+              marginRight: spacing.md,
+            },
+          ]}
+          placeholder={{ blurhash }}
+        />
 
+        {/* Status Badge */}
+        <View
+          style={[
+            styles.statusBadge,
+            {
+              top:0,
+              right: spacing.lg/2,
+              backgroundColor: colors.background,
+              height: spacing.lg,
+              width: spacing.lg,
+              borderRadius: spacing.lg,
+            },
+          ]}
+        >
+          <View style={{
+            backgroundColor: getStatusColor(),
+            width: spacing.md,
+            height: spacing.md,
+            borderRadius: spacing.md,
+            margin: (spacing.lg - spacing.md)/2,
+          }} />
+        </View>
+      </View>
       {/* Info */}
       <View style={styles.info}>
         {/* Title & Status */}
@@ -277,30 +283,6 @@ function MyProductCardContent({
           <AppText style={[{ fontWeight: "600", flex: 1 }]} numberOfLines={2}>
             {ad.title}
           </AppText>
-
-          {/* Status Badge */}
-          <View
-            style={[
-              styles.statusBadge,
-              {
-                backgroundColor: getStatusColor() + "20",
-                paddingHorizontal: spacing.xs,
-                paddingVertical: 2,
-                borderRadius: radius.sm,
-                marginLeft: spacing.xs,
-              },
-            ]}
-          >
-            <AppText
-              style={{
-                color: getStatusColor(),
-                fontSize: 10,
-                fontWeight: "600",
-              }}
-            >
-              {getStatusLabel()}
-            </AppText>
-          </View>
         </View>
 
         {/* Price & Stats */}
@@ -407,7 +389,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   statusBadge: {
-    alignSelf: "flex-start",
+    position:"absolute"
   },
   priceRow: {
     flexDirection: "row",

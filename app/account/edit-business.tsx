@@ -6,7 +6,7 @@ import InputField from "@/components/ui/InputField";
 import TextAreaField from "@/components/ui/TextAreaField";
 import { TextButton } from "@/components/ui/TextButton";
 import { useAuth } from "@/hooks/useAuth";
-import { useSeller } from "@/hooks/useSeller";
+import { useMySeller } from "@/hooks/useSeller";
 import { useTheme } from "@/hooks/useTheme";
 import { CreateSellerProfileRequest } from "@/types";
 import { Feather } from "@expo/vector-icons";
@@ -15,11 +15,11 @@ import { Stack, useRouter } from "expo-router";
 import { useFormik } from "formik";
 import { useRef } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  TextInput,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
@@ -56,7 +56,7 @@ export default function SetupBusinessProfileScreen() {
     isCreating,
     updateSellerProfileAsync,
     isUpdating,
-  } = useSeller();
+  } = useMySeller();
   const router = useRouter();
 
   const sellerProfile = user?.sellerProfile;

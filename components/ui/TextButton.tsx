@@ -16,7 +16,7 @@ import AppText from "./AppText";
 
 type Props = {
   gradientColors?: readonly [ColorValue, ColorValue, ...ColorValue[]];
-  title: string;
+  title: string | ReactNode;
   titleStyle?: StyleProp<TextStyle>;
   underline?: boolean;
   isLeft?: boolean;

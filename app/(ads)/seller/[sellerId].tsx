@@ -1,0 +1,191 @@
+import BusinessProfileHeader from "@/components/account/BusinessProfileHeader";
+import BusinessProfileSkeleton from "@/components/account/BusinessProfileSkeleton";
+import ProductCard from "@/components/ads/ProductCard";
+import ProductCardSkeleton from "@/components/ads/ProductCardSkeleton";
+import AppText from "@/components/ui/AppText";
+import AppView from "@/components/ui/AppView";
+import { Header } from "@/components/ui/Header";
+import IconButton from "@/components/ui/IconButton";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useInfiniteAds } from "@/hooks/useAds";
+import { useAuth } from "@/hooks/useAuth";
+import { useSeller } from "@/hooks/useSeller";
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { router, Stack } from "expo-router";
+import { useLocalSearchParams } from "expo-router/build/hooks";
+import React from "react";
+import { Share } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import MasonryList from "reanimated-masonry-list";
+
+const frontendUrl =
+  process.env.EXPO_PUBLIC_FRONTEND_URL || "https://willfinditt.com";
+
+export default function SellerProfileScreen() {
+  const { colors, spacing, icons } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { sellerId } = useLocalSearchParams<{ sellerId: string }>();
+  const { user } = useAuth();
+
+  const { sellerProfile, isLoading: isLoadingProfile } = useSeller(sellerId);
+
+  // Fetch all user ads
+  const {
+    data: adsData,
+    isLoading: isLoadingAds,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteAds({ limit: 20, userId: sellerProfile?.userId });
+
+  const allAds = adsData?.pages.flatMap((page) => page.data) || [];
+
+  const handleShare = () => {
+    const businessUrl = `${frontendUrl}/seller/${sellerProfile?.id}`;
+    Share.share({
+      message: `Check out my business on WillFindItt: ${businessUrl}`,
+      url: businessUrl,
+      title: "My Business on WillFindItt",
+    });
+  };
+
+  const handleCall = () => {
+    router.push(`tel:${sellerProfile?.user?.phone}`);
+  };
+
+  const handleReviewPress = () => {
+    router.push("/account/my-reviews");
+  };
+
+  const handleMessage = () => {
+    if (sellerProfile?.userId && user) {
+      router.push({
+        pathname: "/(chats)/[chatId]",
+        params: { chatId: "", userId: sellerProfile.userId },
+      });
+    }
+  };
+
+  if (isLoadingProfile) {
+    return <BusinessProfileSkeleton />;
+  }
+
+  if (!sellerProfile) {
+    return (
+      <AppView
+        style={{
+          flex: 1,
+          backgroundColor: colors.backgroundPrimary,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Stack.Screen
+          options={{
+            headerShown: true,
+            header: () => (
+              <Header
+                backgroundColor={colors.yellow}
+                containerStyle={{
+                  paddingBottom: spacing.md,
+                  paddingHorizontal: spacing.md,
+                  paddingTop: insets.top + spacing.md,
+                }}
+              />
+            ),
+          }}
+        />
+        <AppText>
+          <Feather
+            name="alert-circle"
+            size={icons.lg}
+            color={colors.textGray}
+          />
+          {"  "}
+          Seller profile not found.
+        </AppText>
+      </AppView>
+    );
+  }
+
+  return (
+    <AppView style={{ flex: 1, backgroundColor: colors.yellow }}>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          header: () => (
+            <Header
+              backgroundColor={colors.yellow}
+              containerStyle={{
+                paddingBottom: spacing.md,
+                paddingHorizontal: spacing.md,
+                paddingTop: insets.top + spacing.md,
+              }}
+              right={
+                <IconButton
+                  icon={
+                    <Ionicons
+                      name="share-social"
+                      size={icons.md}
+                      color={colors.iconBlack}
+                    />
+                  }
+                  onPress={handleShare}
+                />
+              }
+            />
+          ),
+        }}
+      />
+      <MasonryList
+        style={{
+          gap: spacing.sm,
+          paddingHorizontal: spacing.md,
+        }}
+        contentContainerStyle={{
+          paddingBottom: spacing.md + insets.bottom,
+          backgroundColor: colors.background,
+          flexGrow: 1,
+        }}
+        data={isLoadingAds ? Array(6).fill({}) : allAds}
+        numColumns={2}
+        keyExtractor={(item, index) => item.id || `skeleton-${index}`}
+        ListHeaderComponentStyle={{
+          backgroundColor: colors.yellow,
+          marginBottom: spacing.md,
+        }}
+        ListHeaderComponent={
+          <BusinessProfileHeader
+            user={user || undefined}
+            sellerProfile={sellerProfile}
+            onCall={handleCall}
+            onReviewsPress={handleReviewPress}
+            onMessage={handleMessage}
+          />
+        }
+        renderItem={({ item, index }: any) => {
+          if (isLoadingAds) {
+            return <ProductCardSkeleton />;
+          }
+          return (
+            <ProductCard
+              onPress={() =>
+                router.push({ pathname: "/[adId]", params: { adId: item.id } })
+              }
+              ad={item}
+            />
+          );
+        }}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        onEndReachedThreshold={0.1}
+        loading={isFetchingNextPage}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+      />
+    </AppView>
+  );
+}

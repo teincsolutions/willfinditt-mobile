@@ -1,5 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAd, useSaveAd, useUnsaveAd } from "@/hooks/useAds";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { Ad } from "@/types/ad";
 import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
@@ -122,8 +123,7 @@ function ProductCardContent({
         </AppText>
 
         <AppText style={[{ fontWeight: "700", marginTop: spacing.xs }]}>
-          {ad.currency}
-          {ad.price}
+          {ad.price ? formatCurrency(ad.price, 'en-GH', ad.currency) : "Contact for Price"}
         </AppText>
       </AppView>
 

@@ -18,7 +18,7 @@ export default function CustomDrawerContent(
   props: DrawerContentComponentProps
 ) {
   const { colors, icons, spacing } = useTheme();
-  const { logoutAsync, isAuthenticated } = useAuth();
+  const { logoutAsync, isAuthenticated, user } = useAuth();
   const { data: chatStats } = useChatStats(isAuthenticated);
 
   const handleLogout = async () => {
@@ -162,23 +162,25 @@ export default function CustomDrawerContent(
           />
         )}
       />
-      <DrawerMenuItem
-        label="Business Profile"
-        onPress={() => {
-          if (!isAuthenticated) {
-            handleLogin();
-            return;
-          }
-          router.push("/account/business");
-        }}
-        icon={({ active }) => (
-          <Ionicons
-            name={active ? "business" : "business-outline"}
-            size={icons.md}
-            color={active ? colors.iconWhite : colors.iconGray}
-          />
-        )}
-      />
+      {user?.sellerProfile && (
+        <DrawerMenuItem
+          label="Business"
+          onPress={() => {
+            if (!isAuthenticated) {
+              handleLogin();
+              return;
+            }
+            router.push("/account/business");
+          }}
+          icon={({ active }) => (
+            <Ionicons
+              name={active ? "business" : "business-outline"}
+              size={icons.md}
+              color={active ? colors.iconWhite : colors.iconGray}
+            />
+          )}
+        />
+      )}
 
       <DrawerMenuItem
         label="Profile"
@@ -245,7 +247,9 @@ export default function CustomDrawerContent(
         )}
       />
       {/* PROMO CARD */}
-      <DrawerPromoCard />
+      <DrawerPromoCard
+        onPress={() => router.push({ pathname: "/account/business" })}
+      />
       {/* LOGOUT */}
 
       {isAuthenticated && (

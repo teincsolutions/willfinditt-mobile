@@ -10,7 +10,7 @@ export default function AdsLayout() {
     >
       <Stack.Screen name="[adId]/index" />
       <Stack.Screen name="create-ad" />
-      <Stack.Screen name="seller" />
+      <Stack.Screen name="seller/[sellerId]" />
     </Stack>
   );
 }

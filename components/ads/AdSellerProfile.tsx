@@ -6,9 +6,10 @@ import { formatDistanceToNow } from "date-fns";
 import { router } from "expo-router";
 import { Call, Message } from "iconsax-react-nativejs";
 import React from "react";
-import { Linking, Share as RNShare } from "react-native";
+import { Linking, Pressable, Share as RNShare } from "react-native";
 import AppView from "../ui/AppView";
 import { Avatar } from "../ui/Avatar";
+import { ProductCardSmallLandscapeSkeleton } from "./ProductCardSmallLandscapeSkeleton";
 
 export function AdSellerProfile({ ad }: { ad?: Ad }) {
   const { spacing, colors, icons } = useTheme();
@@ -27,8 +28,17 @@ export function AdSellerProfile({ ad }: { ad?: Ad }) {
     });
   };
 
+  const handleProfilePress = () => {
+    if (ad?.userId) {
+      router.push({
+        pathname: "/seller/[sellerId]",
+        params: { sellerId: ad.user?.sellerProfile?.id || "" },
+      });
+    }
+  };
+
   if (ad?.user == null) {
-    return null;
+    return <ProductCardSmallLandscapeSkeleton />;
   }
 
   return (
@@ -44,8 +54,12 @@ export function AdSellerProfile({ ad }: { ad?: Ad }) {
         verified={ad?.user?.isVerified}
         size="lg"
         uri={ad?.user?.avatar}
+        onPress={handleProfilePress}
       />
-      <AppView style={{ flex: 1, gap: spacing.xs }}>
+      <Pressable
+        onPress={handleProfilePress}
+        style={{ flex: 1, gap: spacing.xs }}
+      >
         <AppText
           variant="lg"
           style={{ fontWeight: "700", color: colors.primary }}
@@ -67,7 +81,7 @@ export function AdSellerProfile({ ad }: { ad?: Ad }) {
                 }
               )}`)}
         </AppText>
-      </AppView>
+      </Pressable>
       <AppView style={{ flexDirection: "row", gap: spacing.sm }}>
         <Call onPress={handleCall} size={icons.lg} color={colors.iconBlack} />
         <Message

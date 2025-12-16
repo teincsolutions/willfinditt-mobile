@@ -1,3 +1,4 @@
+import SellerRating from "@/components/account/SellerRating";
 import AdDetailsSkeleton from "@/components/ads/AdDetailsSkeleton";
 import { AdInfoBlock } from "@/components/ads/AdInfoBlock";
 import { AdSellerProfile } from "@/components/ads/AdSellerProfile";
@@ -10,7 +11,6 @@ import AppView from "@/components/ui/AppView";
 import BottomActionBar from "@/components/ui/ButtomActionBar";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
-import SellerRating from "@/components/ui/SellerRating";
 import { TextButton } from "@/components/ui/TextButton";
 import { useAd, useInfiniteAds } from "@/hooks/useAds";
 import { useTheme } from "@/hooks/useTheme";

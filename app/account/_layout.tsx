@@ -6,8 +6,8 @@ export default function AccountLayout() {
   const { spacing, colors } = useTheme();
   return (
     <Stack>
-      <Stack.Screen name="business" />
-      <Stack.Screen name="edit-business" />
+      <Stack.Screen name="business" options={{title:"Business Profile"}} />
+      <Stack.Screen name="edit-business" options={{title:"Edit Business Profile"}} />
       <Stack.Screen
         name="verification"
         options={{
@@ -22,6 +22,7 @@ export default function AccountLayout() {
           ),
         }}
       />
+      <Stack.Screen name="my-reviews" options={{title:"My Reviews"}} />
     </Stack>
   );
 }

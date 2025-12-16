@@ -2,15 +2,15 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { Image } from "expo-image";
 import React from "react";
-import { StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import AppText from "../ui/AppText";
-import AppView from "../ui/AppView";
 
-export default function DrawerPromoCard() {
+export default function DrawerPromoCard({ onPress }: { onPress?: () => void }) {
   const { spacing, radius, colors } = useTheme();
 
   return (
-    <AppView
+    <Pressable
+      onPress={onPress}
       style={[
         styles.card,
         {
@@ -37,7 +37,7 @@ export default function DrawerPromoCard() {
         style={styles.image}
         contentFit="contain"
       />
-    </AppView>
+    </Pressable>
   );
 }
 

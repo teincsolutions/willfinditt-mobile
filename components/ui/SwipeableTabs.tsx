@@ -36,6 +36,7 @@ interface SwipeableTabsProps<T> {
   ListEmptyComponent?: React.ReactElement;
   ListFooterComponent?: React.ReactElement;
   onEndReached?: () => void;
+  onRefresh?: () => void;
   onEndReachedThreshold?: number;
   refreshControl?: any;
   ListHeaderComponent?: React.ReactElement;
@@ -55,6 +56,7 @@ export default function SwipeableTabs<T>({
   ListFooterComponent,
   onEndReached,
   onEndReachedThreshold,
+  onRefresh,
   refreshControl,
   ListHeaderComponent,
   contentContainerStyle,
@@ -119,7 +121,7 @@ export default function SwipeableTabs<T>({
   );
 
   return (
-    <ScrollView style={[{ flex: 1, gap: spacing.md }, style]}>
+    <ScrollView  style={[{ flex: 1 }, style]}>
       {/* Optional Header */}
       {ListHeaderComponent}
 
