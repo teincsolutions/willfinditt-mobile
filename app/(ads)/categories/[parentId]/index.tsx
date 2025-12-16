@@ -10,12 +10,10 @@ import { useTheme } from "@/hooks/useTheme";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { FlatList } from "react-native-gesture-handler";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SubCategoriesScreen() {
   const { parentId = "" } = useLocalSearchParams() as { parentId: string };
   const { data: parentCategory } = useCategory(parentId);
-  const insets = useSafeAreaInsets();
   const { icons, spacing, colors } = useTheme();
   const { data: categories, isLoading } = useSubcategories(parentId);
   const [query, setQuery] = useState("");
@@ -34,7 +32,10 @@ export default function SubCategoriesScreen() {
               left={<BackButton label="Cancel" showIcon={false} />}
               navRowStyle={{ marginHorizontal: spacing.md }}
               title={parentCategory?.name || "Categories"}
-              containerStyle={{ paddingBottom: spacing.sm, paddingTop:spacing.md }}
+              containerStyle={{
+                paddingBottom: spacing.sm,
+                paddingTop: spacing.md,
+              }}
             >
               <SearchBar
                 style={{ marginHorizontal: spacing.md }}
@@ -77,7 +78,7 @@ export default function SubCategoriesScreen() {
         ListEmptyComponent={() =>
           isLoading ? (
             <AppView style={{ gap: spacing.md }}>
-              {Array(4)
+              {Array(6)
                 .fill(null)
                 .map((_, index) => (
                   <CategoryCardLandscapeSkeleton key={index} />

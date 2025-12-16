@@ -98,7 +98,7 @@ export default function CustomDrawerContent(
             handleLogin();
             return;
           }
-          router.push("/create-ad");
+          router.push({ pathname: "/(ads)/create" });
         }}
         icon={({ active }) => (
           <MaterialCommunityIcons

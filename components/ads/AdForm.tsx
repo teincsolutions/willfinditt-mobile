@@ -8,11 +8,13 @@ import PrimaryButton from "@/components/ui/PrimaryButton";
 import RichTextArea from "@/components/ui/RichTextArea";
 import TextAreaField from "@/components/ui/TextAreaField";
 import ToggleSwitch from "@/components/ui/ToggleSwitch";
+import { useAuth } from "@/hooks/useAuth";
 import { useParentCategories, useSubcategories } from "@/hooks/useCategories";
 import { useCategoryFields } from "@/hooks/useCategoryFields";
 import { useTheme } from "@/hooks/useTheme";
-import { AdCondition, CategoryFieldType } from "@/types";
+import { AdCondition, CategoryFieldType, CreateAdRequest } from "@/types";
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -24,27 +26,9 @@ import {
 } from "react-native";
 import { RichEditor } from "react-native-pell-rich-editor";
 
-export interface AdFormData {
-  title: string;
-  description: string;
-  price: string;
-  currency: string;
-  condition?: AdCondition;
-  categoryId: string;
-  images: string[];
-  address?: string;
-  contactPhone?: string;
-  contactEmail?: string;
-  isNegotiable: boolean;
-  fieldValues: {
-    categoryFieldId: string;
-    value: string;
-  }[];
-}
-
 interface AdFormProps {
-  initialData?: Partial<AdFormData>;
-  onSubmit: (data: AdFormData) => void;
+  initialData?: Partial<CreateAdRequest>;
+  onSubmit: (data: CreateAdRequest) => void;
   isLoading?: boolean;
   submitButtonText?: string;
 }
@@ -56,26 +40,29 @@ export default function AdForm({
   submitButtonText = "Submit",
 }: AdFormProps) {
   const { colors, spacing, radius, icons } = useTheme();
+  const { user } = useAuth();
 
   // Form state
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(
     initialData?.description || ""
   );
-  const [price, setPrice] = useState(initialData?.price || "");
-  const [currency, setCurrency] = useState(initialData?.currency || "USD");
+  const [price, setPrice] = useState(initialData?.price || 0);
+  const [currency, setCurrency] = useState(initialData?.currency || "GHS");
   const [condition, setCondition] = useState<AdCondition | undefined>(
     initialData?.condition
   );
   const [parentCategoryId, setParentCategoryId] = useState("");
   const [categoryId, setCategoryId] = useState(initialData?.categoryId || "");
   const [images, setImages] = useState<string[]>(initialData?.images || []);
-  const [address, setAddress] = useState(initialData?.address || "");
+  const [address, setAddress] = useState(
+    initialData?.address || user?.sellerProfile?.verification?.address
+  );
   const [contactPhone, setContactPhone] = useState(
-    initialData?.contactPhone || ""
+    initialData?.contactPhone || user?.phone
   );
   const [contactEmail, setContactEmail] = useState(
-    initialData?.contactEmail || ""
+    initialData?.contactEmail || user?.email
   );
   const [isNegotiable, setIsNegotiable] = useState(
     initialData?.isNegotiable || false
@@ -345,7 +332,7 @@ export default function AdForm({
       }
     }
 
-    const formData: AdFormData = {
+    const formData: CreateAdRequest = {
       title: title.trim(),
       description: description.trim(),
       price,
@@ -391,10 +378,6 @@ export default function AdForm({
 
           {/* Basic Information */}
           <AppView style={{ marginBottom: spacing.lg }}>
-            <AppText variant="lg" style={{ marginBottom: spacing.md }}>
-              Basic Information
-            </AppText>
-
             <InputField
               label="Title *"
               value={title}
@@ -418,14 +401,10 @@ export default function AdForm({
             <PlaceholderField
               label="Category *"
               placeholder="Select a category"
-              value={
-                parentCategoryId
-                  ? parentCategories?.find((c) => c.id === parentCategoryId)
-                      ?.name
-                  : ""
-              }
               onPress={() => {
-                // Category selection handled below
+                router.push({
+                  pathname: "/(ads)/categories",
+                });
               }}
               inputStyle={{
                 backgroundColor: colors.selectBg,
@@ -449,58 +428,36 @@ export default function AdForm({
               }
               style={{ marginBottom: spacing.md }}
             />
+          </AppView>
 
-            {/* Parent Categories */}
-            {loadingParents ? (
-              <ActivityIndicator />
-            ) : (
-              <View style={{ gap: spacing.sm, marginBottom: spacing.md }}>
-                {parentCategories?.map((cat) => (
-                  <Pressable
-                    key={cat.id}
-                    onPress={() => {
-                      setParentCategoryId(cat.id);
-                      setCategoryId("");
-                    }}
-                    style={{
-                      padding: spacing.md,
-                      backgroundColor:
-                        parentCategoryId === cat.id
-                          ? colors.primaryLight
-                          : colors.inputBg,
-                      borderRadius: radius.md,
-                      borderWidth: 1,
-                      borderColor:
-                        parentCategoryId === cat.id
-                          ? colors.primary
-                          : colors.border,
-                    }}
-                  >
-                    <AppText>{cat.name}</AppText>
-                  </Pressable>
-                ))}
-              </View>
-            )}
+          {/* Dynamic Category Fields */}
+          {categoryId && categoryFields && categoryFields.length > 0 && (
+            <AppView style={{ marginBottom: spacing.lg }}>
+              {loadingFields ? (
+                <ActivityIndicator />
+              ) : (
+                categoryFields.map((field) => renderDynamicField(field))
+              )}
+            </AppView>
+          )}
 
-            {/* Subcategories */}
-            {parentCategoryId && (
-              <>
+          {/* Pricing */}
+          <AppView style={{ marginBottom: spacing.lg }}>
+            <View
+              style={{
+                flexDirection: "row",
+                gap: spacing.md,
+                marginBottom: spacing.md,
+              }}
+            >
+              <View style={{ flex: 2 }}>
                 <PlaceholderField
-                  label="Subcategory *"
-                  placeholder="Select a subcategory"
-                  value={
-                    categoryId
-                      ? subcategories?.find((c) => c.id === categoryId)?.name
-                      : ""
-                  }
+                  label="Currency"
+                  value={currency}
+                  placeholder="USD"
                   onPress={() => {}}
-                  inputStyle={{
-                    backgroundColor: colors.selectBg,
-                    paddingRight: spacing.sm,
-                  }}
                   rightIcon={
                     <IconButton
-                      onPress={() => {}}
                       style={{
                         backgroundColor: colors.iconLightGray,
                         borderRadius: radius.sm,
@@ -514,82 +471,15 @@ export default function AdForm({
                       }
                     />
                   }
-                  style={{ marginBottom: spacing.sm }}
                 />
-
-                {loadingSubcategories ? (
-                  <ActivityIndicator />
-                ) : (
-                  <View style={{ gap: spacing.sm }}>
-                    {subcategories?.map((cat) => (
-                      <Pressable
-                        key={cat.id}
-                        onPress={() => setCategoryId(cat.id)}
-                        style={{
-                          padding: spacing.md,
-                          backgroundColor:
-                            categoryId === cat.id
-                              ? colors.primaryLight
-                              : colors.inputBg,
-                          borderRadius: radius.md,
-                          borderWidth: 1,
-                          borderColor:
-                            categoryId === cat.id
-                              ? colors.primary
-                              : colors.border,
-                        }}
-                      >
-                        <AppText>{cat.name}</AppText>
-                      </Pressable>
-                    ))}
-                  </View>
-                )}
-              </>
-            )}
-          </AppView>
-
-          {/* Dynamic Category Fields */}
-          {categoryId && categoryFields && categoryFields.length > 0 && (
-            <AppView style={{ marginBottom: spacing.lg }}>
-              <AppText variant="lg" style={{ marginBottom: spacing.md }}>
-                Additional Details
-              </AppText>
-              {loadingFields ? (
-                <ActivityIndicator />
-              ) : (
-                categoryFields.map((field) => renderDynamicField(field))
-              )}
-            </AppView>
-          )}
-
-          {/* Pricing */}
-          <AppView style={{ marginBottom: spacing.lg }}>
-            <AppText variant="lg" style={{ marginBottom: spacing.md }}>
-              Pricing
-            </AppText>
-
-            <View
-              style={{
-                flexDirection: "row",
-                gap: spacing.md,
-                marginBottom: spacing.md,
-              }}
-            >
-              <View style={{ flex: 3 }}>
+              </View>
+              <View style={{ flex: 4 }}>
                 <InputField
                   label="Price *"
                   value={price}
                   onChangeText={setPrice}
                   placeholder="0.00"
                   keyboardType="decimal-pad"
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <InputField
-                  label="Currency"
-                  value={currency}
-                  onChangeText={setCurrency}
-                  placeholder="USD"
                 />
               </View>
             </View>
@@ -604,55 +494,29 @@ export default function AdForm({
 
           {/* Condition */}
           <AppView style={{ marginBottom: spacing.lg }}>
-            <AppText variant="lg" style={{ marginBottom: spacing.md }}>
-              Condition
-            </AppText>
-
-            <View style={{ gap: spacing.sm }}>
-              {Object.values(AdCondition).map((cond) => (
-                <Pressable
-                  key={cond}
-                  onPress={() => setCondition(cond)}
+            <PlaceholderField
+              label="Condition"
+              placeholder="Select condition"
+              onPress={() => {
+                // Open condition selection modal (not implemented here)
+              }}
+              rightIcon={
+                <IconButton
+                  onPress={() => {}}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    padding: spacing.md,
-                    backgroundColor:
-                      condition === cond ? colors.primaryLight : colors.inputBg,
-                    borderRadius: radius.md,
-                    borderWidth: 1,
-                    borderColor:
-                      condition === cond ? colors.primary : colors.border,
+                    backgroundColor: colors.iconLightGray,
+                    borderRadius: radius.sm,
                   }}
-                >
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      borderWidth: 2,
-                      borderColor:
-                        condition === cond ? colors.primary : colors.border,
-                      marginRight: spacing.sm,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {condition === cond && (
-                      <View
-                        style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: 5,
-                          backgroundColor: colors.primary,
-                        }}
-                      />
-                    )}
-                  </View>
-                  <AppText>{cond.replace(/_/g, " ")}</AppText>
-                </Pressable>
-              ))}
-            </View>
+                  icon={
+                    <Feather
+                      name="chevron-down"
+                      size={icons.sm}
+                      color={colors.iconGray}
+                    />
+                  }
+                />
+              }
+            />
           </AppView>
 
           {/* Contact Information */}

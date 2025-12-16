@@ -48,7 +48,10 @@ export default function CreateAdScreen() {
           title: "Create Ad",
           headerShown: true,
           header: () => (
-            <Header containerStyle={{ paddingHorizontal: spacing.md }} />
+            <Header
+              title="Create Ad"
+              containerStyle={{ paddingHorizontal: spacing.md }}
+            />
           ),
         }}
       />

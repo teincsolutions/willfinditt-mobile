@@ -1,6 +1,7 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSaveAd, useUnsaveAd } from "@/hooks/useAds";
+import { formatCurrency } from "@/lib/formatCurrency";
 import { Ad } from "@/types";
 import { Image, useImage } from "expo-image";
 import React, { useEffect, useState } from "react";
@@ -82,7 +83,7 @@ export default function ProductCard({
   };
   return (
     <Pressable
-    onLongPress={onLongPress}
+      onLongPress={onLongPress}
       style={[
         styles.card,
         {
@@ -137,9 +138,8 @@ export default function ProductCard({
             )}
 
             {ad.price ? (
-              <AppText variant="md" style={{ marginTop: 4 }}>
-                {ad.currency}
-                {ad.price}
+              <AppText variant="md" style={{ marginTop: 4, fontWeight: "700" }}>
+                {formatCurrency(ad.price, "en-GH", ad.currency)}
               </AppText>
             ) : null}
           </AppView>
