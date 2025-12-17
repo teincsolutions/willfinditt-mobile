@@ -2,7 +2,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useUploadAdImages } from "@/hooks/useUpload";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -51,6 +51,7 @@ export default function AdImageUploader({
   );
 
   const { mutateAsync: uploadAdImages, progress } = useUploadAdImages();
+  const previousUploadedUrlsRef = useRef<string>("");
 
   const handleUploadImages = useCallback(
     async (imagesToUpload: ImageItem[]) => {
@@ -145,7 +146,16 @@ export default function AdImageUploader({
       .map((img) => img.uploadedUrl!)
       .filter(Boolean);
 
-    if (uploadedUrls.length > 0 && onImagesUploaded) {
+    // Create a stable string representation of uploaded URLs
+    const uploadedUrlsString = uploadedUrls.sort().join(",");
+
+    // Only call onImagesUploaded if the URLs have actually changed
+    if (
+      uploadedUrls.length > 0 &&
+      onImagesUploaded &&
+      uploadedUrlsString !== previousUploadedUrlsRef.current
+    ) {
+      previousUploadedUrlsRef.current = uploadedUrlsString;
       onImagesUploaded(uploadedUrls);
     }
   }, [images, onImagesUploaded]);
