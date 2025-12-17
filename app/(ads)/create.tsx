@@ -1,4 +1,4 @@
-import AdForm, { AdFormData } from "@/components/ads/AdForm";
+import AdForm from "@/components/ads/AdForm";
 import { Header } from "@/components/ui/Header";
 import { useCreateAd } from "@/hooks/useAds";
 import { useTheme } from "@/hooks/useTheme";
@@ -12,12 +12,12 @@ export default function CreateAdScreen() {
   const { colors, spacing } = useTheme();
   const createMutation = useCreateAd();
 
-  const handleSubmit = async (formData: AdFormData) => {
+  const handleSubmit = async (formData: CreateAdRequest) => {
     try {
       const adData: CreateAdRequest = {
         title: formData.title,
         description: formData.description,
-        price: parseFloat(formData.price),
+        price: formData.price,
         currency: formData.currency,
         condition: formData.condition,
         categoryId: formData.categoryId,
@@ -27,6 +27,7 @@ export default function CreateAdScreen() {
         contactEmail: formData.contactEmail,
         isNegotiable: formData.isNegotiable,
         fieldValues: formData.fieldValues,
+        cityId: "",
       };
 
       const newAd = await createMutation.mutateAsync(adData);

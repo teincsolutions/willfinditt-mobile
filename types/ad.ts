@@ -82,7 +82,7 @@ export interface CreateAdRequest {
   currency?: string;
   condition?: AdCondition;
   categoryId: string;
-  cityId?: string;
+  cityId: string;
   images?: string[];
   videos?: string[];
   address?: string;
@@ -97,25 +97,7 @@ export interface CreateAdRequest {
   }[];
 }
 
-export interface UpdateAdRequest {
-  title?: string;
-  description?: string;
-  price?: number;
-  condition?: AdCondition;
-  status?: AdStatus;
-  isNegotiable?: boolean;
-  images?: string[];
-  videos?: string[];
-  address?: string;
-  latitude?: number;
-  longitude?: number;
-  contactPhone?: string;
-  contactEmail?: string;
-  fieldValues?: {
-    categoryFieldId: string;
-    value: string;
-  }[];
-}
+export type UpdateAdRequest = Partial<CreateAdRequest>;
 
 export interface CreateCommentRequest {
   adId: string;

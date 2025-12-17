@@ -24,6 +24,7 @@ interface Props<T> {
   title: string;
   data: T[];
   loading?: boolean;
+  snapPoints?: string[];
   onDone?: () => void;
   renderItem: (params: { item: T; index: number }) => React.ReactElement | null;
   ListHeaderComponent?: React.ReactElement;
@@ -38,13 +39,17 @@ export const SelectableListSheet = forwardRef<BottomSheet, Props<any>>(
       loading,
       ListHeaderComponent,
       ListHeaderComponentStyle,
+      snapPoints,
       onDone,
       renderItem,
     },
     ref
   ) => {
     const { spacing, colors } = useTheme();
-    const snapPoints = useMemo(() => ["70%"], []);
+    const effectiveSnapPoints = useMemo(
+      () => snapPoints || ["70%"],
+      [snapPoints]
+    );
 
     const insets = useSafeAreaInsets();
 
@@ -54,7 +59,7 @@ export const SelectableListSheet = forwardRef<BottomSheet, Props<any>>(
         ref={ref}
         index={-1}
         enablePanDownToClose
-        snapPoints={snapPoints}
+        snapPoints={effectiveSnapPoints}
         backdropComponent={(props) => (
           <BottomSheetBackdrop
             {...props}

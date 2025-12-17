@@ -26,7 +26,7 @@ export function SelectButton({
         useNativeDriver: true,
       }),
     ]).start();
-  }, [active]);
+  }, [active, scaleAnim]);
 
   return (
     <Pressable
