@@ -68,7 +68,7 @@ export default function CategoriesScreen() {
                 value={query}
                 onChangeText={setQuery}
                 onPressFilter={() => {
-                  router.push("/(search)/filters");
+                  router.push("/search/filters");
                 }}
               />
             </Header>
@@ -96,7 +96,7 @@ export default function CategoriesScreen() {
               onPress={() => {
                 setSelectedParentCategory(item);
                 router.push({
-                  pathname: "/(ads)/categories/[parentId]",
+                  pathname: "/ads/categories/[parentId]",
                   params: { parentId: item.id },
                 });
               }}
@@ -107,7 +107,7 @@ export default function CategoriesScreen() {
               onPress={() => {
                 setSelectedParentCategory(item);
                 router.push({
-                  pathname: "/(ads)/categories/[parentId]",
+                  pathname: "/ads/categories/[parentId]",
                   params: { parentId: item.id },
                 });
               }}

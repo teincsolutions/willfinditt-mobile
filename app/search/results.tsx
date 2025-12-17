@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MasonryList from "reanimated-masonry-list";
 
 export default function ResultsScreen() {
-  const { colors, spacing, icons, radius } = useTheme();
+  const { colors, spacing, icons } = useTheme();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     query?: string;
@@ -136,7 +136,7 @@ export default function ResultsScreen() {
           onClear={handleClearSearch}
           onPress={() =>
             router.push({
-              pathname: "/(search)",
+              pathname: "/search",
               params: {
                 query: searchQuery,
                 categoryId: selectedCategoryId || undefined,
@@ -168,10 +168,10 @@ export default function ResultsScreen() {
           minPrice={minPrice}
           maxPrice={maxPrice}
           onPriceFilterPress={() =>
-            router.push({ pathname: "/(search)/filters" })
+            router.push({ pathname: "/search/filters" })
           }
           selectedCityId={selectedCityId}
-          onLocationPress={() => router.push({ pathname: "/regions" })}
+          onLocationPress={() => router.push({ pathname: "/search/locations/regions" })}
         />
 
         <AppText
@@ -215,7 +215,7 @@ export default function ResultsScreen() {
           return (
             <ProductCard
               onPress={() =>
-                router.push({ pathname: "/[adId]", params: { adId: item.id } })
+                router.push({ pathname: "/ads/[adId]", params: { adId: item.id } })
               }
               ad={item}
             />

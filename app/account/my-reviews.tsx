@@ -243,7 +243,7 @@ export default function BusinessProfileScreen() {
                 <TextButton
                   icon={<AddCircle size={icons.md} color={colors.iconBlack} />}
                   title="Create Ad"
-                  onPress={() => router.push({ pathname: "/(ads)/create-ad" })}
+                  onPress={() => router.push({ pathname: "/ads/create" })}
                 />
               }
             />
@@ -261,11 +261,11 @@ export default function BusinessProfileScreen() {
           paddingBottom: insets.bottom + spacing.md,
           backgroundColor: colors.backgroundPrimary,
         }}
-        tabScrollStyle={{ paddingTop: 45 +  spacing.md }}
+        tabScrollStyle={{ paddingTop: 45 + spacing.md }}
         renderItem={({ item }: { item: Ad }) => (
           <MyProductCardLandscape
             ad={item}
-            onPress={() => router.push(`/(ads)/${item.id}` as any)}
+            onPress={() => router.push(`/ads/${item.id}` as any)}
             style={{ marginHorizontal: spacing.md, marginVertical: spacing.xs }}
           />
         )}
@@ -275,9 +275,10 @@ export default function BusinessProfileScreen() {
             <BusinessProfileHeader
               user={user || undefined}
               sellerProfile={sellerProfile}
-              onEditProfile={handleEditBusiness}
-              onShare={handleShare}
               onReviewsPress={handleReviewPress}
+              onCall={function (): void {
+                throw new Error("Function not implemented.");
+              }}
             />
 
             {/* Stats Section */}

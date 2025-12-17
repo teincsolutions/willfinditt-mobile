@@ -25,13 +25,13 @@ A complete ad creation and editing system with:
    - Image upload with preview
    - Real-time validation
 
-2. **`/app/(ads)/create.tsx`** (56 lines)
+2. **`/app/ads/create.tsx`** (56 lines)
 
    - Screen for creating new ads
    - Uses `useCreateAd` mutation
    - Redirects to ad details after creation
 
-3. **`/app/(ads)/[adId]/edit.tsx`** (134 lines)
+3. **`/app/ads/[adId]/edit.tsx`** (134 lines)
 
    - Screen for editing existing ads
    - Pre-fills form with current data
@@ -50,7 +50,7 @@ A complete ad creation and editing system with:
 
 ### Modified Files
 
-1. **`/app/(ads)/[adId]/index.tsx`**
+1. **`/app/ads/[adId]/index.tsx`**
    - Added edit button in header (owner only)
    - Integrated `useAuth` to check ownership
 
@@ -117,7 +117,7 @@ The form automatically renders fields based on the selected category:
 
 ```typescript
 // Navigate from anywhere
-router.push("/(ads)/create");
+router.push("/ads/create");
 
 // User fills form → Submit → Redirects to ad details
 ```
@@ -126,7 +126,7 @@ router.push("/(ads)/create");
 
 ```typescript
 // From ad details page (owner only)
-router.push(`/(ads)/${adId}/edit`);
+router.push(`/ads/${adId}/edit`);
 
 // User updates form → Submit → Returns to ad details
 ```

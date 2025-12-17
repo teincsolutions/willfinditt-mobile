@@ -7,10 +7,11 @@ import AppView from "@/components/ui/AppView";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatMessages, useCreateChat } from "@/hooks/useChatMessages";
 import { useTheme } from "@/hooks/useTheme";
+import { useUser } from "@/hooks/useUser";
 import { formatTime } from "@/lib/formatTime";
 import { Message } from "@/types/chat";
 import { Stack, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -20,13 +21,16 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ChatScreen() {
-  const { chatId: initialChatId, userId, adId } = useLocalSearchParams<{ chatId: string, userId: string, adId: string }>();
   const { spacing, colors } = useTheme();
-  const { user } = useAuth();
   const insets = useSafeAreaInsets();
 
-  const [chatId, setChatId] = useState<string>(initialChatId);
-  const {createChat, isCreating} = useCreateChat();
+  const {
+    chatId: initialChatId,
+    userId,
+    adId,
+  } = useLocalSearchParams<{ chatId: string; userId: string; adId: string }>();
+  const { user } = useAuth();
+  const { createChat, isCreating } = useCreateChat();
   const {
     messages,
     chat,
@@ -40,19 +44,21 @@ export default function ChatScreen() {
     isOtherOnline,
   } = useChatMessages(chatId);
 
+  // Determine the other participant
+  const otherUserId = chat
+    ? chat.senderId === user?.id
+      ? chat.receiverId
+      : chat.senderId
+    : "";
+  
+  const { data: otherUser } = useUser(userId || otherUserId);
+
   // Mark messages as read when entering chat
   useEffect(() => {
     if (chat && !isLoading) {
       markAsRead();
     }
   }, [chat, isLoading, markAsRead]);
-
-  // Determine the other participant
-  const otherUser = chat
-    ? chat.senderId === user?.id
-      ? chat.receiver
-      : chat.sender
-    : null;
 
   const displayName = otherUser
     ? [otherUser.firstName, otherUser.lastName].filter(Boolean).join(" ") ||

@@ -179,7 +179,7 @@ export default function MessagesScreen() {
           <ChatListItem
             onPress={() =>
               router.push({
-                pathname: "/(chats)/[chatId]",
+                pathname: "/chats/[chatId]",
                 params: { chatId: item.id },
               })
             }

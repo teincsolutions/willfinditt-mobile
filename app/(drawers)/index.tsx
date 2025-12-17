@@ -1,11 +1,9 @@
-// screens/HomeScreen.tsx
-
 import React, { useRef, useState } from "react";
 
 import ProductCard from "@/components/ads/ProductCard";
 import ProductCardSkeleton from "@/components/ads/ProductCardSkeleton";
 import { CategoryCardCircular } from "@/components/category/CategoryCardCircular";
-import { CategoryList } from "@/components/category/CategoryList";
+import { HomeCategoryList } from "@/components/category/HomeCategoryList";
 import SectionHeader from "@/components/category/SectionHeader";
 import DrawerHeaderRight from "@/components/drawer/DrawerHeaderRight";
 import DrawerHeaderTitle from "@/components/drawer/DrawerHeaderTitle";
@@ -130,9 +128,9 @@ export default function HomeScreen() {
         }}
       >
         <SearchBarPlaceholder
-          onPress={() => router.push({ pathname: "/(search)" })}
+          onPress={() => router.push({ pathname: "/search" })}
           onPressFilter={() => {
-            router.push({ pathname: "/regions" });
+            router.push({ pathname: "/search/locations/regions" });
           }}
           style={{ marginHorizontal: spacing.md }}
         />
@@ -148,7 +146,7 @@ export default function HomeScreen() {
           }
         />
 
-        <CategoryList
+        <HomeCategoryList
           data={categories}
           isLoading={isLoadingCategories}
           isGrid={showAllCategories}
@@ -156,8 +154,8 @@ export default function HomeScreen() {
             <CategoryCardCircular
               onPress={() =>
                 router.push({
-                  pathname: "/categories/[parentId]",
-                  params: { parentId: item.id },
+                  pathname: "/search/categories/[parentId]",
+                  params: { parentId: item.id, source: "home" },
                 })
               }
               category={item}
@@ -186,7 +184,7 @@ export default function HomeScreen() {
               <SecondaryTextButton
                 variant="lg"
                 onPress={() => {
-                  router.push({ pathname: "/(search)/results" });
+                  router.push({ pathname: "/search/results" });
                 }}
                 title="See All"
                 titleStyle={{ color: colors.textGray }}
@@ -232,9 +230,9 @@ export default function HomeScreen() {
             />
           )}
           <SearchBarPlaceholder
-            onPress={() => router.push({ pathname: "/(search)" })}
+            onPress={() => router.push({ pathname: "/search" })}
             onPressFilter={() => {
-              router.push({ pathname: "/regions" });
+              router.push({ pathname: "/search/locations/regions" });
             }}
             style={{ marginHorizontal: spacing.md }}
           />
@@ -259,7 +257,7 @@ export default function HomeScreen() {
           return (
             <ProductCard
               onPress={() =>
-                router.push({ pathname: "/[adId]", params: { adId: item.id } })
+                router.push({ pathname: "/ads/[adId]", params: { adId: item.id } })
               }
               ad={item}
             />

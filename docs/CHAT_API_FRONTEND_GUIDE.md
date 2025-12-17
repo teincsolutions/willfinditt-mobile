@@ -175,7 +175,7 @@ async function getUserChats(page = 1, limit = 20, search = '', adId = null) {
       limit: limit.toString(),
     });
 
-    if (search) params.append('search', search);
+    if search params.append('search', search);
     if (adId) params.append('adId', adId);
 
     const response = await fetch(`/api/v1/chat?${params}`, {

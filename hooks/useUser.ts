@@ -78,6 +78,7 @@ export const useUser = (userId?: string) => {
   return {
     // Query
     ...userQuery,
+    
     // Email change
     requestEmailChange: requestEmailChangeMutation.mutate,
     requestEmailChangeAsync: requestEmailChangeMutation.mutateAsync,

@@ -39,7 +39,7 @@ interface AdFormProps {
 }
 ```
 
-### 2. `/app/(ads)/create.tsx`
+### 2. `/app/ads/create.tsx`
 
 Screen for creating new ads.
 
@@ -50,7 +50,7 @@ Screen for creating new ads.
 - Redirects to ad details page after successful creation
 - Loading state during submission
 
-### 3. `/app/(ads)/[adId]/edit.tsx`
+### 3. `/app/ads/[adId]/edit.tsx`
 
 Screen for editing existing ads.
 
@@ -63,7 +63,7 @@ Screen for editing existing ads.
 - Error handling with redirect on failure
 - Toast notifications for success/error
 
-### 4. Updated `/app/(ads)/[adId]/index.tsx`
+### 4. Updated `/app/ads/[adId]/index.tsx`
 
 Enhanced ad details page with edit functionality.
 
@@ -203,14 +203,14 @@ Ad Details → Edit Button (owner only) → Edit Ad Page → [Submit] → Back t
 
 ```typescript
 // Navigate to create page
-router.push("/(ads)/create");
+router.push("/ads/create");
 ```
 
 ### Editing an Existing Ad
 
 ```typescript
 // Navigate to edit page (from ad details)
-router.push(`/(ads)/${adId}/edit`);
+router.push(`/ads/${adId}/edit`);
 ```
 
 ### Checking if User Can Edit

@@ -1,7 +1,5 @@
 import { SelectableListSheet } from "@/components/bottom-sheet/SelectableBottomSheet";
 import SheetRadioOptionItem from "@/components/bottom-sheet/SheetRadioOptionItem";
-import { BackButton } from "@/components/ui/BackButton";
-import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import PlaceholderField from "@/components/ui/PlaceholderField";
 import RangeInput from "@/components/ui/RangeInput";
@@ -26,18 +24,15 @@ export default function FiltersScreen() {
   const sheetRef = useRef<BottomSheet>(null);
   const [selected, setSelected] = useState<string | number | null>("all");
 
+  const handleOpenCategory = () => {
+    router.push({
+      pathname: "/search/categories",
+      params: { source: "filters" },
+    });
+  };
+
   return (
     <>
-      <Header
-        containerStyle={{
-          backgroundColor: colors.background,
-          paddingBottom: spacing.lg,
-          paddingTop: spacing.md,
-        }}
-        left={<BackButton label="Cancel" showIcon={false} />}
-        title="Filters"
-        navRowStyle={{ marginHorizontal: spacing.md }}
-      />
       <ScrollView
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{
@@ -47,7 +42,7 @@ export default function FiltersScreen() {
         }}
       >
         <PlaceholderField
-          onPress={() => router.push("/categories")}
+          onPress={handleOpenCategory}
           placeholder={"Select a category"}
           label="Category"
           rightLabel="Reset"
@@ -60,7 +55,7 @@ export default function FiltersScreen() {
           value={""}
           rightIcon={
             <IconButton
-              onPress={() => router.push("/categories")}
+              onPress={handleOpenCategory}
               style={{
                 backgroundColor: colors.iconLightGray,
                 borderRadius: radius.sm,

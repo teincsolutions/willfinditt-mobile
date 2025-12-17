@@ -462,34 +462,7 @@ export default function AdForm({
               )}
             </AppView>
 
-            {/* Basic Information */}
-            <AppView style={{ marginBottom: spacing.lg }}>
-              <InputField
-                label="Title *"
-                value={formik.values.title}
-                onChangeText={formik.handleChange("title")}
-                onBlur={formik.handleBlur("title")}
-                placeholder="Enter ad title"
-                error={formik.touched.title && formik.errors.title}
-                style={{ marginBottom: spacing.md }}
-              />
-
-              <RichTextArea
-                ref={richEditorRef}
-                label="Description *"
-                value={formik.values.description}
-                onChange={(text) => formik.setFieldValue("description", text)}
-                placeholder="Describe your item in detail"
-                style={{ marginBottom: spacing.md }}
-              />
-              {formik.touched.description && formik.errors.description && (
-                <AppText style={{ color: colors.error, marginTop: spacing.xs }}>
-                  {formik.errors.description}
-                </AppText>
-              )}
-            </AppView>
-
-            {/* Category Selection */}
+             {/* Category Selection */}
             <AppView style={{ marginBottom: spacing.lg }}>
               <PlaceholderField
                 label="Category *"
@@ -497,7 +470,7 @@ export default function AdForm({
                 value={selectedCategory ? selectedCategory.name : ""}
                 onPress={() => {
                   router.push({
-                    pathname: "/(ads)/categories",
+                    pathname: "/ads/categories",
                   });
                 }}
                 inputStyle={{
@@ -529,6 +502,34 @@ export default function AdForm({
               )}
             </AppView>
 
+            {/* Basic Information */}
+            <AppView style={{ marginBottom: spacing.lg }}>
+              <InputField
+                label="Title *"
+                value={formik.values.title}
+                onChangeText={formik.handleChange("title")}
+                onBlur={formik.handleBlur("title")}
+                placeholder="Enter ad title"
+                error={formik.touched.title && formik.errors.title}
+                style={{ marginBottom: spacing.md }}
+              />
+
+              <RichTextArea
+                ref={richEditorRef}
+                label="Description *"
+                value={formik.values.description}
+                onChange={(text) => formik.setFieldValue("description", text)}
+                placeholder="Describe your item in detail"
+                style={{ marginBottom: spacing.md }}
+              />
+              {formik.touched.description && formik.errors.description && (
+                <AppText style={{ color: colors.error, marginTop: spacing.xs }}>
+                  {formik.errors.description}
+                </AppText>
+              )}
+            </AppView>
+
+           
             {/* Dynamic Category Fields */}
             {formik.values.categoryId &&
               categoryFields &&

@@ -8,6 +8,8 @@ import { Dimensions, FlatList, StyleSheet } from "react-native";
 import AppView from "../ui/AppView";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const blurhash = "LEHV6nWB2yk8pyo0adR*.7kCMdnj";
+
 export function AdInfoBlock({ ad }: { ad?: Ad }) {
   const { spacing } = useTheme();
 
@@ -54,7 +56,7 @@ export function AdInfoBlock({ ad }: { ad?: Ad }) {
         horizontal
         keyExtractor={(_, i) => String(i)}
         renderItem={({ item }) => (
-          <Image source={{ uri: item }} style={styles.thumb} />
+          <Image source={{ uri: item }} placeholder={{blurhash}} style={styles.thumb} />
         )}
         contentContainerStyle={{ marginTop: spacing.md }}
         showsHorizontalScrollIndicator={false}

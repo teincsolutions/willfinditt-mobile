@@ -81,7 +81,7 @@ export default function CustomDrawerContent(
       <DrawerMenuItem
         label="Categories"
         onPress={() => {
-          router.push("/categories");
+          router.push("/search/categories");
         }}
         icon={({ active }) => (
           <Ionicons
@@ -98,7 +98,7 @@ export default function CustomDrawerContent(
             handleLogin();
             return;
           }
-          router.push({ pathname: "/(ads)/create" });
+          router.push({ pathname: "/ads/create" });
         }}
         icon={({ active }) => (
           <MaterialCommunityIcons

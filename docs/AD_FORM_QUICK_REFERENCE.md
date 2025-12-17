@@ -6,13 +6,13 @@
 
 ```typescript
 import { router } from "expo-router";
-router.push("/(ads)/create");
+router.push("/ads/create");
 ```
 
 ### Navigate to Edit Ad
 
 ```typescript
-router.push(`/(ads)/${adId}/edit`);
+router.push(`/ads/${adId}/edit`);
 ```
 
 ## Component Usage
@@ -228,7 +228,7 @@ const isOwner = user?.id === ad?.userId;
 
 {
   isOwner && (
-    <Button onPress={() => router.push(`/(ads)/${ad.id}/edit`)}>Edit</Button>
+    <Button onPress={() => router.push(`/ads/${ad.id}/edit`)}>Edit</Button>
   );
 }
 ```
@@ -245,7 +245,7 @@ const handleSubmit = async (formData: AdFormData) => {
 
     const newAd = await createMutation.mutateAsync(adData);
     toast.success("Ad created!");
-    router.replace(`/(ads)/${newAd.id}`);
+    router.replace(`/ads/${newAd.id}`);
   } catch (error: any) {
     toast.error(error?.message || "Failed to create ad");
   }

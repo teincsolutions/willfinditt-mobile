@@ -10,10 +10,11 @@ import Badge from "../ui/Badge";
 
 interface Props {
   category: Category;
+  selected?: boolean;
   onPress: () => void;
 }
 
-export default function CategoryCardLandscape({ category, onPress }: Props) {
+export default function CategoryCardLandscape({ category, selected, onPress }: Props) {
   const { colors, spacing, radius, avatarSize, icons } = useTheme();
 
   return (
@@ -25,8 +26,9 @@ export default function CategoryCardLandscape({ category, onPress }: Props) {
           backgroundColor: colors.background,
           borderRadius: radius.md,
           padding: spacing.md,
-          borderColor: colors.border,
+          borderColor: selected ? colors.primary : colors.border,
           borderWidth: 1,
+          opacity: selected ? 1 : 0.7,
         },
       ]}
     >

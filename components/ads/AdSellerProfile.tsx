@@ -19,7 +19,11 @@ export function AdSellerProfile({ ad }: { ad?: Ad }) {
   };
 
   const handleMessage = () => {
-    if (ad) router.push({ pathname: "/messages", params: { adId: ad.id } });
+    if (ad)
+      router.push({
+        pathname: "/chats/[chatId]",
+        params: { chatId: "", adId: ad.id, userId: ad.userId },
+      });
   };
 
   const handleShare = () => {
@@ -31,7 +35,7 @@ export function AdSellerProfile({ ad }: { ad?: Ad }) {
   const handleProfilePress = () => {
     if (ad?.userId) {
       router.push({
-        pathname: "/seller/[sellerId]",
+        pathname: "/ads/seller/[sellerId]",
         params: { sellerId: ad.user?.sellerProfile?.id || "" },
       });
     }

@@ -9,7 +9,6 @@ import PlaceholderField from "@/components/ui/PlaceholderField";
 import { TextButton } from "@/components/ui/TextButton";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
-import { useUser } from "@/hooks/useUser";
 import { Feather } from "@expo/vector-icons";
 import Drawer from "expo-router/drawer";
 import { useFormik } from "formik";
@@ -35,8 +34,7 @@ const BasicInfoSchema = Yup.object().shape({
 
 export default function ProfileScreen() {
   const { icons, spacing, colors, radius, fontSizes } = useTheme();
-  const { user, isLoading } = useAuth();
-  const { updateProfileAsync, isUpdatingProfile } = useUser();
+  const { user, isLoading, updateProfileAsync, isUpdatingProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
 
   const { values, handleChange, setFieldValue, handleBlur, errors, touched, handleSubmit } =

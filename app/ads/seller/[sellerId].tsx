@@ -60,7 +60,7 @@ export default function SellerProfileScreen() {
   const handleMessage = () => {
     if (sellerProfile?.userId && user) {
       router.push({
-        pathname: "/(chats)/[chatId]",
+        pathname: "/chats/[chatId]",
         params: { chatId: "", userId: sellerProfile.userId },
       });
     }
@@ -170,7 +170,7 @@ export default function SellerProfileScreen() {
           return (
             <ProductCard
               onPress={() =>
-                router.push({ pathname: "/[adId]", params: { adId: item.id } })
+                router.push({ pathname: "/ads/[adId]", params: { adId: item.id } })
               }
               ad={item}
             />

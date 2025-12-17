@@ -243,7 +243,7 @@ export default function BusinessProfileScreen() {
                 <TextButton
                   icon={<AddCircle size={icons.md} color={colors.iconBlack} />}
                   title="Create Ad"
-                  onPress={() => router.push({ pathname: "/(ads)/create" })}
+                  onPress={() => router.push({ pathname: "/ads/create" })}
                 />
               }
             />
@@ -265,7 +265,7 @@ export default function BusinessProfileScreen() {
         renderItem={({ item }: { item: Ad }) => (
           <MyProductCardLandscape
             ad={item}
-            onPress={() => router.push(`/(ads)/${item.id}` as any)}
+            onPress={() => router.push(`/ads/${item.id}` as any)}
             style={{ marginHorizontal: spacing.md, marginVertical: spacing.xs }}
           />
         )}

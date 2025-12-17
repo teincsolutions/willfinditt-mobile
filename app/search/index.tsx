@@ -78,7 +78,7 @@ export default function SearchScreen() {
 
     // Navigate to search results
     router.push({
-      pathname: "/(search)/results",
+      pathname: "/search/results",
       params: { query },
     });
   };
@@ -90,7 +90,7 @@ export default function SearchScreen() {
 
     // Navigate to search results
     router.push({
-      pathname: "/(search)/results",
+      pathname: "/search/results",
       params: { query: suggestion.keyword },
     });
   };
@@ -102,14 +102,14 @@ export default function SearchScreen() {
 
     // Navigate to search results
     router.push({
-      pathname: "/(search)/results",
+      pathname: "/search/results",
       params: { query: suggestion.keyword },
     });
   };
 
   // Handle saved ad selection
   const handleSavedAdPress = (ad: Ad) => {
-    router.push(`/(ads)/${ad.id}`);
+    router.push(`/ads/${ad.id}`);
   };
 
   // Show loading for suggestions
@@ -145,7 +145,7 @@ export default function SearchScreen() {
               }}
               right={
                 <IconButton
-                  onPress={() => router.push("/(search)/filters")}
+                  onPress={() => router.push("/search/filters")}
                   icon={
                     <FilterSearch size={icons.md} color={colors.iconBlack} />
                   }
@@ -156,7 +156,7 @@ export default function SearchScreen() {
                 value={query}
                 onChangeText={setQuery}
                 onSubmit={handleSearchSubmit}
-                onPressFilter={() => router.push("/(search)/filters")}
+                onPressFilter={() => router.push("/search/filters")}
                 onClear={() => {
                   setQuery("");
                 }}

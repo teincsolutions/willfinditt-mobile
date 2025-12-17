@@ -1,103 +1,108 @@
+import AppText from "@/components/ui/AppText";
+import AppView from "@/components/ui/AppView";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Category } from "@/types";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { ReactElement } from "react";
+import React, { useState } from "react";
 import { FlatList } from "react-native";
-import AppText from "../ui/AppText";
-import AppView from "../ui/AppView";
-import { CategoryCardCircularSkeleton } from "./CategoryCardCircularSkeleton";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SearchBar } from "../search/SearchBar";
+import CategoryCardLandscape from "./CategoryCardLandscape";
+import CategoryCardLandscapeSkeleton from "./CategoryCardLandscapeSkeleton";
+import { EmptyCategoryCard } from "./EmptyCategoryCard";
 
-export function CategoryList({
-  data,
-  renderItem,
-  isGrid = false,
-  onEndReached,
-  isLoading,
-}: {
+interface Props {
   data: Category[];
-  renderItem: ({ item }: { item: Category }) => ReactElement;
-  isGrid?: boolean;
-  onEndReached?: () => void;
-  isLoading?: boolean;
-}) {
-  const { spacing, colors, icons } = useTheme();
+  selected?: Category;
+  onSelect: (category: Category) => void;
+  loading?: boolean;
+}
 
-  // Render loading state
-  if (isLoading) {
+export default function CategoryList({
+  data: categories,
+  selected,
+  onSelect,
+  loading,
+}: Props) {
+  const insets = useSafeAreaInsets();
+  const { colors, spacing, radius } = useTheme();
+  const [query, setQuery] = useState("");
+  const filteredCategories =
+    categories?.filter((cat) =>
+      cat.name?.toLowerCase().includes(query.toLowerCase())
+    ) || [];
+
+  // Header showing selected city
+  const renderHeader = () => {
     return (
       <AppView
-        style={{
-          paddingHorizontal: isGrid ? spacing.md : spacing.lg,
-          gap: spacing.md,
-          ...(isGrid
-            ? { flexDirection: "row", flexWrap: "wrap" }
-            : { flexDirection: "row" }),
-        }}
+        style={[
+          {
+            gap: spacing.xs,
+            marginVertical: spacing.md,
+          },
+        ]}
       >
-        {isGrid
-          ? Array(8)
-              .fill(null)
-              .map((_, index) => <CategoryCardCircularSkeleton key={index} />)
-          : Array(4)
-              .fill(null)
-              .map((_, index) => <CategoryCardCircularSkeleton key={index} />)}
-      </AppView>
-    );
-  }
-
-  // Render empty state
-  if (data.length === 0) {
-    return (
-      <AppView
-        style={{
-          alignItems: "center",
-          flex: 1,
-          gap: spacing.md,
-        }}
-      >
-        <MaterialCommunityIcons
-          name="package-variant-closed-remove"
-          size={icons.xl}
-          color={colors.iconGray}
+        <SearchBar
+          value={query}
+          onChangeText={setQuery}
+          showSearchButton={false}
         />
-        <AppText style={{ textAlign: "center", color: colors.textGray }}>
-          No Categories Found
-        </AppText>
+
+        {selected && (
+          <AppText
+            variant="lg"
+            fontWeight="bold"
+            style={{ color: colors.primary, marginTop: spacing.xs }}
+          >
+            {selected.name}
+          </AppText>
+        )}
       </AppView>
     );
-  }
+  };
 
-  // Grid layout - render in a simple View without ScrollView
-  if (isGrid) {
-    return (
-      <AppView
-        style={{
-          paddingHorizontal: spacing.md,
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: spacing.xs,
-        }}
-      >
-        {data.map((item, key) => <AppView key={key}>{renderItem({ item })}</AppView>)}
+  const emptyState = () => {
+    return loading ? (
+      <AppView style={{ paddingHorizontal: spacing.md }}>
+        {[...Array(10)].map((_, index) => (
+          <CategoryCardLandscapeSkeleton key={index} />
+        ))}
       </AppView>
+    ) : (
+      <EmptyCategoryCard />
     );
-  }
+  };
 
-  // Horizontal list layout - use FlatList
   return (
     <FlatList
-      data={data}
-      renderItem={renderItem}
+      data={filteredCategories}
       keyExtractor={(item) => item.id}
-      showsHorizontalScrollIndicator={false}
+      renderItem={({ item }) => (
+        <CategoryCardLandscape
+          category={item}
+          selected={selected?.id === item.id}
+          onPress={() => onSelect(item)}
+        />
+      )}
+      ListHeaderComponent={renderHeader}
+      ListEmptyComponent={emptyState}
+      stickyHeaderIndices={[0]}
       contentContainerStyle={{
-        paddingHorizontal: spacing.lg,
-        gap: spacing.xs,
+        paddingHorizontal: spacing.md,
+        paddingBottom: insets.bottom + spacing.md,
+        gap: spacing.sm,
       }}
-      horizontal
-      initialNumToRender={4}
-      onEndReached={onEndReached}
-      onEndReachedThreshold={0.5}
+      ListHeaderComponentStyle={{
+        backgroundColor: colors.background,
+        marginHorizontal: -spacing.md,
+        paddingHorizontal: spacing.md,
+        borderBottomEndRadius: radius.lg,
+        borderBottomStartRadius: radius.lg,
+      }}
+      style={{
+        backgroundColor: colors.backgroundPrimary,
+      }}
+      showsVerticalScrollIndicator={false}
     />
   );
 }

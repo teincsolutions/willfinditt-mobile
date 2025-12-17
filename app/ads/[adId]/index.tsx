@@ -169,7 +169,7 @@ export default function AdDetailsScreen() {
             >
               {isOwner && (
                 <IconButton
-                  onPress={() => router.push(`/(ads)/${adId}/edit`)}
+                  onPress={() => router.push(`/ads/${adId}/edit`)}
                   icon={
                     <Feather
                       name="edit"

@@ -34,7 +34,7 @@ export default function MyAdsScreen() {
           ad={item}
           onPress={() => {
             // Navigate to ad details
-            router.push(`/(ads)/${item.id}`);
+            router.push(`/ads/${item.id}`);
           }}
           style={{ marginBottom: 12 }}
         />
@@ -97,7 +97,7 @@ const { data: sold } = useInfiniteMyAds({
 
 ```tsx
 // If you only have the ID
-<MyProductCardLandscape adId="123" onPress={() => router.push(`/(ads)/123`)} />
+<MyProductCardLandscape adId="123" onPress={() => router.push(`/ads/123`)} />
 ```
 
 ## Props
@@ -118,7 +118,7 @@ const { data: sold } = useInfiniteMyAds({
 ### Edit
 
 - Opens edit screen for the ad
-- Default: `router.push(\`/(ads)/\${ad.id}/edit\`)`
+- Default: `router.push(\`/ads/\${ad.id}/edit\`)`
 - Can be overridden with `onEdit` prop
 
 ### Promote
@@ -131,7 +131,7 @@ const { data: sold } = useInfiniteMyAds({
 
 - Shows detailed analytics
 - Views, saves, engagement metrics
-- Default: `router.push(\`/(ads)/\${ad.id}/stats\`)`
+- Default: `router.push(\`/ads/\${ad.id}/stats\`)`
 
 ### Share
 
@@ -214,7 +214,7 @@ export default function ActiveAdsScreen() {
       renderItem={({ item }) => (
         <MyProductCardLandscape
           ad={item}
-          onPress={() => router.push(`/(ads)/${item.id}`)}
+          onPress={() => router.push(`/ads/${item.id}`)}
         />
       )}
       estimatedItemSize={100}
@@ -240,7 +240,7 @@ export default function DraftsScreen() {
         renderItem={({ item }) => (
           <MyProductCardLandscape
             ad={item}
-            onPress={() => router.push(`/(ads)/${item.id}/edit`)}
+            onPress={() => router.push(`/ads/${item.id}/edit`)}
           />
         )}
         estimatedItemSize={100}

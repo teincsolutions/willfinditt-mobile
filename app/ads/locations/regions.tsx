@@ -50,7 +50,7 @@ export default function RegionsScreen() {
           value={query}
           onChangeText={setQuery}
           onPressFilter={() => {
-            router.push("/(search)/filters");
+            router.push("/search/filters");
           }}
         />
       </Header>
@@ -60,7 +60,7 @@ export default function RegionsScreen() {
         onSelectState={(state) => {
           setSelectedState(state);
           router.push({
-            pathname: "/(locations)/[regionId]",
+            pathname: "/ads/locations/[regionId]",
             params: { regionId: state.id },
           });
         }}

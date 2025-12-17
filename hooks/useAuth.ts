@@ -1,5 +1,6 @@
 import queryClient from "@/lib/query-client";
 import { authService } from "@/services/authService";
+import { userService } from "@/services/userService";
 import type {
   AuthResponse,
   LoginRequest,
@@ -237,19 +238,27 @@ export function useAuth() {
     mutationFn: () => authService.getProfile(),
     onSuccess: (userData) => {
       // TanStack Query + MMKV handles persistence automatically
-      queryClient.setQueryData(["auth", "user"], userData);
+      queryClient.setQueryData(AUTH_QUERY_KEYS.AUTH_USER, userData);
     },
   });
 
   const checkUserStatusMutation = useMutation({
     mutationFn: () => authService.getProfile(),
     onSuccess: async (updatedUser) => {
-      queryClient.setQueryData(["auth", "user"], updatedUser);
+      queryClient.setQueryData(AUTH_QUERY_KEYS.AUTH_USER, updatedUser);
 
       // If user is no longer active, logout
       if (!updatedUser.isActive) {
         await logoutMutation.mutateAsync();
       }
+    },
+  });
+
+  // Update Profile Mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: Partial<User>) => userService.updateProfile(data),
+    onSuccess: (updatedUser: User) => { 
+      queryClient.setQueryData(AUTH_QUERY_KEYS.AUTH_USER, updatedUser);
     },
   });
 
@@ -268,6 +277,12 @@ export function useAuth() {
     registerAsync: registerMutation.mutateAsync,
     isRegistering: registerMutation.isPending,
     registerError: registerMutation.error,
+
+    // Update Profile
+    updateProfile: updateProfileMutation.mutate,
+    updateProfileAsync: updateProfileMutation.mutateAsync,
+    isUpdatingProfile: updateProfileMutation.isPending,
+    updateProfileError: updateProfileMutation.error,
 
     // Login
     login: loginMutation.mutate,

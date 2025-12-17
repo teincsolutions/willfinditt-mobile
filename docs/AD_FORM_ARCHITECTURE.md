@@ -319,13 +319,13 @@ Try-Catch Structure
 App Navigation
 │
 ├── Any Screen
-│   └── router.push("/(ads)/create")
+│   └── router.push("/ads/create")
 │       └── Create Ad Page
 │           └── Submit → Ad Details
 │
 └── Ad Details (as owner)
     └── Edit Button
-        └── router.push(`/(ads)/${id}/edit`)
+        └── router.push(`/ads/${id}/edit`)
             └── Edit Ad Page
                 └── Submit → router.back()
 ```

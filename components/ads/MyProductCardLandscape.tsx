@@ -97,13 +97,13 @@ function MyProductCardContent({
       onEdit(ad);
     } else {
       // Default navigation to edit screen
-      router.push(`/(ads)/${ad.id}/edit` as any);
+      router.push(`/ads/${ad.id}/edit` as any);
     }
   };
 
   const handlePromote = () => {
     // Navigate to promote/boost ad screen
-    router.push(`/(ads)/${ad.id}/promote` as any);
+    router.push(`/ads/${ad.id}/promote` as any);
   };
 
   const handleShare = () => {
@@ -113,7 +113,7 @@ function MyProductCardContent({
 
   const handleViewStats = () => {
     // Navigate to ad statistics screen
-    router.push(`/(ads)/${ad.id}/stats` as any);
+    router.push(`/ads/${ad.id}/stats` as any);
   };
 
   const handleDelete = () => {

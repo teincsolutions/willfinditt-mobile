@@ -35,7 +35,7 @@ export default function CreateAdScreen() {
       toast.success("Ad created successfully!");
 
       // Navigate to the ad details page
-      router.replace(`/(ads)/${newAd.id}`);
+      router.replace(`/ads/${newAd.id}`);
     } catch (error: any) {
       toast.error(error?.message || "Failed to create ad");
       console.error("Error creating ad:", error);
