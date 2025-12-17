@@ -1,6 +1,7 @@
 import { AdCondition, AdSearchParams } from "@/types";
-import { mmkvStorage } from "@/utils/mmkvStorage";
-import { useCallback, useState } from "react";
+import { storage } from "@/utils/mmkvStorage";
+import { useCallback } from "react";
+import { useMMKVObject } from "react-native-mmkv";
 
 const SEARCH_FILTERS_KEY = "search-filters";
 
@@ -25,128 +26,123 @@ const DEFAULT_FILTERS: AdSearchParams = {
  * Used across search screens for consistent filtering
  */
 export const useSearchFilters = () => {
-  // Initialize state from MMKV storage
-  const [filters, setFiltersState] = useState<AdSearchParams>(() => {
-    const stored = mmkvStorage.getJSON<AdSearchParams>(SEARCH_FILTERS_KEY);
-    return stored || DEFAULT_FILTERS;
-  });
+  // Use MMKV reactive hook for automatic re-renders
+  const [filters, setFiltersState] = useMMKVObject<AdSearchParams>(
+    SEARCH_FILTERS_KEY,
+    storage
+  );
+
+  const currentFilters = filters || DEFAULT_FILTERS;
 
   // Update all filters
   const setFilters = useCallback(
     (newFilters: Partial<AdSearchParams>) => {
-      const updated = { ...filters, ...newFilters };
-      mmkvStorage.setJSON(SEARCH_FILTERS_KEY, updated);
+      const updated = { ...currentFilters, ...newFilters };
       setFiltersState(updated);
     },
-    [filters]
+    [currentFilters, setFiltersState]
   );
 
   // Set search query
   const setQuery = useCallback(
     (query: string | undefined) => {
-      const updated = { ...filters, query, page: 1 };
-      mmkvStorage.setJSON(SEARCH_FILTERS_KEY, updated);
+      const updated = { ...currentFilters, query, page: 1 };
       setFiltersState(updated);
     },
-    [filters]
+    [currentFilters, setFiltersState]
   );
 
   // Set category (single value as array)
   const setCategoryId = useCallback(
     (categoryId: string | undefined) => {
       const updated = {
-        ...filters,
+        ...currentFilters,
         categoryIds: categoryId ? [categoryId] : undefined,
         page: 1,
       };
-      mmkvStorage.setJSON(SEARCH_FILTERS_KEY, updated);
       setFiltersState(updated);
     },
-    [filters]
+    [currentFilters, setFiltersState]
   );
 
   // Set city (single value as array)
   const setCityId = useCallback(
     (cityId: string | undefined) => {
       const updated = {
-        ...filters,
+        ...currentFilters,
         cityIds: cityId ? [cityId] : undefined,
         page: 1,
       };
-      mmkvStorage.setJSON(SEARCH_FILTERS_KEY, updated);
       setFiltersState(updated);
     },
-    [filters]
+    [currentFilters, setFiltersState]
   );
 
   // Set conditions
   const setConditions = useCallback(
     (conditions: AdCondition[] | undefined) => {
-      const updated = { ...filters, conditions, page: 1 };
-      mmkvStorage.setJSON(SEARCH_FILTERS_KEY, updated);
+      const updated = { ...currentFilters, conditions, page: 1 };
       setFiltersState(updated);
     },
-    [filters]
+    [currentFilters, setFiltersState]
   );
 
   // Set price range
   const setPriceRange = useCallback(
     (priceMin: number | undefined, priceMax: number | undefined) => {
-      const updated = { ...filters, priceMin, priceMax, page: 1 };
-      mmkvStorage.setJSON(SEARCH_FILTERS_KEY, updated);
+      const updated = { ...currentFilters, priceMin, priceMax, page: 1 };
       setFiltersState(updated);
     },
-    [filters]
+    [currentFilters, setFiltersState]
   );
 
   // Set sorting
   const setSorting = useCallback(
     (sortBy: string, sortOrder: "asc" | "desc") => {
-      const updated = { ...filters, sortBy, sortOrder, page: 1 };
-      mmkvStorage.setJSON(SEARCH_FILTERS_KEY, updated);
+      const updated = { ...currentFilters, sortBy, sortOrder, page: 1 };
       setFiltersState(updated);
     },
-    [filters]
+    [currentFilters, setFiltersState]
   );
 
   // Set page
   const setPage = useCallback(
     (page: number) => {
-      const updated = { ...filters, page };
-      mmkvStorage.setJSON(SEARCH_FILTERS_KEY, updated);
+      const updated = { ...currentFilters, page };
       setFiltersState(updated);
     },
-    [filters]
+    [currentFilters, setFiltersState]
   );
 
   // Clear all filters (reset to defaults)
   const clearFilters = useCallback(() => {
-    mmkvStorage.setJSON(SEARCH_FILTERS_KEY, DEFAULT_FILTERS);
     setFiltersState(DEFAULT_FILTERS);
-  }, []);
+  }, [setFiltersState]);
 
   // Clear specific filters but keep query
   const clearFilterOptions = useCallback(() => {
     const updated = {
       ...DEFAULT_FILTERS,
-      query: filters.query,
+      query: currentFilters.query,
     };
-    mmkvStorage.setJSON(SEARCH_FILTERS_KEY, updated);
     setFiltersState(updated);
-  }, [filters.query]);
+  }, [currentFilters, setFiltersState]);
 
   // Get single categoryId from array
-  const categoryId = filters.categoryIds?.[0];
+  const categoryId = currentFilters.categoryIds?.[0];
 
   // Get single cityId from array
-  const cityId = filters.cityIds?.[0];
+  const cityId = currentFilters.cityIds?.[0];
 
   // Count active filters (excluding query, page, limit, sortBy, sortOrder)
   const activeFiltersCount =
-    (filters.categoryIds?.length || 0) +
-    (filters.cityIds?.length || 0) +
-    (filters.conditions?.length || 0) +
-    (filters.priceMin !== undefined || filters.priceMax !== undefined ? 1 : 0);
+    (currentFilters.categoryIds?.length || 0) +
+    (currentFilters.cityIds?.length || 0) +
+    (currentFilters.conditions?.length || 0) +
+    (currentFilters.priceMin !== undefined ||
+    currentFilters.priceMax !== undefined
+      ? 1
+      : 0);
 
   return {
     filters,

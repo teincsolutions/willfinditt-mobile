@@ -1,6 +1,7 @@
 import { Category } from "@/types";
-import { mmkvStorage } from "@/utils/mmkvStorage";
-import { useCallback, useState } from "react";
+import { storage } from "@/utils/mmkvStorage";
+import { useCallback } from "react";
+import { useMMKVObject } from "react-native-mmkv";
 
 const SELECTED_CATEGORY_KEY = "selected-category";
 const SELECTED_PARENT_CATEGORY_KEY = "selected-parent-category";
@@ -10,50 +11,24 @@ const SELECTED_PARENT_CATEGORY_KEY = "selected-parent-category";
  * Used for creating or editing ads with category context
  */
 export const useCategorySelection = () => {
-  // Initialize state from MMKV storage
-  const [selectedCategory, setSelectedCategoryState] =
-    useState<Category | null>(() => {
-      return mmkvStorage.getJSON<Category>(SELECTED_CATEGORY_KEY) || null;
-    });
+  // Use MMKV reactive hooks for automatic re-renders
+  const [selectedCategory, setSelectedCategory] = useMMKVObject<Category>(
+    SELECTED_CATEGORY_KEY,
+    storage
+  );
 
-  const [selectedParentCategory, setSelectedParentCategoryState] =
-    useState<Category | null>(() => {
-      return (
-        mmkvStorage.getJSON<Category>(SELECTED_PARENT_CATEGORY_KEY) || null
-      );
-    });
-
-  // Set selected category
-  const setSelectedCategory = useCallback((category: Category | null) => {
-    if (category) {
-      mmkvStorage.setJSON(SELECTED_CATEGORY_KEY, category);
-    } else {
-      mmkvStorage.removeItem(SELECTED_CATEGORY_KEY);
-    }
-    setSelectedCategoryState(category);
-  }, []);
-
-  // Set selected parent category
-  const setSelectedParentCategory = useCallback((category: Category | null) => {
-    if (category) {
-      mmkvStorage.setJSON(SELECTED_PARENT_CATEGORY_KEY, category);
-    } else {
-      mmkvStorage.removeItem(SELECTED_PARENT_CATEGORY_KEY);
-    }
-    setSelectedParentCategoryState(category);
-  }, []);
+  const [selectedParentCategory, setSelectedParentCategory] =
+    useMMKVObject<Category>(SELECTED_PARENT_CATEGORY_KEY, storage);
 
   // Clear all category selections
   const clearCategorySelection = useCallback(() => {
-    mmkvStorage.removeItem(SELECTED_CATEGORY_KEY);
-    mmkvStorage.removeItem(SELECTED_PARENT_CATEGORY_KEY);
-    setSelectedCategoryState(null);
-    setSelectedParentCategoryState(null);
-  }, []);
+    setSelectedCategory(undefined);
+    setSelectedParentCategory(undefined);
+  }, [setSelectedCategory, setSelectedParentCategory]);
 
   return {
-    selectedCategory,
-    selectedParentCategory,
+    selectedCategory: selectedCategory || null,
+    selectedParentCategory: selectedParentCategory || null,
     setSelectedCategory,
     setSelectedParentCategory,
     clearCategorySelection,

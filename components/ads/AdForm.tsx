@@ -10,6 +10,7 @@ import TextAreaField from "@/components/ui/TextAreaField";
 import ToggleSwitch from "@/components/ui/ToggleSwitch";
 import { useAuth } from "@/hooks/useAuth";
 import { useCategoryFields } from "@/hooks/useCategoryFields";
+import { useCategorySelection } from "@/hooks/useCategorySelection";
 import { useTheme } from "@/hooks/useTheme";
 import {
   AdCondition,
@@ -178,6 +179,8 @@ export default function AdForm({
 }: AdFormProps) {
   const { colors, spacing, radius, icons } = useTheme();
   const { user } = useAuth();
+  const { selectedCategory } = useCategorySelection();
+
   // Condition selection sheet ref
   const conditionSheetRef = useRef<BottomSheet>(null);
   // Currency selection sheet ref
@@ -191,7 +194,7 @@ export default function AdForm({
 
   // Fetch category fields for dynamic form rendering
   const { data: categoryFields, isLoading: loadingFields } = useCategoryFields(
-    initialData?.categoryId || ""
+    selectedCategory?.id || initialData?.categoryId || ""
   );
 
   // Initialize formik with dynamic validation schema
@@ -202,7 +205,7 @@ export default function AdForm({
       price: initialData?.price?.toString() || "",
       currency: initialData?.currency || "GHS",
       condition: initialData?.condition,
-      categoryId: initialData?.categoryId || "",
+      categoryId: selectedCategory?.id || initialData?.categoryId || "",
       images: initialData?.images || [],
       address:
         initialData?.address ||
@@ -254,6 +257,17 @@ export default function AdForm({
       onSubmit(formData);
     },
   });
+
+  // Update categoryId in formik when selected category changes
+  useEffect(() => {
+    if (
+      selectedCategory?.id &&
+      selectedCategory.id !== formik.values.categoryId
+    ) {
+      formik.setFieldValue("categoryId", selectedCategory.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory]);
 
   // Update dynamic field values in formik when category fields change
   useEffect(() => {
@@ -496,6 +510,7 @@ export default function AdForm({
               <PlaceholderField
                 label="Category *"
                 placeholder="Select a category"
+                value={selectedCategory ? selectedCategory.name : ""}
                 onPress={() => {
                   router.push({
                     pathname: "/(ads)/categories",
@@ -523,6 +538,11 @@ export default function AdForm({
                 }
                 style={{ marginBottom: spacing.md }}
               />
+              {formik.touched.categoryId && formik.errors.categoryId && (
+                <AppText style={{ color: colors.error, marginTop: spacing.xs }}>
+                  {formik.errors.categoryId}
+                </AppText>
+              )}
             </AppView>
 
             {/* Dynamic Category Fields */}

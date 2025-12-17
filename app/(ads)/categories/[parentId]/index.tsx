@@ -6,6 +6,7 @@ import AppView from "@/components/ui/AppView";
 import { BackButton } from "@/components/ui/BackButton";
 import { Header } from "@/components/ui/Header";
 import { useCategory, useSubcategories } from "@/hooks/useCategories";
+import { useCategorySelection } from "@/hooks/useCategorySelection";
 import { useTheme } from "@/hooks/useTheme";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -14,8 +15,10 @@ import { FlatList } from "react-native-gesture-handler";
 export default function SubCategoriesScreen() {
   const { parentId = "" } = useLocalSearchParams() as { parentId: string };
   const { data: parentCategory } = useCategory(parentId);
-  const { icons, spacing, colors } = useTheme();
+  const { spacing, colors } = useTheme();
   const { data: categories, isLoading } = useSubcategories(parentId);
+  const { setSelectedCategory, setSelectedParentCategory } =
+    useCategorySelection();
   const [query, setQuery] = useState("");
   const filteredCategories =
     categories?.filter((cat) =>
@@ -30,11 +33,10 @@ export default function SubCategoriesScreen() {
           header: () => (
             <Header
               left={<BackButton label="Cancel" showIcon={false} />}
-              navRowStyle={{ marginHorizontal: spacing.md }}
               title={parentCategory?.name || "Categories"}
+              navRowStyle={{ paddingHorizontal: spacing.md }}
               containerStyle={{
                 paddingBottom: spacing.sm,
-                paddingTop: spacing.md,
               }}
             >
               <SearchBar
@@ -64,11 +66,9 @@ export default function SubCategoriesScreen() {
           <CategoryCardLandscape
             category={item}
             onPress={() => {
-              router.dismiss();
-              router.push({
-                pathname: "/(search)/results",
-                params: { categoryId: item.id, query: item.name },
-              });
+              setSelectedCategory(item);
+              setSelectedParentCategory(parentCategory);
+              router.dismissAll();
             }}
           />
         )}

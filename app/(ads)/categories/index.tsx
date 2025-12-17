@@ -9,17 +9,17 @@ import { BackButton } from "@/components/ui/BackButton";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { useParentCategories } from "@/hooks/useCategories";
+import { useCategorySelection } from "@/hooks/useCategorySelection";
 import { useTheme } from "@/hooks/useTheme";
 import { router, Stack } from "expo-router";
 import { Grid2, RowVertical } from "iconsax-react-nativejs";
 import { useState } from "react";
 import { FlatList } from "react-native-gesture-handler";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CategoriesScreen() {
-  const insets = useSafeAreaInsets();
   const { icons, spacing, colors } = useTheme();
   const { data: categories, isLoading } = useParentCategories();
+  const { setSelectedParentCategory } = useCategorySelection();
   const [query, setQuery] = useState("");
   const [isGrid, setIsGrid] = useState(true);
   const filteredCategories =
@@ -31,6 +31,7 @@ export default function CategoriesScreen() {
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen
         options={{
+          headerShown: true,
           header: () => (
             <Header
               left={<BackButton label="Cancel" showIcon={false} />}
@@ -59,7 +60,7 @@ export default function CategoriesScreen() {
               navRowStyle={{ marginHorizontal: spacing.md }}
               title="All Categories"
               containerStyle={{
-                paddingBottom: spacing.lg, 
+                paddingBottom: spacing.lg,
               }}
             >
               <SearchBar
@@ -93,8 +94,9 @@ export default function CategoriesScreen() {
             <CategoryCardCircular
               category={item}
               onPress={() => {
+                setSelectedParentCategory(item);
                 router.push({
-                  pathname: "/categories/[parentId]",
+                  pathname: "/(ads)/categories/[parentId]",
                   params: { parentId: item.id },
                 });
               }}
@@ -103,8 +105,9 @@ export default function CategoriesScreen() {
             <CategoryCardLandscape
               category={item}
               onPress={() => {
+                setSelectedParentCategory(item);
                 router.push({
-                  pathname: "/categories/[parentId]",
+                  pathname: "/(ads)/categories/[parentId]",
                   params: { parentId: item.id },
                 });
               }}
