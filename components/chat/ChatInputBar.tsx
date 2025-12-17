@@ -52,7 +52,7 @@ export default function ChatInputBar({
         style={[
           styles.input,
           {
-            minHeight: 60,
+            minHeight: 40,
             marginHorizontal: spacing.sm,
             paddingHorizontal: spacing.md,
             paddingVertical: spacing.sm,

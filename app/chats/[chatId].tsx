@@ -11,7 +11,7 @@ import { useUser } from "@/hooks/useUser";
 import { formatTime } from "@/lib/formatTime";
 import { Message } from "@/types/chat";
 import { Stack, useLocalSearchParams } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -30,6 +30,7 @@ export default function ChatScreen() {
     adId,
   } = useLocalSearchParams<{ chatId: string; userId: string; adId: string }>();
   const { user } = useAuth();
+  const [chatId, setChatId] = useState<string>(initialChatId);
   const { createChat, isCreating } = useCreateChat();
   const {
     messages,
@@ -42,7 +43,7 @@ export default function ChatScreen() {
     sendMessage,
     isSending,
     isOtherOnline,
-  } = useChatMessages(chatId);
+  } = useChatMessages(chatId, { receiverId: userId, adId });
 
   // Determine the other participant
   const otherUserId = chat
@@ -58,7 +59,12 @@ export default function ChatScreen() {
     if (chat && !isLoading) {
       markAsRead();
     }
+
   }, [chat, isLoading, markAsRead]);
+
+  useEffect(() => {
+    
+  } , []);
 
   const displayName = otherUser
     ? [otherUser.firstName, otherUser.lastName].filter(Boolean).join(" ") ||
