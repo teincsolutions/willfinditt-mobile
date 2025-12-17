@@ -269,22 +269,6 @@ export default function AdForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]);
 
-  // Update dynamic field values in formik when category fields change
-  useEffect(() => {
-    if (categoryFields && categoryFields.length > 0) {
-      const dynamicValues = categoryFields.reduce((acc, field) => {
-        const existingValue = formik.values.fieldValues?.find(
-          (fv) => fv.categoryFieldId === field.id
-        );
-        acc[`field_${field.id}`] = existingValue?.value || "";
-        return acc;
-      }, {} as Record<string, string>);
-
-      formik.setValues((prev) => ({ ...prev, ...dynamicValues }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryFields]);
-
   // Handle images uploaded from AdImageUploader
   const handleImagesUploaded = (uploadedUrls: string[]) => {
     formik.setFieldValue("images", uploadedUrls);
