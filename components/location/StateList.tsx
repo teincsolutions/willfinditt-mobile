@@ -4,7 +4,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { State } from "@/types/location";
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { FlatList, Pressable, StyleSheet } from "react-native";
+import { FlatList, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SearchBar } from "../search/SearchBar";
 import StateCard from "./StateCard";
@@ -62,7 +62,15 @@ export default function StateList({
         )}
       </AppView>
     );
-  }, [query, selectedState, spacing, colors, icons]);
+  }, [
+    spacing.xs,
+    spacing.md,
+    query,
+    selectedState,
+    colors.primary,
+    icons.xs,
+    onSelectState,
+  ]);
 
   const emptyState = React.useMemo(() => {
     return loading ? (
@@ -115,7 +123,3 @@ export default function StateList({
     />
   );
 }
-
-const styles = StyleSheet.create({
-  header: {},
-});

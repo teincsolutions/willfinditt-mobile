@@ -17,7 +17,6 @@ export interface State {
   cities?: City[];
   _count?: {
     cities: number;
-    ads: number;
   };
 }
 
@@ -27,4 +26,7 @@ export interface City {
   stateId: string;
   createdAt: string;
   state?: State;
+  _count?: {
+    ads: number;
+  };
 }

@@ -32,29 +32,29 @@ export default function PrimaryButton({
   const isDisabled = disabled || loading;
 
   return (
-    <LinearGradient
-      colors={
-        backgroundColor
-          ? [backgroundColor, backgroundColor]
-          : [colors.primary, colors.accent]
-      }
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
-      style={[
-        styles.linear,
-        {
-          height: button.height,
-          borderRadius: button.radius,
-          paddingHorizontal: button.paddingHorizontal,
-          opacity: isDisabled ? 0.6 : 1,
-        },
-        style,
-      ]}
+    <Pressable
+      onPress={onPress}
+      disabled={disabled || loading}
+      style={[{ gap: spacing.md }]}
     >
-      <Pressable
-        onPress={onPress}
-        disabled={disabled || loading}
-        style={[styles.btn, { gap: spacing.md }]}
+      <LinearGradient
+        colors={
+          backgroundColor
+            ? [backgroundColor, backgroundColor]
+            : [colors.primary, colors.accent]
+        }
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={[
+          styles.btn,
+          {
+            height: button.height,
+            borderRadius: button.radius,
+            paddingHorizontal: button.paddingHorizontal,
+            opacity: isDisabled ? 0.6 : 1,
+          },
+          style,
+        ]}
       >
         <AppText
           variant="lg"
@@ -68,16 +68,12 @@ export default function PrimaryButton({
           {title}
         </AppText>
         {loading && <ActivityIndicator size="small" color={colors.iconGray} />}
-      </Pressable>
-    </LinearGradient>
+      </LinearGradient>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  linear: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
   btn: {
     flexDirection: "row",
     alignItems: "center",

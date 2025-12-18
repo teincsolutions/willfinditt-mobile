@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
 export default function StateCardSkeleton() {
-  const { colors, spacing, input, radius} = useTheme();
+  const { colors, input, radius } = useTheme();
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -58,7 +58,6 @@ export default function StateCardSkeleton() {
           styles.iconSkeleton,
           {
             backgroundColor: colors.border,
-            borderRadius: 4,
           },
         ]}
       />

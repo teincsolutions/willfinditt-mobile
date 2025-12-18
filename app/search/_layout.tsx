@@ -15,8 +15,7 @@ export default function SearchLayout() {
       />
       <Stack.Screen name="results" options={{ headerShown: false }} />
       <Stack.Screen name="categories" options={{ headerShown: false }} />
-      <Stack.Screen name="locations/regions" />
-      <Stack.Screen name="locations/cities/[regionId]" />
+      <Stack.Screen name="locations" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -2,22 +2,28 @@ import { SelectableListSheet } from "@/components/bottom-sheet/SelectableBottomS
 import SheetRadioOptionItem from "@/components/bottom-sheet/SheetRadioOptionItem";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
+import CheckBox from "@/components/ui/CheckBox";
 import IconButton from "@/components/ui/IconButton";
-import { Pill } from "@/components/ui/Pill";
+import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import RangeInput from "@/components/ui/RangeInput";
+import SearchableSelectModal from "@/components/ui/SearchableSelectModal";
+import TextAreaField from "@/components/ui/TextAreaField";
 import { TextButton } from "@/components/ui/TextButton";
+import ToggleSwitch from "@/components/ui/ToggleSwitch";
 import { useCategory } from "@/hooks/useCategories";
-import { useLocationSelection } from "@/hooks/useLocationSelection";
+import { useCategoryFields } from "@/hooks/useCategoryFields";
+import { useCityById } from "@/hooks/useLocations";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { useTheme } from "@/hooks/useTheme";
-import { AdCondition } from "@/types";
+import { AdCondition, CategoryField, CategoryFieldType } from "@/types";
 import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
-import React, { useEffect, useRef } from "react";
-import { ScrollView, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const conditionOptions = [
   { id: AdCondition.NEW, name: "New", value: AdCondition.NEW },
@@ -37,7 +43,8 @@ const sortOptions = [
 ];
 
 export default function FiltersScreen() {
-  const { colors, spacing, radius, icons, fontSizes } = useTheme();
+  const { colors, spacing, radius, icons } = useTheme();
+  const insets = useSafeAreaInsets();
   const conditionSheetRef = useRef<BottomSheet>(null);
   const sortSheetRef = useRef<BottomSheet>(null);
 
@@ -49,20 +56,25 @@ export default function FiltersScreen() {
     setConditions,
     setPriceRange,
     setSorting,
+    setFieldValues,
     clearFilterOptions,
   } = useSearchFilters();
 
   // Fetch category name if categoryId exists
   const { data: category } = useCategory(categoryId || "");
-  
+
   // Get selected city from location selection
-  const { selectedCity } = useLocationSelection();
+  const { data: selectedCity } = useCityById(cityId!);
+
+  // Fetch category fields for dynamic filtering
+  const { data: categoryFields, isLoading: loadingFields } = useCategoryFields(
+    categoryId || ""
+  );
 
   // Local state for conditions (array for multiple selection)
-  const [selectedConditions, setSelectedConditions] = React.useState<
-    AdCondition[]
-  >(filters?.conditions || []);
-
+  const [selectedCondition, setSelectedCondition] = useState(
+    filters?.conditions || []
+  );
   // Local state for price range
   const [priceRange, setPriceRangeLocal] = React.useState({
     low: filters?.priceMin || 0,
@@ -74,9 +86,19 @@ export default function FiltersScreen() {
     `${filters?.sortBy || "createdAt"}-${filters?.sortOrder || "desc"}`
   );
 
+  // Local state for dynamic field values
+  const [dynamicFieldValues, setDynamicFieldValues] = useState<
+    Record<string, string>
+  >({});
+
+  // State for select modals
+  const [selectModalVisible, setSelectModalVisible] = useState<{
+    [key: string]: boolean;
+  }>({});
+
   // Update local state when filters change
   useEffect(() => {
-    setSelectedConditions(filters?.conditions || []);
+    setSelectedCondition(filters?.conditions || []);
     setPriceRangeLocal({
       low: filters?.priceMin || 0,
       high: filters?.priceMax || 100000,
@@ -84,7 +106,37 @@ export default function FiltersScreen() {
     setSelectedSort(
       `${filters?.sortBy || "createdAt"}-${filters?.sortOrder || "desc"}`
     );
+
+    // Initialize dynamic field values from filters
+    if (filters?.fieldValues) {
+      const fieldValuesMap: Record<string, string> = {};
+      filters.fieldValues.forEach((fv) => {
+        fieldValuesMap[`field_${fv.categoryFieldId}`] = fv.value;
+      });
+      setDynamicFieldValues(fieldValuesMap);
+    } else {
+      setDynamicFieldValues({});
+    }
   }, [filters]);
+
+  // Reset dynamic fields when category changes
+  useEffect(() => {
+    if (categoryId && categoryFields) {
+      // Initialize field values from filters if they match current category
+      const fieldValuesMap: Record<string, string> = {};
+      if (filters?.fieldValues) {
+        filters.fieldValues.forEach((fv) => {
+          const fieldExists = categoryFields.find(
+            (f) => f.id === fv.categoryFieldId
+          );
+          if (fieldExists) {
+            fieldValuesMap[`field_${fv.categoryFieldId}`] = fv.value;
+          }
+        });
+      }
+      setDynamicFieldValues(fieldValuesMap);
+    }
+  }, [categoryId, categoryFields, filters?.fieldValues]);
 
   const handleOpenCategory = () => {
     router.push({
@@ -100,21 +152,17 @@ export default function FiltersScreen() {
     });
   };
 
-  const handleToggleCondition = (condition: AdCondition) => {
-    setSelectedConditions((prev) => {
-      if (prev.includes(condition)) {
-        return prev.filter((c) => c !== condition);
-      } else {
-        return [...prev, condition];
-      }
-    });
+  const handleFieldValueChange = (fieldId: string, value: string) => {
+    setDynamicFieldValues((prev) => ({
+      ...prev,
+      [`field_${fieldId}`]: value,
+    }));
   };
 
   const handleApplyFilters = () => {
+    console.log("Applying filters...");
     // Apply conditions
-    setConditions(
-      selectedConditions.length > 0 ? selectedConditions : undefined
-    );
+    setConditions(selectedCondition.length > 0 ? selectedCondition : undefined);
 
     // Apply price range (only if not default values)
     if (priceRange.low !== 0 || priceRange.high !== 100000) {
@@ -130,15 +178,256 @@ export default function FiltersScreen() {
     const [sortBy, sortOrder] = selectedSort.split("-");
     setSorting(sortBy, sortOrder as "asc" | "desc");
 
+    // Apply dynamic field values
+    if (categoryFields && categoryFields.length > 0) {
+      const fieldValuesArray = categoryFields
+        .map((field) => ({
+          categoryFieldId: field.id,
+          value: dynamicFieldValues[`field_${field.id}`] || "",
+        }))
+        .filter((fv) => fv.value.trim() !== "");
+
+      setFieldValues(
+        fieldValuesArray.length > 0 ? fieldValuesArray : undefined
+      );
+    }
+
     // Navigate back to results
-    router.back();
+    router.dismiss();
   };
 
   const handleResetFilters = () => {
     clearFilterOptions();
-    setSelectedConditions([]);
+    setSelectedCondition([]);
     setPriceRangeLocal({ low: 0, high: 100000 });
     setSelectedSort("createdAt-desc");
+    setDynamicFieldValues({});
+  };
+
+  const renderDynamicFilterField = (field: CategoryField) => {
+    const fieldKey = `field_${field.id}`;
+    const fieldValue = dynamicFieldValues[fieldKey] || "";
+
+    switch (field.type) {
+      case CategoryFieldType.TEXT:
+        return (
+          <InputField
+            key={field.id}
+            label={field.label}
+            value={fieldValue}
+            onChangeText={(value) => handleFieldValueChange(field.id, value)}
+            placeholder={`Filter by ${field.label.toLowerCase()}`}
+            style={{ marginBottom: spacing.md }}
+          />
+        );
+
+      case CategoryFieldType.NUMBER:
+        return (
+          <InputField
+            key={field.id}
+            label={field.label}
+            value={fieldValue}
+            onChangeText={(value) => handleFieldValueChange(field.id, value)}
+            placeholder={`Filter by ${field.label.toLowerCase()}`}
+            keyboardType="numeric"
+            style={{ marginBottom: spacing.md }}
+          />
+        );
+
+      case CategoryFieldType.TEXTAREA:
+        return (
+          <TextAreaField
+            key={field.id}
+            label={field.label}
+            value={fieldValue}
+            onChangeText={(value) => handleFieldValueChange(field.id, value)}
+            placeholder={`Filter by ${field.label.toLowerCase()}`}
+            numberOfLines={3}
+            style={{ marginBottom: spacing.md }}
+          />
+        );
+
+      case CategoryFieldType.SELECT:
+        return (
+          <AppView key={field.id} style={{ marginBottom: spacing.lg }}>
+            <PlaceholderField
+              label={field.label}
+              placeholder={`Select ${field.label.toLowerCase()}`}
+              value={
+                field.options?.find((opt: any) => opt.value === fieldValue)
+                  ?.label || ""
+              }
+              onPress={() => {
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: true,
+                }));
+              }}
+              inputStyle={{
+                backgroundColor: colors.selectBg,
+                paddingRight: spacing.sm,
+              }}
+              rightIcon={
+                <IconButton
+                  onPress={() => {
+                    setSelectModalVisible((prev) => ({
+                      ...prev,
+                      [field.id]: true,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: colors.iconLightGray,
+                    borderRadius: radius.sm,
+                  }}
+                  icon={
+                    <Feather
+                      name="chevron-down"
+                      size={icons.sm}
+                      color={colors.iconGray}
+                    />
+                  }
+                />
+              }
+            />
+
+            <SearchableSelectModal
+              key={field.id}
+              visible={selectModalVisible[field.id] || false}
+              onClose={() =>
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: false,
+                }))
+              }
+              options={field.options || []}
+              value={fieldValue}
+              onSelect={(value) => {
+                handleFieldValueChange(field.id, value.toString());
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: false,
+                }));
+              }}
+              title={`Select ${field.label.toLowerCase()}`}
+            />
+          </AppView>
+        );
+
+      case CategoryFieldType.RADIO:
+        return (
+          <AppView key={field.id} style={{ marginBottom: spacing.lg }}>
+            <PlaceholderField
+              label={field.label}
+              placeholder={`Select ${field.label.toLowerCase()}`}
+              value={
+                field.options?.find((opt: any) => opt.value === fieldValue)
+                  ?.label || ""
+              }
+              onPress={() => {
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: true,
+                }));
+              }}
+              inputStyle={{
+                backgroundColor: colors.selectBg,
+                paddingRight: spacing.sm,
+              }}
+              rightIcon={
+                <IconButton
+                  onPress={() => {
+                    setSelectModalVisible((prev) => ({
+                      ...prev,
+                      [field.id]: true,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: colors.iconLightGray,
+                    borderRadius: radius.sm,
+                  }}
+                  icon={
+                    <Feather
+                      name="chevron-down"
+                      size={icons.sm}
+                      color={colors.iconGray}
+                    />
+                  }
+                />
+              }
+            />
+
+            <SearchableSelectModal
+              key={field.id}
+              visible={selectModalVisible[field.id] || false}
+              onClose={() =>
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: false,
+                }))
+              }
+              options={field.options || []}
+              value={fieldValue}
+              onSelect={(value) => {
+                handleFieldValueChange(field.id, value.toString());
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: false,
+                }));
+              }}
+              title={`Select ${field.label.toLowerCase()}`}
+            />
+          </AppView>
+        );
+
+      case CategoryFieldType.CHECKBOX:
+        const checkboxValues = fieldValue ? fieldValue.split(",") : [];
+        return (
+          <View key={field.id} style={{ marginBottom: spacing.md }}>
+            <AppText
+              variant="sm"
+              style={{ marginBottom: spacing.sm, fontWeight: "600" }}
+            >
+              {field.label}
+            </AppText>
+            <View style={{ gap: spacing.sm }}>
+              {field.options?.map((option: any) => {
+                const isChecked = checkboxValues.includes(option.value);
+                return (
+                  <CheckBox
+                    key={option.value}
+                    label={option.label}
+                    value={isChecked}
+                    onValueChange={(checked) => {
+                      const newValues = checked
+                        ? [...checkboxValues, option.value]
+                        : checkboxValues.filter(
+                            (v: string) => v !== option.value
+                          );
+                      handleFieldValueChange(field.id, newValues.join(","));
+                    }}
+                  />
+                );
+              })}
+            </View>
+          </View>
+        );
+
+      case CategoryFieldType.BOOLEAN:
+        return (
+          <ToggleSwitch
+            key={field.id}
+            label={field.label}
+            value={fieldValue === "true"}
+            onValueChange={(val) =>
+              handleFieldValueChange(field.id, val ? "true" : "false")
+            }
+            style={{ marginBottom: spacing.md }}
+          />
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
@@ -234,43 +523,48 @@ export default function FiltersScreen() {
 
         {/* Condition Filter */}
         <AppView style={{ marginBottom: spacing.lg }}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: spacing.sm,
+          <PlaceholderField
+            label="Condition"
+            placeholder="Select condition"
+            value={
+              conditionOptions.find(
+                (option) => option.value === selectedCondition?.[0]
+              )?.name || ""
+            }
+            onPress={() => {
+              conditionSheetRef.current?.expand();
             }}
-          >
-            <AppText variant="sm" fontWeight="medium">
-              Condition
-            </AppText>
-            {selectedConditions.length > 0 && (
-              <TextButton
-                title="Clear"
-                onPress={() => setSelectedConditions([])}
-                titleStyle={{ fontSize: fontSizes.sm }}
+            rightIcon={
+              <IconButton
+                onPress={() => {
+                  conditionSheetRef.current?.expand();
+                }}
+                style={{
+                  backgroundColor: colors.iconLightGray,
+                  borderRadius: radius.sm,
+                }}
+                icon={
+                  <Feather
+                    name="chevron-down"
+                    size={icons.sm}
+                    color={colors.iconGray}
+                  />
+                }
               />
-            )}
-          </View>
-
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: spacing.sm,
-            }}
-          >
-            {conditionOptions.map((option) => (
-              <Pill
-                key={option.id}
-                item={option.name}
-                selected={selectedConditions.includes(option.value)}
-                onPress={() => handleToggleCondition(option.value)}
-              />
-            ))}
-          </View>
+            }
+          />
         </AppView>
+
+        {/* Dynamic Category Fields */}
+        {categoryId && categoryFields && categoryFields.length > 0 && (
+          <AppView style={{ marginBottom: spacing.lg }}>
+            {loadingFields ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              categoryFields.map((field) => renderDynamicFilterField(field))
+            )}
+          </AppView>
+        )}
 
         {/* Sort By */}
         <AppView style={{ marginBottom: spacing.lg }}>
@@ -330,6 +624,7 @@ export default function FiltersScreen() {
           borderTopWidth: 1,
           borderTopColor: colors.border,
           gap: spacing.sm,
+          paddingBottom: insets.bottom,
         }}
       >
         <PrimaryButton
@@ -340,11 +635,30 @@ export default function FiltersScreen() {
         <TextButton
           title="Reset All Filters"
           onPress={handleResetFilters}
-          titleStyle={{ color: colors.textGray }}
+          titleStyle={{ color: colors.blue, fontWeight: "600" }}
         />
       </AppView>
 
       {/* Bottom Sheets */}
+      <SelectableListSheet
+        ref={conditionSheetRef}
+        title="Condition"
+        snapPoints={["50%"]}
+        data={conditionOptions}
+        onDone={() => {
+          conditionSheetRef.current?.close();
+        }}
+        renderItem={({ item, index }) => (
+          <SheetRadioOptionItem
+            item={item}
+            selected={selectedCondition.includes(item.value)}
+            onPress={() => {
+              setSelectedCondition([item.value]);
+              conditionSheetRef.current?.close();
+            }}
+          />
+        )}
+      />
       <SelectableListSheet
         ref={sortSheetRef}
         title="Sort By"

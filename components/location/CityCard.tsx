@@ -4,6 +4,7 @@ import { City } from "@/types/location";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import Badge from "../ui/Badge";
 
 interface Props {
   city: City;
@@ -12,7 +13,7 @@ interface Props {
 }
 
 export default function CityCard({ city, selected, onPress }: Props) {
-  const { colors, spacing, radius, icons, input } = useTheme();
+  const { colors, spacing, icons, input } = useTheme();
 
   return (
     <Pressable
@@ -44,7 +45,14 @@ export default function CityCard({ city, selected, onPress }: Props) {
       >
         {city.name}
       </AppText>
-
+      <Badge
+        style={{
+          marginStart: spacing.md,
+          backgroundColor: colors.blue,
+        }}
+        countStyle={{ color: colors.textWhite }}
+        count={city._count?.ads || 0}
+      />
       {/* Check Icon for Selected */}
       {selected && (
         <View
@@ -61,6 +69,13 @@ export default function CityCard({ city, selected, onPress }: Props) {
           <Feather name="check" size={icons.sm} color={colors.textWhite} />
         </View>
       )}
+
+      {/* Right Icon */}
+      <Feather
+        name="chevron-right"
+        size={icons.md}
+        color={selected ? colors.primary : colors.iconGray}
+      />
     </Pressable>
   );
 }

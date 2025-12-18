@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
 export default function CityCardSkeleton() {
-  const { colors, spacing, input } = useTheme();
+  const { colors, input } = useTheme();
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -58,7 +58,6 @@ export default function CityCardSkeleton() {
           styles.circleSkeleton,
           {
             backgroundColor: colors.border,
-            borderRadius: 12,
           },
         ]}
       />

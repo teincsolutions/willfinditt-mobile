@@ -14,7 +14,7 @@ export default function SubCategoriesScreen() {
   const { setCategoryId, categoryId } = useSearchFilters();
   const { data: selectedCategory } = useCategory(categoryId || "");
 
-  const handleNavigateNext = (catId: string) => {
+  const handleNavigateNext = () => {
     if (source === "filters") {
       router.back();
     } else {
@@ -38,7 +38,7 @@ export default function SubCategoriesScreen() {
         data={categories}
         onSelect={(cat) => {
           setCategoryId(cat.id);
-          handleNavigateNext(cat.id);
+          handleNavigateNext();
         }}
       />
     </AppView>

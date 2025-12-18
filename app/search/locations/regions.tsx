@@ -1,30 +1,30 @@
 import StateList from "@/components/location/StateList";
 import AppView from "@/components/ui/AppView";
-import { useStatesByCountry } from "@/hooks/useLocations";
-import { useLocationSelection } from "@/hooks/useLocationSelection";
+import { useCityById, useStatesByCountry } from "@/hooks/useLocations";
+import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { useTheme } from "@/hooks/useTheme";
 import { State } from "@/types";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 // Default Ghana country ID - adjust if needed
 const GHANA_COUNTRY_ID = "cmg8dfzhk0000pga392vf9568";
 
 export default function RegionsScreen() {
   const { colors } = useTheme();
+  const { source = "search" } = useLocalSearchParams<{ source?: string }>();
   const { data: states = [], isLoading } = useStatesByCountry(GHANA_COUNTRY_ID);
-  const { selectedState, setSelectedState } = useLocationSelection();
-  console.log("Selected State in RegionsScreen:", states, selectedState);
+  const { cityId } = useSearchFilters();
+  const { data: selectedCity } = useCityById(cityId!);
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <StateList
         states={states}
-        selectedState={selectedState!}
+        selectedState={selectedCity?.state!}
         onSelectState={(state: State) => {
-          setSelectedState(state);
-          router.push({
+          router.replace({
             pathname: "/search/locations/cities/[regionId]",
-            params: { regionId: state.id },
+            params: { regionId: state.id, source },
           });
         }}
         loading={isLoading}

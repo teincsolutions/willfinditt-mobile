@@ -5,10 +5,10 @@ import React, { ReactNode } from "react";
 import {
   ActivityIndicator,
   ColorValue,
-  Pressable,
   StyleProp,
   StyleSheet,
   TextStyle,
+  TouchableOpacity,
   View,
   ViewStyle,
 } from "react-native";
@@ -47,7 +47,7 @@ export function TextButton({
 }: Props) {
   const { colors, textButton, spacing, icons } = useTheme();
   return (
-    <Pressable disabled={disabled} onPress={onPress}>
+    <TouchableOpacity activeOpacity={0.5} disabled={disabled} onPress={onPress}>
       <LinearGradient
         colors={gradientColors || [colors.background, colors.background]}
         start={{ x: 0, y: 0 }}
@@ -103,7 +103,7 @@ export function TextButton({
           )}
         </View>
       </LinearGradient>
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 

@@ -105,6 +105,15 @@ export const useSearchFilters = () => {
     [currentFilters, setFiltersState]
   );
 
+  // Set field values (dynamic category fields)
+  const setFieldValues = useCallback(
+    (fieldValues: { categoryFieldId: string; value: string }[] | undefined) => {
+      const updated = { ...currentFilters, fieldValues, page: 1 };
+      setFiltersState(updated);
+    },
+    [currentFilters, setFiltersState]
+  );
+
   // Set page
   const setPage = useCallback(
     (page: number) => {
@@ -142,7 +151,8 @@ export const useSearchFilters = () => {
     (currentFilters.priceMin !== undefined ||
     currentFilters.priceMax !== undefined
       ? 1
-      : 0);
+      : 0) +
+    (currentFilters.fieldValues?.length || 0);
 
   return {
     filters,
@@ -156,6 +166,7 @@ export const useSearchFilters = () => {
     setConditions,
     setPriceRange,
     setSorting,
+    setFieldValues,
     setPage,
     clearFilters,
     clearFilterOptions,
