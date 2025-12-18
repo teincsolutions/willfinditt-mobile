@@ -80,7 +80,19 @@
           }
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-ssl-pinning",
+        {
+          "sslPinning": {
+            "hosts": {
+              "api.willfind8.com": [
+                "xjCqs7iKe/Ir4XPymYzObBAv7nYMf12RzcFWh4/nXnw="
+              ]
+            }
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
