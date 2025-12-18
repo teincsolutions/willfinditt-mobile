@@ -6,11 +6,12 @@ import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatMessages, useCreateChat } from "@/hooks/useChatMessages";
+import { useSeller } from "@/hooks/useSeller";
 import { useTheme } from "@/hooks/useTheme";
-import { useUser } from "@/hooks/useUser";
 import { formatTime } from "@/lib/formatTime";
-import { Message } from "@/types/chat";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Chat, Message } from "@/types/chat";
+import { Stack } from "expo-router";
+import { useGlobalSearchParams } from "expo-router/build/hooks";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -26,12 +27,18 @@ export default function ChatScreen() {
 
   const {
     chatId: initialChatId,
+    sellerId,
     userId,
     adId,
-  } = useLocalSearchParams<{ chatId: string; userId: string; adId: string }>();
+  } = useGlobalSearchParams<{
+    chatId: string;
+    sellerId: string;
+    userId: string;
+    adId: string;
+  }>();
   const { user } = useAuth();
   const [chatId, setChatId] = useState<string>(initialChatId);
-  const { createChat, isCreating } = useCreateChat();
+  const { createChatAsync, isCreating } = useCreateChat();
   const {
     messages,
     chat,
@@ -43,37 +50,50 @@ export default function ChatScreen() {
     sendMessage,
     isSending,
     isOtherOnline,
-  } = useChatMessages(chatId, { receiverId: userId, adId });
+  } = useChatMessages(chatId, { adId, receiverId: userId || "" });
 
   // Determine the other participant
-  const otherUserId = chat
+  const otherUser = chat
     ? chat.senderId === user?.id
-      ? chat.receiverId
-      : chat.senderId
-    : "";
-  
-  const { data: otherUser } = useUser(userId || otherUserId);
+      ? `${chat.receiver?.firstName} ${chat.receiver?.lastName}`
+      : `${chat.sender?.firstName} ${chat.sender?.lastName}`
+    : null;
+
+  const { sellerProfile } = useSeller(sellerId);
 
   // Mark messages as read when entering chat
   useEffect(() => {
     if (chat && !isLoading) {
       markAsRead();
     }
-
   }, [chat, isLoading, markAsRead]);
 
   useEffect(() => {
-    
-  } , []);
+    const initializeChat = async () => {
+      if (!chatId) {
+        try {
+          const newChat: Chat = await createChatAsync({
+            adId,
+            receiverId: userId || "",
+          });
 
-  const displayName = otherUser
-    ? [otherUser.firstName, otherUser.lastName].filter(Boolean).join(" ") ||
-      otherUser.username
-    : "Chat";
+          setChatId(newChat.id);
+        } catch (error) {
+          console.error("Failed to create chat:", error);
+        }
+      }
+    };
+    initializeChat();
+  }, [adId, userId]);
+
+  const sellerNameNoChat = `${sellerProfile?.user?.firstName || ""} ${
+    sellerProfile?.user?.lastName || ""
+  }`;
+  const displayName = chat ? otherUser : sellerNameNoChat || "Chat";
 
   const handleSendMessage = (content: string) => {
     if (content.trim()) {
-      sendMessage({ content: content.trim() });
+      sendMessage({ chatId, content: content.trim() });
     }
   };
 
@@ -150,7 +170,7 @@ export default function ChatScreen() {
         <Stack.Screen
           options={{
             header: () => (
-              <ChatHeader isOnline={isOtherOnline} name={displayName} />
+              <ChatHeader isOnline={isOtherOnline} name={displayName!} />
             ),
           }}
         />
@@ -178,7 +198,10 @@ export default function ChatScreen() {
           ListHeaderComponent={renderFooter()}
           ListEmptyComponent={renderEmptyState()}
         />
-        <ChatInputBar onSendMessage={handleSendMessage} isSending={isSending} />
+        <ChatInputBar
+          onSendMessage={handleSendMessage}
+          isSending={isSending || isCreating}
+        />
       </AppView>
     </KeyboardAvoidingView>
   );

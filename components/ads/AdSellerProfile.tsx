@@ -3,43 +3,27 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Ad } from "@/types";
 import { Feather } from "@expo/vector-icons";
 import { formatDistanceToNow } from "date-fns";
-import { router } from "expo-router";
 import { Call, Message } from "iconsax-react-nativejs";
 import React from "react";
-import { Linking, Pressable, Share as RNShare } from "react-native";
+import { Pressable } from "react-native";
 import AppView from "../ui/AppView";
 import { Avatar } from "../ui/Avatar";
 import { ProductCardSmallLandscapeSkeleton } from "./ProductCardSmallLandscapeSkeleton";
 
-export function AdSellerProfile({ ad }: { ad?: Ad }) {
+export function AdSellerProfile({
+  ad,
+  handleProfilePress,
+  handleCall,
+  handleMessage,
+  handleShare,
+}: {
+  ad?: Ad;
+  handleProfilePress?: () => void;
+  handleCall?: () => void;
+  handleMessage?: () => void;
+  handleShare?: () => void;
+}) {
   const { spacing, colors, icons } = useTheme();
-
-  const handleCall = () => {
-    if (ad?.user?.phone) Linking.openURL(`tel:${ad.user?.phone}`);
-  };
-
-  const handleMessage = () => {
-    if (ad)
-      router.push({
-        pathname: "/chats/[chatId]",
-        params: { chatId: "", adId: ad.id, userId: ad.userId },
-      });
-  };
-
-  const handleShare = () => {
-    RNShare.share({
-      message: `Check out this ad from ${ad?.user?.firstName} ${ad?.user?.lastName}: ${ad?.title}`,
-    });
-  };
-
-  const handleProfilePress = () => {
-    if (ad?.userId) {
-      router.push({
-        pathname: "/ads/seller/[sellerId]",
-        params: { sellerId: ad.user?.sellerProfile?.id || "" },
-      });
-    }
-  };
 
   if (ad?.user == null) {
     return <ProductCardSmallLandscapeSkeleton />;

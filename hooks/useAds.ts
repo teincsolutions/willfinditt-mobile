@@ -1,11 +1,12 @@
 import { adService } from "@/services/adService";
 import {
+  Ad,
   AdCondition,
   AdSearchRequest,
   AdSearchSuggestionsParams,
   AdStatus,
   CreateAdRequest,
-  UpdateAdRequest,
+  UpdateAdRequest
 } from "@/types";
 import {
   useInfiniteQuery,
@@ -13,6 +14,10 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { router } from "expo-router";
+import { Alert, Linking, Share } from "react-native";
+import { toast } from "sonner-native";
+import { useAuth } from "./useAuth";
 
 // Hook for infinite scrolling ads (basic endpoint - /ads)
 export const useInfiniteAds = (params?: {
@@ -240,4 +245,71 @@ export const useInfiniteSavedAds = (params?: { limit?: number }) => {
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
+};
+
+export const useAdActions = (ad?: Ad) => {
+  const { isAuthenticated, user } = useAuth();
+
+  const handleCall = () => {
+    if (ad?.user?.phone) Linking.openURL(`tel:${ad.user?.phone}`);
+  };
+
+  const handleLogin = () => {
+    Alert.alert("Login", "Do you want to login now?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "OK",
+        onPress: () => {
+          router.push("/(auth)/login");
+        },
+      },
+    ]);
+  };
+
+  const handleMessage = () => {
+    if (!isAuthenticated) {
+      handleLogin();
+      return;
+    }
+
+    if (ad?.user?.sellerProfile && ad.userId !== user?.id) {
+      router.push({
+        pathname: "/chats/[chatId]",
+        params: {
+          chatId: "",
+          adId: ad.id,
+          userId: ad.userId,
+          sellerId: ad.user?.sellerProfile?.id || "",
+        },
+      });
+    } else if (ad && ad.userId === user?.id) {
+      toast.dismiss("You cannot message yourself.");
+    }
+  };
+
+  const handleShare = () => {
+    Share.share({
+      message: `Check out this ad from ${ad?.user?.sellerProfile?.businessName ||
+        [ad?.user?.firstName, ad?.user?.lastName].filter(Boolean).join(" ")
+        }: ${ad?.title}`,
+    });
+  };
+
+  const handleProfilePress = () => {
+    if (ad?.userId) {
+      router.push({
+        pathname: "/ads/seller/[sellerId]",
+        params: { sellerId: ad.user?.sellerProfile?.id || "" },
+      });
+    }
+  };
+  return {
+    handleCall,
+    handleMessage,
+    handleShare,
+    handleProfilePress
+  }
 };

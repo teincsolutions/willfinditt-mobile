@@ -128,15 +128,10 @@ export const useChatMessages = (
       customChatId?: string;
     }) => {
       if (user == null) return;
-      let actualChatId = customChatId || chatId;
-      const { createChatAsync } = useCreateChat();
-      const receiverId = receiver?.id || options?.receiverId;
-      let newChat = null;
+      const actualChatId = customChatId || chatId;
+      if (!actualChatId) return { actualChatId: null };
 
-      if (!actualChatId) {
-        newChat = await createChatAsync({ receiverId: options?.receiverId || "", adId: options?.adId || "" });
-        actualChatId = newChat.id;
-      }
+      const receiverId = receiver?.id || options?.receiverId;
 
       // Create a temp id and message
       const tempId = `temp-${Date.now()}-${Math.random()

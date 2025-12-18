@@ -1,6 +1,7 @@
+import queryClient from "@/lib/query-client";
+import { mmkvStorage } from "@/utils/mmkvStorage";
 import * as tokenManager from "@/utils/tokenManager";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-
 // Create axios instance
 const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_BASE_URL,
@@ -143,9 +144,11 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-
-        // Clear tokens on refresh failure (synchronous)
+        console.error("Cleaning up auth state after refresh failure");
+        // Clear tokens and sessions on refresh failure (synchronous)
         tokenManager.clearTokens();
+        mmkvStorage.removeItem('auth_is_authenticated');
+        queryClient.clear();
 
         // Optionally redirect to login or trigger logout
         // You can emit an event here or use a store to handle logout

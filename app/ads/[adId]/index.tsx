@@ -12,7 +12,7 @@ import BottomActionBar from "@/components/ui/ButtomActionBar";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { TextButton } from "@/components/ui/TextButton";
-import { useAd, useInfiniteAds } from "@/hooks/useAds";
+import { useAd, useAdActions, useInfiniteAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { useUser } from "@/hooks/useUser";
@@ -37,9 +37,9 @@ export default function AdDetailsScreen() {
     userId: ad?.userId,
   });
   const relatedAds = ads?.pages.flatMap((page) => page.data) || [];
-
   const reviewSheetRef = useRef<BottomSheet>(null);
   const { data: user } = useUser(ad?.userId);
+  const {} = useAdActions();
 
   // Check if current user is the owner of this ad
   const isOwner = currentUser?.id === ad?.userId;

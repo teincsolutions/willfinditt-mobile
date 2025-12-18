@@ -1,9 +1,9 @@
 import { Stack } from "expo-router";
 
-export default function SearchLayout() {
+export default function ChatsLayout() {
   return (
     <Stack>
-      <Stack.Screen name="chats/[chatId]" />
+      <Stack.Screen name="[chatId]" />
     </Stack>
   );
 }

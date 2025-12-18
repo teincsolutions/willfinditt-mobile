@@ -28,7 +28,7 @@ export const AUTH_KEYS = {
 // Storage Helpers (Using MMKV native JSON support)
 // ============================================
 
-async function clearAuthState(): Promise<void> {
+export async function clearAuthState(): Promise<void> {
   try {
     const currentUser = await GoogleSignin.getCurrentUser();
     if (currentUser) await GoogleSignin.signOut();
