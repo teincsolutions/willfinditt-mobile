@@ -213,12 +213,8 @@ export default function AdDetailsScreen() {
       </ScrollView>
       <BottomActionBar
         style={{ paddingBottom: inserts.bottom }}
-        onMessage={function (): void {
-          throw new Error("Function not implemented.");
-        }}
-        onCall={function (): void {
-          throw new Error("Function not implemented.");
-        }}
+        onMessage={handleMessage}
+        onCall={handleCall}
       />
       <WriteReviewSheet
         ref={reviewSheetRef}

@@ -7,19 +7,15 @@ import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useInfiniteAds } from "@/hooks/useAds";
+import { useAdActions, useInfiniteAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useSeller } from "@/hooks/useSeller";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
 import { useLocalSearchParams } from "expo-router/build/hooks";
 import React from "react";
-import { Share } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MasonryList from "reanimated-masonry-list";
-
-const frontendUrl =
-  process.env.EXPO_PUBLIC_FRONTEND_URL || "https://willfinditt.com";
 
 export default function SellerProfileScreen() {
   const { colors, spacing, icons } = useTheme();
@@ -39,34 +35,16 @@ export default function SellerProfileScreen() {
   } = useInfiniteAds({ limit: 20, userId: sellerProfile?.userId });
 
   const allAds = adsData?.pages.flatMap((page) => page.data) || [];
-
-  const handleShare = () => {
-    const businessUrl = `${frontendUrl}/seller/${sellerProfile?.id}`;
-    Share.share({
-      message: `Check out my business on WillFindItt: ${businessUrl}`,
-      url: businessUrl,
-      title: "My Business on WillFindItt",
-    });
-  };
-
-  const handleCall = () => {
-    router.push(`tel:${sellerProfile?.user?.phone}`);
-  };
+  const { handleCall, handleMessage, handleShare } = useAdActions(
+    undefined,
+    sellerProfile
+  );
 
   const handleReviewPress = () => {
     router.push({
       pathname: "/ads/seller/[sellerId]/reviews",
-      params: { sellerId: sellerProfile?.id },
+      params: { sellerId },
     });
-  };
-
-  const handleMessage = () => {
-    if (sellerProfile?.userId && user) {
-      router.push({
-        pathname: "/chats/[chatId]",
-        params: { chatId: "", userId: sellerProfile.userId },
-      });
-    }
   };
 
   if (isLoadingProfile) {

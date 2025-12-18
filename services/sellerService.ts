@@ -95,7 +95,8 @@ export const sellerService = {
     limit = 20
   ): Promise<PaginatedResponse<SellerReview>> => {
     const response = await api.get<PaginatedResponse<SellerReview>>(
-      `/api/v1/seller-reviews/seller/${sellerId}?page=${page}&limit=${limit}`
+      `/api/v1/seller-reviews/seller/${sellerId}`,
+      { params: { page, limit } }
     );
     return response.data;
   },

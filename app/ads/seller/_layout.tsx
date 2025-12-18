@@ -10,7 +10,13 @@ export default function SellerLayout() {
         options={{
           title: "Reviews",
           presentation: "pageSheet",
-          headerLeft: () => <BackButton showIcon={false} label="Close" />,
+          headerLeft: () => (
+            <BackButton
+              showIcon={false}
+              label="Close"
+              style={{ marginRight: 4 }}
+            />
+          ),
         }}
       />
     </Stack>

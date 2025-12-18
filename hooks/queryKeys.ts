@@ -12,4 +12,6 @@ export const SELLER_QUERY_KEYS = {
   SELLER_PROFILE: (sellerId: string) => ["seller", sellerId] as const,
   SELLER_STATS: (sellerId: string) => ["seller", sellerId, "stats"] as const,
   SELLER_MY_STATS: ["seller", "my-stats"] as const,
+  SELLER_REVIEWS: (sellerId: string) =>
+    ["seller", sellerId, "reviews"] as const,
 };

@@ -4,7 +4,12 @@ import type {
   SellerProfile,
   UpdateSellerProfileRequest,
 } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { AUTH_QUERY_KEYS, SELLER_QUERY_KEYS } from "./queryKeys";
 
 export const useMySeller = () => {
@@ -141,8 +146,6 @@ export const useMySeller = () => {
 };
 
 export const useSeller = (sellerId: string) => {
-  const queryClient = useQueryClient();
-
   // Get seller profile by ID
   const sellerProfileQuery = useQuery({
     queryKey: SELLER_QUERY_KEYS.SELLER_PROFILE(sellerId),
@@ -175,12 +178,26 @@ export const useSeller = (sellerId: string) => {
   };
 };
 
-// Hook for fetching seller reviews with pagination
-export const useSellerReviews = (sellerId: string, page = 1, limit = 20) => {
-  return useQuery({
-    queryKey: ["seller-reviews", sellerId, page, limit],
-    queryFn: () => sellerService.getSellerReviews(sellerId, page, limit),
+// Hook for fetching seller reviews with pagination using infinite query
+export const useSellerReviews = (sellerId: string, limit = 20) => {
+  return useInfiniteQuery({
+    queryKey: SELLER_QUERY_KEYS.SELLER_REVIEWS(sellerId),
+    queryFn: ({ pageParam = 1 }) =>
+      sellerService.getSellerReviews(sellerId, pageParam, limit),
     enabled: !!sellerId,
     staleTime: 2 * 60 * 1000, // 2 minutes
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.meta.page < lastPage.meta.totalPages) {
+        return lastPage.meta.page + 1;
+      }
+      return undefined;
+    },
+    getPreviousPageParam: (firstPage) => {
+      if (firstPage.meta.page > 1) {
+        return firstPage.meta.page - 1;
+      }
+      return undefined;
+    },
   });
 };

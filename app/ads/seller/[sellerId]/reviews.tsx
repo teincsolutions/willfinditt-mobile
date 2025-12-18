@@ -5,35 +5,43 @@ import { useSellerReviews } from "@/hooks/useSeller";
 import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
-import { ActivityIndicator, FlatList, RefreshControl, View } from "react-native";
+import React from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SellerReviewScreen() {
   const { sellerId = "" } = useLocalSearchParams() as { sellerId: string };
   const { colors, spacing, icons } = useTheme();
   const insets = useSafeAreaInsets();
-  const [page, setPage] = useState(1);
 
-  const { data, isLoading, refetch, isRefetching } = useSellerReviews(
-    sellerId,
-    page,
-    20
-  );
+  const {
+    data,
+    isLoading,
+    refetch,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useSellerReviews(sellerId, 20);
 
-  const reviews = data?.data || [];
-  const totalReviews = data?.total || 0;
-  const hasMore = (data?.page || 0) < (data?.totalPages || 0);
+  // Flatten all pages into a single array
+  const reviews = data?.pages.flatMap((page) => page.data) || [];
+  const totalReviews = data?.pages[0]?.meta.total || 0;
 
   const handleLoadMore = () => {
-    if (!isLoading && hasMore) {
-      setPage((prev) => prev + 1);
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
   };
 
   const renderEmpty = () => {
     if (isLoading) return null;
-    
+
     return (
       <AppView
         style={{
@@ -50,7 +58,7 @@ export default function SellerReviewScreen() {
         />
         <AppText
           variant="lg"
-          fontWeight="semibold"
+          fontWeight="bold"
           style={{ color: colors.text, marginTop: spacing.md }}
         >
           No Reviews Yet
@@ -63,14 +71,14 @@ export default function SellerReviewScreen() {
             textAlign: "center",
           }}
         >
-          This seller hasn't received any reviews yet
+          This seller hasn&apos;t received any reviews yet
         </AppText>
       </AppView>
     );
   };
 
   const renderFooter = () => {
-    if (!isLoading || page === 1) return null;
+    if (!isFetchingNextPage) return null;
     return (
       <View style={{ paddingVertical: spacing.lg }}>
         <ActivityIndicator color={colors.primary} />
@@ -94,7 +102,7 @@ export default function SellerReviewScreen() {
     </AppView>
   );
 
-  if (isLoading && page === 1) {
+  if (isLoading && !data) {
     return (
       <AppView
         style={{
