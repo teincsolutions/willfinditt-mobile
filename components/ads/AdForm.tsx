@@ -331,20 +331,64 @@ export default function AdForm({
 
       case CategoryFieldType.SELECT:
         return (
-          <SearchableSelectModal
-            key={field.id}
-            visible={selectModalVisible[field.id] || false}
-            onClose={() =>
-              setSelectModalVisible((prev) => ({ ...prev, [field.id]: false }))
-            }
-            options={field.options || []}
-            value={fieldValue}
-            onSelect={(value) => {
-              handleFieldValueChange(field.id, value.toString());
-              setSelectModalVisible((prev) => ({ ...prev, [field.id]: false }));
-            }}
-            title={`Select ${field.label.toLowerCase()}`}
-          />
+          <AppView key={field.id} style={{ marginBottom: spacing.lg }}>
+            <PlaceholderField
+              label={field.label + (field.isRequired ? " *" : "")}
+              placeholder={`Select ${field.label.toLowerCase()}`}
+              value={
+                field.options?.find((opt: any) => opt.value === fieldValue)
+                  ?.label || ""
+              }
+              onPress={() => {
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: true,
+                }));
+              }}
+              inputStyle={{
+                backgroundColor: colors.selectBg,
+                paddingRight: spacing.sm,
+              }}
+              rightIcon={
+                <IconButton
+                  onPress={() => {}}
+                  style={{
+                    backgroundColor: colors.iconLightGray,
+                    borderRadius: radius.sm,
+                  }}
+                  icon={
+                    <Feather
+                      name="chevron-down"
+                      size={icons.sm}
+                      color={colors.iconGray}
+                    />
+                  }
+                />
+              }
+              style={{ marginBottom: spacing.md }}
+            />
+
+            <SearchableSelectModal
+              key={field.id}
+              visible={selectModalVisible[field.id] || false}
+              onClose={() =>
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: false,
+                }))
+              }
+              options={field.options || []}
+              value={fieldValue}
+              onSelect={(value) => {
+                handleFieldValueChange(field.id, value.toString());
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: false,
+                }));
+              }}
+              title={`Select ${field.label.toLowerCase()}`}
+            />
+          </AppView>
         );
       case CategoryFieldType.RADIO:
         return (
@@ -462,7 +506,7 @@ export default function AdForm({
               )}
             </AppView>
 
-             {/* Category Selection */}
+            {/* Category Selection */}
             <AppView style={{ marginBottom: spacing.lg }}>
               <PlaceholderField
                 label="Category *"
@@ -529,7 +573,6 @@ export default function AdForm({
               )}
             </AppView>
 
-           
             {/* Dynamic Category Fields */}
             {formik.values.categoryId &&
               categoryFields &&

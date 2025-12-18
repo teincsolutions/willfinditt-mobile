@@ -3,7 +3,9 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   StyleProp,
   TouchableOpacity,
   View,
@@ -114,25 +116,30 @@ export default function SearchableSelectModal({
       transparent={true}
       onRequestClose={onClose}
     >
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          justifyContent: "flex-end",
-        }}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={0}
       >
         <View
-          style={[
-            {
-              backgroundColor: colors.background,
-              borderTopLeftRadius: radius.lg,
-              borderTopRightRadius: radius.lg,
-              maxHeight: "80%",
-              paddingBottom: spacing.xl,
-            },
-            style,
-          ]}
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "flex-end",
+          }}
         >
+          <View
+            style={[
+              {
+                backgroundColor: colors.background,
+                borderTopLeftRadius: radius.lg,
+                borderTopRightRadius: radius.lg,
+                maxHeight: "80%",
+                paddingBottom: spacing.xl,
+              },
+              style,
+            ]}
+          >
           {/* Header */}
           <View
             style={{
@@ -317,8 +324,9 @@ export default function SearchableSelectModal({
               </TouchableOpacity>
             </View>
           )}
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
