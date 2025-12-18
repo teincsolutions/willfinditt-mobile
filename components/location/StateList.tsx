@@ -2,8 +2,11 @@ import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { useTheme } from "@/contexts/ThemeContext";
 import { State } from "@/types/location";
-import React from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { FlatList, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SearchBar } from "../search/SearchBar";
 import StateCard from "./StateCard";
 import StateCardSkeleton from "./StateCardSkeleton";
 
@@ -14,83 +17,99 @@ interface Props {
   loading?: boolean;
 }
 
-const allState: State = {
-  id: "all",
-  name: "All Regions in Ghana",
-  countryId: "1",
-  createdAt: "",
-};
-
 export default function StateList({
   states,
   selectedState,
   onSelectState,
   loading,
 }: Props) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radius, icons } = useTheme();
+  const insets = useSafeAreaInsets();
+  const [query, setQuery] = useState("");
+
+  const filteredStates =
+    states?.filter((state) =>
+      state.name?.toLowerCase().includes(query.toLowerCase())
+    ) || [];
 
   // Header showing selected state
-  const renderHeader = () => {
-    if (!selectedState) return null;
-
+  const renderHeader = React.useMemo(() => {
     return (
-      <>
-        <AppView
-          style={[
-            styles.header,
-            {
-              backgroundColor: colors.background,
-              padding: spacing.md,
-              marginBottom: spacing.md,
-              borderRadius: spacing.sm,
-            },
-          ]}
-        >
-          <AppText
-            variant="lg"
-            fontWeight="bold"
-            style={{ color: colors.primary, marginTop: spacing.xs }}
-          >
-            {selectedState.name}
-          </AppText>
-        </AppView>
-        <StateCard
-          state={allState}
-          selected={selectedState.id === "all"}
-          onPress={() => {
-            onSelectState(allState);
-          }}
+      <AppView
+        style={[
+          {
+            gap: spacing.xs,
+            paddingVertical: spacing.md,
+          },
+        ]}
+      >
+        <SearchBar
+          value={query}
+          onChangeText={setQuery}
+          showSearchButton={false}
         />
-      </>
-    );
-  };
 
-  if (loading) {
-    return (
-      <AppView style={{ paddingHorizontal: spacing.md }}>
-        {[...Array(8)].map((_, index) => (
+        {selectedState && (
+          <Pressable onPress={() => onSelectState(selectedState)}>
+            <AppText
+              variant="lg"
+              fontWeight="bold"
+              style={{ color: colors.primary, marginTop: spacing.xs }}
+            >
+              <Feather name="circle" size={icons.xs} /> {selectedState.name}
+            </AppText>
+          </Pressable>
+        )}
+      </AppView>
+    );
+  }, [query, selectedState, spacing, colors, icons]);
+
+  const emptyState = React.useMemo(() => {
+    return loading ? (
+      <AppView style={{ gap: spacing.xs }}>
+        {[...Array(15)].map((_, index) => (
           <StateCardSkeleton key={index} />
         ))}
       </AppView>
-    );
-  }
+    ) : null;
+  }, [loading, spacing]);
+
+  const renderItem = React.useCallback(
+    ({ item }: { item: State }) => (
+      <StateCard
+        state={item}
+        selected={selectedState?.id === item.id}
+        onPress={() => onSelectState(item)}
+      />
+    ),
+    [selectedState, onSelectState]
+  );
+
+  const keyExtractor = React.useCallback((item: State) => item.id, []);
 
   return (
     <FlatList
-      data={states}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <StateCard
-          state={item}
-          selected={selectedState?.id === item.id}
-          onPress={() => onSelectState(item)}
-        />
-      )}
+      data={filteredStates}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      keyboardShouldPersistTaps="handled"
       ListHeaderComponent={renderHeader}
-      stickyHeaderIndices={selectedState ? [0] : []}
+      ListEmptyComponent={emptyState}
+      stickyHeaderIndices={[0]}
       contentContainerStyle={{
         paddingHorizontal: spacing.md,
-        paddingBottom: spacing.xl,
+        paddingBottom: insets.bottom + spacing.md,
+        gap: spacing.sm,
+      }}
+      ListHeaderComponentStyle={{
+        backgroundColor: colors.background,
+        marginHorizontal: -spacing.md,
+        paddingHorizontal: spacing.md,
+        borderBottomEndRadius: radius.lg,
+        borderBottomStartRadius: radius.lg,
+      }}
+      style={{
+        backgroundColor: colors.backgroundPrimary,
       }}
       showsVerticalScrollIndicator={false}
     />

@@ -4,6 +4,7 @@ import { State } from "@/types/location";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet } from "react-native";
+import Badge from "../ui/Badge";
 
 interface Props {
   state: State;
@@ -12,7 +13,7 @@ interface Props {
 }
 
 export default function StateCard({ state, selected, onPress }: Props) {
-  const { colors, spacing, radius, icons, input } = useTheme();
+  const { colors, icons, input, spacing } = useTheme();
 
   return (
     <Pressable
@@ -30,7 +31,6 @@ export default function StateCard({ state, selected, onPress }: Props) {
           height: input.height,
           borderRadius: input.radius,
           paddingHorizontal: input.paddingHorizontal,
-          marginBottom: spacing.sm,
         },
       ]}
     >
@@ -45,6 +45,15 @@ export default function StateCard({ state, selected, onPress }: Props) {
       >
         {state.name}
       </AppText>
+
+      <Badge
+        style={{
+          marginStart: spacing.md,
+          backgroundColor: colors.blue,
+        }}
+        countStyle={{ color: colors.textWhite }}
+        count={state._count?.cities || 0}
+      />
 
       {/* Right Icon */}
       <Feather

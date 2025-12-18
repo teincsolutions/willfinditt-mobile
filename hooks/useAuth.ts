@@ -75,7 +75,6 @@ export function useAuth() {
     queryClient.invalidateQueries({
       queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
     });
-    toast.success("Login Successful!");
   };
 
   // ============================================
@@ -97,6 +96,7 @@ export function useAuth() {
     onSuccess: async (response) => {
       if (!response.requires2FA) {
         handleSuccessfulLogin(response);
+        toast.success("Login Successful!");
       }
     },
   });
@@ -110,6 +110,7 @@ export function useAuth() {
     },
     onSuccess: (response) => {
       handleSuccessfulLogin(response);
+      toast.success("Login Successful!");
     },
   });
 
@@ -135,7 +136,7 @@ export function useAuth() {
     onError: (error) => {
       clearAuthState();
       console.log("Error during logout:", error);
-    },
+    },  
   });
 
   // ============================================
@@ -257,7 +258,7 @@ export function useAuth() {
   // Update Profile Mutation
   const updateProfileMutation = useMutation({
     mutationFn: (data: Partial<User>) => userService.updateProfile(data),
-    onSuccess: (updatedUser: User) => { 
+    onSuccess: (updatedUser: User) => {
       queryClient.setQueryData(AUTH_QUERY_KEYS.AUTH_USER, updatedUser);
     },
   });

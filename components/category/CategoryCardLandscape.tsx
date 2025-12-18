@@ -66,10 +66,11 @@ export default function CategoryCardLandscape({ category, selected, onPress }: P
           <Badge
             style={{
               marginStart: spacing.md,
-              backgroundColor: colors.backgroundPrimary,
+              backgroundColor: colors.primary,
             }}
-            countStyle={{ color: colors.text }}
+            countStyle={{ color: colors.textWhite }}
             count={category._count?.ads || 0}
+            label="Ads"
           />
         </AppView>
 

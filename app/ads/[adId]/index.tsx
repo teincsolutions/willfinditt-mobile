@@ -39,7 +39,8 @@ export default function AdDetailsScreen() {
   const relatedAds = ads?.pages.flatMap((page) => page.data) || [];
   const reviewSheetRef = useRef<BottomSheet>(null);
   const { data: user } = useUser(ad?.userId);
-  const {} = useAdActions();
+  const { handleProfilePress, handleMessage, handleCall, handleShare } =
+    useAdActions(ad);
 
   // Check if current user is the owner of this ad
   const isOwner = currentUser?.id === ad?.userId;
@@ -121,7 +122,13 @@ export default function AdDetailsScreen() {
             backgroundColor: colors.background,
           }}
         >
-          <AdSellerProfile ad={ad} />
+          <AdSellerProfile
+            handleProfilePress={handleProfilePress}
+            handleCall={handleCall}
+            handleMessage={handleMessage}
+            handleShare={handleShare}
+            ad={ad}
+          />
           <MoreFromSellerCarousel ads={relatedAds} />
         </AppView>
       </>

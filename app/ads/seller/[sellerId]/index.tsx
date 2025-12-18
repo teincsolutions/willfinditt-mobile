@@ -54,7 +54,10 @@ export default function SellerProfileScreen() {
   };
 
   const handleReviewPress = () => {
-    router.push("/account/my-reviews");
+    router.push({
+      pathname: "/ads/seller/[sellerId]/reviews",
+      params: { sellerId: sellerProfile?.id },
+    });
   };
 
   const handleMessage = () => {
@@ -170,7 +173,10 @@ export default function SellerProfileScreen() {
           return (
             <ProductCard
               onPress={() =>
-                router.push({ pathname: "/ads/[adId]", params: { adId: item.id } })
+                router.push({
+                  pathname: "/ads/[adId]",
+                  params: { adId: item.id },
+                })
               }
               ad={item}
             />

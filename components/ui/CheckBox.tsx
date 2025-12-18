@@ -50,14 +50,13 @@ export default function CheckBox({
         {
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
           paddingVertical: spacing.sm,
           opacity: disabled ? 0.5 : 1,
         },
         style,
       ]}
     >
-      <View style={{ flex: 1, marginRight: spacing.md }}>
+      <View style={{ minWidth:"30%", marginRight: spacing.md }}>
         {label && (
           <AppText
             variant="md"
@@ -86,6 +85,7 @@ export default function CheckBox({
             ? checkboxColor || colors.primary
             : "transparent",
           alignItems: "center",
+          alignSelf: "flex-end",
           justifyContent: "center",
         }}
       >

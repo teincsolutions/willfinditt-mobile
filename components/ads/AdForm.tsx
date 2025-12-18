@@ -11,6 +11,7 @@ import ToggleSwitch from "@/components/ui/ToggleSwitch";
 import { useAuth } from "@/hooks/useAuth";
 import { useCategoryFields } from "@/hooks/useCategoryFields";
 import { useCategorySelection } from "@/hooks/useCategorySelection";
+import { useLocationSelection } from "@/hooks/useLocationSelection";
 import { useTheme } from "@/hooks/useTheme";
 import {
   AdCondition,
@@ -180,6 +181,7 @@ export default function AdForm({
   const { colors, spacing, radius, icons } = useTheme();
   const { user } = useAuth();
   const { selectedCategory } = useCategorySelection();
+  const { selectedCity } = useLocationSelection();
 
   // Condition selection sheet ref
   const conditionSheetRef = useRef<BottomSheet>(null);
@@ -515,6 +517,46 @@ export default function AdForm({
                 onPress={() => {
                   router.push({
                     pathname: "/ads/categories",
+                  });
+                }}
+                inputStyle={{
+                  backgroundColor: colors.selectBg,
+                  paddingRight: spacing.sm,
+                }}
+                rightIcon={
+                  <IconButton
+                    onPress={() => {}}
+                    style={{
+                      backgroundColor: colors.iconLightGray,
+                      borderRadius: radius.sm,
+                    }}
+                    icon={
+                      <Feather
+                        name="chevron-down"
+                        size={icons.sm}
+                        color={colors.iconGray}
+                      />
+                    }
+                  />
+                }
+                style={{ marginBottom: spacing.md }}
+              />
+              {formik.touched.categoryId && formik.errors.categoryId && (
+                <AppText style={{ color: colors.error, marginTop: spacing.xs }}>
+                  {formik.errors.categoryId}
+                </AppText>
+              )}
+            </AppView>
+
+             {/* City Selection */}
+            <AppView style={{ marginBottom: spacing.lg }}>
+              <PlaceholderField
+                label="City *"
+                placeholder="Select a city"
+                value={selectedCity ? selectedCity.name : ""}
+                onPress={() => {
+                  router.push({
+                    pathname: "/ads/locations/regions",
                   });
                 }}
                 inputStyle={{

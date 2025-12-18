@@ -1,5 +1,5 @@
+import { City, Country, State } from '@/types';
 import api from './api';
-import { Country, State, City } from '@/types';
 
 export const locationService = {
   // Get all countries
@@ -17,6 +17,18 @@ export const locationService = {
   // Get cities by state ID
   getCitiesByState: async (stateId: string): Promise<City[]> => {
     const response = await api.get<City[]>(`/api/v1/location/states/${stateId}/cities`);
+    return response.data;
+  },
+
+  // Get city details by ID
+  getCityById: async (cityId: string): Promise<City> => {
+    const response = await api.get<City>(`/api/v1/location/cities/${cityId}`);
+    return response.data;
+  },
+
+  // Get state details by ID
+  getStateById: async (stateId: string): Promise<State> => {
+    const response = await api.get<State>(`/api/v1/location/states/${stateId}`);
     return response.data;
   },
 };

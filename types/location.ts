@@ -15,6 +15,10 @@ export interface State {
   createdAt: string;
   country?: Country;
   cities?: City[];
+  _count?: {
+    cities: number;
+    ads: number;
+  };
 }
 
 export interface City {

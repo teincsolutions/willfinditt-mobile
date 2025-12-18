@@ -7,7 +7,7 @@ import { Category } from "@/types";
 import { router } from "expo-router";
 
 export default function CategoriesScreen() {
-  const { spacing, colors } = useTheme();
+  const {  colors } = useTheme();
   const { data: categories = [], isLoading } = useParentCategories();
   const { selectedParentCategory, setSelectedParentCategory } =
     useCategorySelection();

@@ -1,17 +1,25 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import { StyleProp, ViewStyle } from "react-native";
+import { Pressable, StyleProp, ViewStyle } from "react-native";
 import AppText from "./AppText";
-import AppView from "./AppView";
 
 interface PillProps {
   item: string;
   style?: StyleProp<ViewStyle>;
+  selected?: boolean;
+  onPress?: () => void;
 }
-export function Pill({ item, style }: PillProps) {
+export function Pill({ item, style, selected, onPress }: PillProps) {
   const { pill, colors } = useTheme();
   return (
-    <AppView style={[pill, { borderColor: colors.border }, style]}>
+    <Pressable
+      onPress={onPress}
+      style={[
+        pill,
+        { borderColor: selected ? colors.primary : colors.border },
+        style,
+      ]}
+    >
       <AppText variant="sm">{item}</AppText>
-    </AppView>
+    </Pressable>
   );
 }

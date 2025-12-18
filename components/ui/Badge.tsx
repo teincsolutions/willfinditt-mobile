@@ -16,12 +16,14 @@ export default function Badge({
   color,
   textColor,
   countStyle,
+  label,
 }: {
   count: number;
   style?: StyleProp<ViewStyle>;
   countStyle?: StyleProp<TextStyle>;
   color?: string;
   textColor?: string;
+  label?: string;
 }) {
   const { colors, spacing, fontSizes } = useTheme();
 
@@ -44,7 +46,7 @@ export default function Badge({
           countStyle,
         ]}
       >
-        {count}
+        {count} {label&& label}
       </AppText>
     </View>
   );

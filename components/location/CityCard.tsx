@@ -30,7 +30,6 @@ export default function CityCard({ city, selected, onPress }: Props) {
           height: input.height,
           borderRadius: input.radius,
           paddingHorizontal: input.paddingHorizontal,
-          marginBottom: spacing.sm,
         },
       ]}
     >

@@ -37,7 +37,6 @@ export default function CityCardSkeleton() {
           height: input.height,
           borderRadius: input.radius,
           paddingHorizontal: input.paddingHorizontal,
-          marginBottom: spacing.sm,
           opacity: fadeAnim,
         },
       ]}

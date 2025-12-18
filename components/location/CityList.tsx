@@ -2,8 +2,11 @@ import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { useTheme } from "@/contexts/ThemeContext";
 import { City } from "@/types/location";
-import React from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { FlatList, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SearchBar } from "../search/SearchBar";
 import CityCard from "./CityCard";
 import CityCardSkeleton from "./CityCardSkeleton";
 
@@ -20,64 +23,91 @@ export default function CityList({
   onSelectCity,
   loading,
 }: Props) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radius, icons } = useTheme();
+  const insets = useSafeAreaInsets();
+  const [query, setQuery] = useState("");
+
+  const filteredCities =
+    cities?.filter((city) =>
+      city.name?.toLowerCase().includes(query.toLowerCase())
+    ) || [];
 
   // Header showing selected city
-  const renderHeader = () => {
-    if (!selectedCity) return null;
-
+  const renderHeader = React.useMemo(() => {
     return (
       <AppView
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.backgroundPrimary,
-            padding: spacing.md,
-            marginBottom: spacing.md,
-            borderRadius: spacing.sm,
-          },
-        ]}
+        style={{
+          backgroundColor: colors.background,
+          paddingVertical: spacing.md,
+        }}
       >
-        <AppText variant="sm" style={{ color: colors.textGray }}>
-          Selected City
-        </AppText>
-        <AppText
-          variant="lg"
-          fontWeight="bold"
-          style={{ color: colors.primary, marginTop: spacing.xs }}
-        >
-          {selectedCity.name}
-        </AppText>
+        <SearchBar
+          value={query}
+          onChangeText={setQuery}
+          showSearchButton={false}
+        />
+
+        {selectedCity && (
+          <Pressable onPress={() => onSelectCity(selectedCity)}>
+            <AppText
+              variant="lg"
+              fontWeight="bold"
+              style={{ color: colors.primary, marginTop: spacing.xs }}
+            >
+              <Feather name="circle" size={icons.xs} /> {selectedCity.name}
+            </AppText>
+          </Pressable>
+        )}
       </AppView>
     );
-  };
+  }, [query, selectedCity, spacing, colors, icons]);
 
-  if (loading) {
-    return (
-      <AppView style={{ paddingHorizontal: spacing.md }}>
+  const emptyState = React.useMemo(() => {
+    return loading ? (
+      <AppView style={{ gap: spacing.xs }}>
         {[...Array(10)].map((_, index) => (
           <CityCardSkeleton key={index} />
         ))}
       </AppView>
-    );
-  }
+    ) : null;
+  }, [loading, spacing]);
+
+  const renderItem = React.useCallback(
+    ({ item }: { item: City }) => (
+      <CityCard
+        city={item}
+        selected={selectedCity?.id === item.id}
+        onPress={() => onSelectCity(item)}
+      />
+    ),
+    [selectedCity, onSelectCity]
+  );
+
+  const keyExtractor = React.useCallback((item: City) => item.id, []);
 
   return (
     <FlatList
-      data={cities}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <CityCard
-          city={item}
-          selected={selectedCity?.id === item.id}
-          onPress={() => onSelectCity(item)}
-        />
-      )}
+      data={filteredCities}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
       ListHeaderComponent={renderHeader}
-      stickyHeaderIndices={selectedCity ? [0] : []}
+      ListEmptyComponent={emptyState}
+      stickyHeaderIndices={[0]}
+      keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
         paddingHorizontal: spacing.md,
-        paddingBottom: spacing.xl,
+        paddingBottom: insets.bottom + spacing.md,
+        gap: spacing.xs,
+      }}
+      ListHeaderComponentStyle={{
+        backgroundColor: colors.background,
+        marginHorizontal: -spacing.md,
+        paddingHorizontal: spacing.md,
+        borderBottomEndRadius: radius.lg,
+        borderBottomStartRadius: radius.lg,
+      }}
+      style={{
+        backgroundColor: colors.backgroundPrimary,
       }}
       showsVerticalScrollIndicator={false}
     />

@@ -6,6 +6,7 @@ import {
   AdSearchSuggestionsParams,
   AdStatus,
   CreateAdRequest,
+  SellerProfile,
   UpdateAdRequest
 } from "@/types";
 import {
@@ -247,7 +248,7 @@ export const useInfiniteSavedAds = (params?: { limit?: number }) => {
   });
 };
 
-export const useAdActions = (ad?: Ad) => {
+export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
   const { isAuthenticated, user } = useAuth();
 
   const handleCall = () => {
@@ -275,14 +276,14 @@ export const useAdActions = (ad?: Ad) => {
       return;
     }
 
-    if (ad?.user?.sellerProfile && ad.userId !== user?.id) {
+    if ((ad?.user?.sellerProfile|| seller) && ad?.userId !== user?.id) {
       router.push({
         pathname: "/chats/[chatId]",
         params: {
           chatId: "",
-          adId: ad.id,
-          userId: ad.userId,
-          sellerId: ad.user?.sellerProfile?.id || "",
+          adId: ad?.id,
+          userId: ad?.userId,
+          sellerId: ad?.user?.sellerProfile?.id || seller?.id || "",
         },
       });
     } else if (ad && ad.userId === user?.id) {
@@ -291,18 +292,20 @@ export const useAdActions = (ad?: Ad) => {
   };
 
   const handleShare = () => {
-    Share.share({
-      message: `Check out this ad from ${ad?.user?.sellerProfile?.businessName ||
-        [ad?.user?.firstName, ad?.user?.lastName].filter(Boolean).join(" ")
-        }: ${ad?.title}`,
-    });
+    if (ad?.userId || seller) {
+      Share.share({
+        message: `Check out this ad from ${ad?.user?.sellerProfile?.businessName ||
+          [ad?.user?.firstName, ad?.user?.lastName].filter(Boolean).join(" ")
+          }: ${ad?.title}`,
+      });
+    }
   };
 
   const handleProfilePress = () => {
-    if (ad?.userId) {
+    if (ad?.userId || seller) {
       router.push({
         pathname: "/ads/seller/[sellerId]",
-        params: { sellerId: ad.user?.sellerProfile?.id || "" },
+        params: { sellerId: ad?.user?.sellerProfile?.id || seller?.id || "" },
       });
     }
   };
