@@ -174,3 +174,13 @@ export const useSeller = (sellerId: string) => {
     refetch: sellerProfileQuery.refetch,
   };
 };
+
+// Hook for fetching seller reviews with pagination
+export const useSellerReviews = (sellerId: string, page = 1, limit = 20) => {
+  return useQuery({
+    queryKey: ["seller-reviews", sellerId, page, limit],
+    queryFn: () => sellerService.getSellerReviews(sellerId, page, limit),
+    enabled: !!sellerId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
