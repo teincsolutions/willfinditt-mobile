@@ -1,7 +1,7 @@
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { useTheme } from "@/contexts/ThemeContext";
-import { State } from "@/types/location";
+import { City, State } from "@/types/location";
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { FlatList, Pressable } from "react-native";
@@ -12,15 +12,19 @@ import StateCardSkeleton from "./StateCardSkeleton";
 
 interface Props {
   states: State[];
+  selectedCity?: City;
   selectedState?: State;
   onSelectState: (state: State) => void;
+  onSelectCity: (city: City) => void;
   loading?: boolean;
 }
 
 export default function StateList({
   states,
+  selectedCity,
   selectedState,
   onSelectState,
+  onSelectCity,
   loading,
 }: Props) {
   const { colors, spacing, radius, icons } = useTheme();
@@ -49,14 +53,14 @@ export default function StateList({
           showSearchButton={false}
         />
 
-        {selectedState && (
-          <Pressable onPress={() => onSelectState(selectedState)}>
+        {selectedCity && (
+          <Pressable onPress={() => onSelectCity(selectedCity)}>
             <AppText
               variant="lg"
               fontWeight="bold"
               style={{ color: colors.primary, marginTop: spacing.xs }}
             >
-              <Feather name="circle" size={icons.xs} /> {selectedState.name}
+              <Feather name="circle" size={icons.xs} /> {selectedCity.name}
             </AppText>
           </Pressable>
         )}
@@ -66,7 +70,7 @@ export default function StateList({
     spacing.xs,
     spacing.md,
     query,
-    selectedState,
+    selectedCity,
     colors.primary,
     icons.xs,
     onSelectState,

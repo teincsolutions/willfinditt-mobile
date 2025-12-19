@@ -130,7 +130,7 @@ export default function HomeScreen() {
         <SearchBarPlaceholder
           onPress={() => router.push({ pathname: "/search" })}
           onPressFilter={() => {
-            router.push({ pathname: "/search/locations/regions" });
+            router.push({ pathname:"/search/locations/regions" });
           }}
           style={{ marginHorizontal: spacing.md }}
         />

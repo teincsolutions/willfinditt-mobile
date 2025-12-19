@@ -1,5 +1,6 @@
 import FilterChip from "@/components/ui/FilterChip";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useCityById } from "@/hooks/useLocations";
 import { AdCondition } from "@/types";
 import { Location, Sort } from "iconsax-react-nativejs";
 import React from "react";
@@ -29,6 +30,7 @@ export default function HorizontalFilters({
   onConditionPress,
 }: HorizontalFiltersProps) {
   const { colors, spacing, icons } = useTheme();
+  const {data: selectedCity } = useCityById(selectedCityId || "");
 
   const getSortLabel = () => {
     switch (selectedSortValue) {
@@ -57,6 +59,19 @@ export default function HorizontalFilters({
         marginTop: spacing.md,
       }}
     >
+        {/* Location Filter */}
+      <FilterChip
+        label={selectedCity?.name || "Location"}
+        selected={!!selectedCityId}
+        onPress={onLocationPress}
+        icon={
+          <Location
+            size={icons.sm}
+            color={selectedCityId ? colors.iconWhite : colors.iconBlack}
+          />
+        }
+      />
+
       {/* Sort Filter */}
       <FilterChip
         label={`Sort: ${getSortLabel()}`}
@@ -95,19 +110,6 @@ export default function HorizontalFilters({
         }
         selected={!!minPrice || !!maxPrice}
         onPress={onPriceFilterPress}
-      />
-
-      {/* Location Filter */}
-      <FilterChip
-        label="Location"
-        selected={!!selectedCityId}
-        onPress={onLocationPress}
-        icon={
-          <Location
-            size={icons.sm}
-            color={selectedCityId ? colors.iconWhite : colors.iconBlack}
-          />
-        }
       />
     </ScrollView>
   );

@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AppText from "../ui/AppText";
 import AppView from "../ui/AppView";
 import PrimaryButton from "../ui/PrimaryButton";
+import { TextButton } from "../ui/TextButton";
 
 export interface SelectableListSheetRef {
   expand: () => void;
@@ -26,6 +27,7 @@ interface Props<T> {
   loading?: boolean;
   snapPoints?: string[];
   onDone?: () => void;
+  onClear?: () => void;
   renderItem: (params: { item: T; index: number }) => React.ReactElement | null;
   ListHeaderComponent?: React.ReactElement;
   ListHeaderComponentStyle?: StyleProp<ViewStyle>;
@@ -41,6 +43,7 @@ export const SelectableListSheet = forwardRef<BottomSheet, Props<any>>(
       ListHeaderComponentStyle,
       snapPoints,
       onDone,
+      onClear,
       renderItem,
     },
     ref
@@ -125,8 +128,25 @@ export const SelectableListSheet = forwardRef<BottomSheet, Props<any>>(
           />
           {/* DONE BUTTON */}
           {onDone && (
-            <AppView style={{ marginTop: spacing.md }}>
-              <PrimaryButton title="Done" onPress={() => onDone()} />
+            <AppView
+              style={{
+                marginTop: spacing.md,
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
+              <PrimaryButton
+                style={{ flex: 1, width: "100%" }}
+                title="Done"
+                onPress={() => onDone()}
+              />
+              {onClear && (
+                <TextButton
+                  style={{ flex: 1 }}
+                  title="Clear"
+                  onPress={() => onClear()}
+                />
+              )}
             </AppView>
           )}
         </BottomSheetView>
