@@ -1,4 +1,5 @@
 import { useTheme } from "@/contexts/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import AppText from "../ui/AppText";
@@ -11,17 +12,33 @@ type Props = {
   side?: "left" | "right"; // deprecated: kept for backward compatibility
   isDelivered?: boolean;
   isRead?: boolean;
-  isTemp?: boolean;
 };
 
-export default function ChatBubble({ text, time, isSender, side = "left", isDelivered, isRead, isTemp }: Props) {
+export default function ChatBubble({
+  text,
+  time,
+  isSender,
+  side = "left",
+  isDelivered,
+  isRead,
+}: Props) {
   const { colors, spacing, radius } = useTheme();
 
-  const isRight = isSender ?? (side === "right");
+  const isRight = isSender ?? side === "right";
 
   // Status indicator for sender messages
-  const statusText = isTemp ? "…" : (isRead ? "✓✓" :( isDelivered? "✓" : "⏳"));
-  const statusColor = isRead ? colors.primary : isRight ? colors.textWhite : colors.textGray;
+  const statusText = isRead ? (
+    "✓✓"
+  ) : isDelivered ? (
+    "✓"
+  ) : (
+    <Ionicons name="time-outline" size={12} color={colors.iconWhite} />
+  );
+  const statusColor = isRead
+    ? colors.primary
+    : isRight
+    ? colors.textWhite
+    : colors.textGray;
 
   return (
     <View
@@ -39,13 +56,15 @@ export default function ChatBubble({ text, time, isSender, side = "left", isDeli
         style={[
           styles.bubble,
           {
-            backgroundColor: isRight ? colors.primary : colors.backgroundPrimary,
+            backgroundColor: isRight
+              ? colors.primary
+              : colors.backgroundPrimary,
             padding: spacing.md,
             borderTopEndRadius: radius.lg,
             borderTopStartRadius: radius.lg,
             borderBottomRightRadius: isRight ? undefined : radius.lg,
             borderBottomLeftRadius: !isRight ? undefined : radius.lg,
-            marginHorizontal:spacing.md,
+            marginHorizontal: spacing.md,
           },
         ]}
       >
@@ -56,10 +75,20 @@ export default function ChatBubble({ text, time, isSender, side = "left", isDeli
         />
 
         {time ? (
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginTop: spacing.xs }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              marginTop: spacing.xs,
+            }}
+          >
             <AppText
               variant="xs"
-              style={[styles.time, { color: isRight ? colors.textWhite : colors.textGray }]}
+              style={[
+                styles.time,
+                { color: isRight ? colors.textWhite : colors.textGray },
+              ]}
             >
               {time}
             </AppText>

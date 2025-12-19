@@ -5,6 +5,7 @@
 export const AUTH_QUERY_KEYS = {
   AUTH_USER: ["auth", "user"] as const,
   AUTH: ["auth"] as const,
+  SESSIONS: ["auth", "sessions"] as const,
 };
 
 export const SELLER_QUERY_KEYS = {

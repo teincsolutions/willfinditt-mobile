@@ -1,18 +1,20 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { StyleSheet, TextInput } from "react-native";
+import { StyleProp, StyleSheet, TextInput, ViewStyle } from "react-native";
 import AppView from "../ui/AppView";
 import IconButton from "../ui/IconButton";
 
 interface ChatInputBarProps {
   onSendMessage: (message: string) => void;
   isSending?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export default function ChatInputBar({
   onSendMessage,
   isSending = false,
+  style,
 }: ChatInputBarProps) {
   const { colors, spacing, icons, radius } = useTheme();
   const [message, setMessage] = useState("");
@@ -34,6 +36,7 @@ export default function ChatInputBar({
           borderTopColor: colors.border,
           backgroundColor: colors.backgroundPrimary,
         },
+        style,
       ]}
     >
       <IconButton
@@ -72,22 +75,14 @@ export default function ChatInputBar({
           disabled={isSending}
           style={{ backgroundColor: colors.primary }}
           icon={
-            <Ionicons
-              name="send"
-              size={icons.md}
-              color={colors.iconWhite}
-            />
+            <Ionicons name="send" size={icons.md} color={colors.iconWhite} />
           }
         />
       ) : (
         <IconButton
           style={{ backgroundColor: "transparent" }}
           icon={
-            <Feather
-              name="paperclip"
-              size={icons.md}
-              color={colors.iconGray}
-            />
+            <Feather name="paperclip" size={icons.md} color={colors.iconGray} />
           }
         />
       )}

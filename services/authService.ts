@@ -68,10 +68,38 @@ export const authService = {
     }
   },
 
-  // Logout user
-  logout: async (): Promise<void> => {
+  // Logout user (current device)
+  logout: async (refreshToken?: string): Promise<void> => {
     try {
-      await api.post("/api/v1/auth/logout");
+      await api.post("/api/v1/auth/logout", { refreshToken });
+    } catch (error) {
+      return handleAuthError(error);
+    }
+  },
+
+  // Logout from all devices
+  logoutAll: async (): Promise<void> => {
+    try {
+      await api.post("/api/v1/auth/logout-all");
+    } catch (error) {
+      return handleAuthError(error);
+    }
+  },
+
+  // Get active sessions
+  getActiveSessions: async (): Promise<any[]> => {
+    try {
+      const response = await api.get("/api/v1/auth/sessions");
+      return response.data;
+    } catch (error) {
+      return handleAuthError(error);
+    }
+  },
+
+  // Revoke specific session
+  revokeSession: async (sessionId: string): Promise<void> => {
+    try {
+      await api.delete(`/api/v1/auth/sessions/${sessionId}`);
     } catch (error) {
       return handleAuthError(error);
     }

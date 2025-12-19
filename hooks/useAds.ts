@@ -7,7 +7,7 @@ import {
   AdStatus,
   CreateAdRequest,
   SellerProfile,
-  UpdateAdRequest
+  UpdateAdRequest,
 } from "@/types";
 import {
   useInfiniteQuery,
@@ -276,13 +276,13 @@ export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
       return;
     }
 
-    if ((ad?.user?.sellerProfile|| seller) && ad?.userId !== user?.id) {
+    if ((ad?.user?.sellerProfile || seller) && ad?.userId !== user?.id) {
       router.push({
         pathname: "/chats/[chatId]",
         params: {
           chatId: "",
           adId: ad?.id,
-          userId: ad?.userId,
+          userId: ad?.userId || seller?.userId || "",
           sellerId: ad?.user?.sellerProfile?.id || seller?.id || "",
         },
       });
@@ -294,9 +294,10 @@ export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
   const handleShare = () => {
     if (ad?.userId || seller) {
       Share.share({
-        message: `Check out this ad from ${ad?.user?.sellerProfile?.businessName ||
+        message: `Check out this ad from ${
+          ad?.user?.sellerProfile?.businessName ||
           [ad?.user?.firstName, ad?.user?.lastName].filter(Boolean).join(" ")
-          }: ${ad?.title}`,
+        }: ${ad?.title}`,
       });
     }
   };
@@ -313,6 +314,6 @@ export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
     handleCall,
     handleMessage,
     handleShare,
-    handleProfilePress
-  }
+    handleProfilePress,
+  };
 };

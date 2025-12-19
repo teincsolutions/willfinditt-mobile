@@ -8,10 +8,12 @@ import type {
   SocialData,
   User,
 } from "@/types";
+import { onLogout } from "@/utils/eventEmitter";
 import { mmkvStorage, storage } from "@/utils/mmkvStorage";
 import * as tokenManager from "@/utils/tokenManager";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useMMKVBoolean } from "react-native-mmkv";
 import { toast } from "sonner-native";
 import { AUTH_QUERY_KEYS, SELLER_QUERY_KEYS } from "./queryKeys";
@@ -50,6 +52,34 @@ export function useAuth() {
     AUTH_KEYS.IS_AUTHENTICATED,
     storage
   );
+
+  // Listen for logout events from API interceptor
+  useEffect(() => {
+    const cleanup = onLogout((payload) => {
+      console.log("Logout event received:", payload);
+
+      // Use a small timeout to avoid immediate state updates during render
+      setTimeout(() => {
+        // Clear auth state
+        setIsAuthenticated(false);
+
+        // Show appropriate message based on reason
+        const messages = {
+          invalid_token: "Your session is invalid. Please login again.",
+          invalid_user: "Your account is no longer active.",
+          no_refresh_token: "Session expired. Please login again.",
+          refresh_failed: "Session expired. Please login again.",
+          unauthorized: "Please login to continue.",
+          manual: "Logged out successfully.",
+        };
+
+        const message = messages[payload.reason] || "Logged out";
+        toast.error(message);
+      }, 0);
+    });
+
+    return cleanup;
+  }, [setIsAuthenticated]);
 
   // Get user from React Query cache or storage
   const { data: user, isLoading } = useQuery<User | null>({
@@ -126,17 +156,64 @@ export function useAuth() {
   });
 
   /**
-   * Logout user
+   * Logout user from current device
    */
   const logoutMutation = useMutation({
-    mutationFn: async () => await authService.logout(),
+    mutationFn: async (refreshToken?: string) => {
+      const token = refreshToken || tokenManager.getRefreshToken() || undefined;
+      await authService.logout(token);
+    },
     onSuccess: async () => {
       clearAuthState();
+      toast.success("Logged out successfully");
     },
     onError: (error) => {
       clearAuthState();
       console.log("Error during logout:", error);
-    },  
+      toast.error("Logout completed with errors");
+    },
+  });
+
+  /**
+   * Logout user from all devices
+   */
+  const logoutAllMutation = useMutation({
+    mutationFn: async () => await authService.logoutAll(),
+    onSuccess: async () => {
+      clearAuthState();
+      toast.success("Logged out from all devices successfully");
+    },
+    onError: (error) => {
+      clearAuthState();
+      console.log("Error during logout all:", error);
+      toast.error("Logout completed with errors");
+    },
+  });
+
+  /**
+   * Get active sessions
+   */
+  const getActiveSessionsQuery = useQuery({
+    queryKey: AUTH_QUERY_KEYS.SESSIONS,
+    queryFn: () => authService.getActiveSessions(),
+    enabled: isAuthenticated,
+    refetchInterval: false, // Only fetch manually
+  });
+
+  /**
+   * Revoke specific session
+   */
+  const revokeSessionMutation = useMutation({
+    mutationFn: (sessionId: string) => authService.revokeSession(sessionId),
+    onSuccess: () => {
+      // Refetch active sessions after revoking
+      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.SESSIONS });
+      toast.success("Session revoked successfully");
+    },
+    onError: (error) => {
+      console.log("Error revoking session:", error);
+      toast.error("Failed to revoke session");
+    },
   });
 
   // ============================================
@@ -231,7 +308,7 @@ export function useAuth() {
     },
     onError: async () => {
       // If refresh fails, logout user
-      await logoutMutation.mutateAsync();
+      await logoutMutation.mutateAsync(undefined);
     },
   });
 
@@ -250,7 +327,7 @@ export function useAuth() {
 
       // If user is no longer active, logout
       if (!updatedUser.isActive) {
-        await logoutMutation.mutateAsync();
+        await logoutMutation.mutateAsync(undefined);
       }
     },
   });
@@ -307,6 +384,25 @@ export function useAuth() {
     logout: logoutMutation.mutate,
     logoutAsync: logoutMutation.mutateAsync,
     isLoggingOut: logoutMutation.isPending,
+    logoutError: logoutMutation.error,
+
+    // Logout All Devices
+    logoutAll: logoutAllMutation.mutate,
+    logoutAllAsync: logoutAllMutation.mutateAsync,
+    isLoggingOutAll: logoutAllMutation.isPending,
+    logoutAllError: logoutAllMutation.error,
+
+    // Active Sessions
+    activeSessions: getActiveSessionsQuery.data,
+    isLoadingSessions: getActiveSessionsQuery.isLoading,
+    refetchSessions: getActiveSessionsQuery.refetch,
+    sessionsError: getActiveSessionsQuery.error,
+
+    // Revoke Session
+    revokeSession: revokeSessionMutation.mutate,
+    revokeSessionAsync: revokeSessionMutation.mutateAsync,
+    isRevokingSession: revokeSessionMutation.isPending,
+    revokeSessionError: revokeSessionMutation.error,
 
     // Password Management
     changePassword: changePasswordMutation.mutate,

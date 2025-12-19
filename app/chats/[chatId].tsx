@@ -66,7 +66,9 @@ export default function ChatScreen() {
     if (chat && !isLoading) {
       markAsRead();
     }
-  }, [chat, isLoading, markAsRead]);
+    // Only run when chat.id changes or loading state changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chat?.id, isLoading]);
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -78,13 +80,18 @@ export default function ChatScreen() {
           });
 
           setChatId(newChat.id);
-        } catch (error) {
-          console.error("Failed to create chat:", error);
+        } catch (error: any) {
+          console.log(
+            "Failed to create chat:",
+            error.response?.data ?? error.message
+          );
         }
       }
     };
     initializeChat();
-  }, [adId, userId]);
+    // Only run once on mount or when these specific values change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatId, adId, userId]);
 
   const sellerNameNoChat = `${sellerProfile?.user?.firstName || ""} ${
     sellerProfile?.user?.lastName || ""
@@ -105,8 +112,7 @@ export default function ChatScreen() {
         time={formatTime(item.createdAt)}
         isSender={isSender}
         isRead={item.isRead}
-        isTemp={!!item._tmpId}
-        isDelivered={item._isDelivered}
+        isDelivered={!item._tmpId}
       />
     );
   };
@@ -201,6 +207,7 @@ export default function ChatScreen() {
         <ChatInputBar
           onSendMessage={handleSendMessage}
           isSending={isSending || isCreating}
+          style={{ paddingBottom: insets.bottom }}
         />
       </AppView>
     </KeyboardAvoidingView>

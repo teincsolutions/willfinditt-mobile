@@ -387,7 +387,7 @@ export const useChatMessages = (
           if (!oldData) return oldData;
           const newPages = oldData.pages.map((p: any) => ({
             ...p,
-            data: p.data.map((m: any) => ({ ...m, _isDelivered: true })),
+            data: p.data.map((m: any) => ({ ...m, _tmpId: undefined })),
           }));
           return { ...oldData, pages: newPages };
         }
