@@ -166,7 +166,6 @@ export default function DocumentUploadModal({
         style={{
           flex: 1,
           backgroundColor: colors.background,
-          paddingTop: insets.top,
         }}
       >
         {/* Header */}
@@ -476,6 +475,7 @@ export default function DocumentUploadModal({
             title={isUploading ? "Uploading..." : "Submit & Continue"}
             onPress={() => formik.handleSubmit()}
             backgroundColor={colors.black}
+            titleStyle={{ color: colors.textWhite }}
             style={{ width: 300, alignSelf: "center", height: 50 }}
             disabled={isUploading || selectedDocuments.length === 0}
           />

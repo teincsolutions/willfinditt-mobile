@@ -96,6 +96,10 @@ export default function BusinessProfileScreen() {
     router.push("/account/my-reviews");
   };
 
+  const handleVerifyBusiness = () => {
+    router.push({ pathname: "/account/verification" });
+  };
+
   if (isLoadingProfile) {
     return <BusinessProfileSkeleton />;
   }
@@ -261,7 +265,7 @@ export default function BusinessProfileScreen() {
           paddingBottom: insets.bottom + spacing.md,
           backgroundColor: colors.backgroundPrimary,
         }}
-        tabScrollStyle={{ paddingTop: 45 +  spacing.md }}
+        tabScrollStyle={{ paddingTop: 45 + spacing.md }}
         renderItem={({ item }: { item: Ad }) => (
           <MyProductCardLandscape
             ad={item}
@@ -278,6 +282,7 @@ export default function BusinessProfileScreen() {
               onEditProfile={handleEditBusiness}
               onShare={handleShare}
               onReviewsPress={handleReviewPress}
+              onVerifyBusiness={handleVerifyBusiness}
             />
 
             {/* Stats Section */}

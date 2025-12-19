@@ -1,6 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { SellerProfile, User } from "@/types/user";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { Edit } from "iconsax-react-nativejs";
 import React from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
@@ -8,6 +8,7 @@ import AppText from "../ui/AppText";
 import AppView from "../ui/AppView";
 import { Avatar } from "../ui/Avatar";
 import IconButton from "../ui/IconButton";
+import { TextButton } from "../ui/TextButton";
 import MySellerRating from "./MySellerRating";
 
 interface MySellerProfileHeaderProps {
@@ -18,6 +19,7 @@ interface MySellerProfileHeaderProps {
   onShare: () => void;
   onViewProfile?: () => void;
   onReviewsPress?: () => void;
+  onVerifyBusiness?: () => void;
 }
 
 export default function MySellerProfileHeader({
@@ -28,6 +30,7 @@ export default function MySellerProfileHeader({
   onShare,
   onViewProfile,
   onReviewsPress,
+  onVerifyBusiness,
 }: MySellerProfileHeaderProps) {
   const { colors, spacing, icons } = useTheme();
 
@@ -66,11 +69,27 @@ export default function MySellerProfileHeader({
               alignItems: "center",
             }}
           >
-            <MySellerRating
-              onPress={onReviewsPress}
-              rating={sellerProfile.rating || 2.5}
-              totalReviews={sellerProfile.totalReviews || 1}
-            />
+            {sellerProfile.isVerified ? (
+              <MySellerRating
+                onPress={onReviewsPress}
+                rating={sellerProfile.rating || 2.5}
+                totalReviews={sellerProfile.totalReviews || 1}
+              />
+            ) : (
+              <TextButton
+                onPress={onVerifyBusiness}
+                style={{ height: icons.lg }}
+                title="Verify Business"
+                isLeft
+                icon={
+                  <MaterialIcons
+                    name="verified"
+                    size={icons.sm}
+                    color={colors.blue}
+                  />
+                }
+              />
+            )}
 
             <View
               style={{
@@ -83,12 +102,18 @@ export default function MySellerProfileHeader({
                 icon={<Edit size={icons.md} color={colors.iconBlack} />}
                 onPress={onEditProfile}
               />
-              <IconButton
-                icon={
-                  <Feather name="share-2" size={18} color={colors.iconBlack} />
-                }
-                onPress={onShare}
-              />
+              {sellerProfile.isVerified && (
+                <IconButton
+                  icon={
+                    <Feather
+                      name="share-2"
+                      size={18}
+                      color={colors.iconBlack}
+                    />
+                  }
+                  onPress={onShare}
+                />
+              )}
             </View>
           </View>
         </AppView>

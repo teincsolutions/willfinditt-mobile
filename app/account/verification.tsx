@@ -327,6 +327,7 @@ export default function VerificationScreen() {
       >
         <PrimaryButton
           backgroundColor={colors.primary}
+          titleStyle={{ color: colors.textWhite }}
           title={
             isSubmittingVerification
               ? "Submitting..."

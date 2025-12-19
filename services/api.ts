@@ -1,5 +1,3 @@
-import queryClient from "@/lib/query-client";
-import { mmkvStorage } from "@/utils/mmkvStorage";
 import * as tokenManager from "@/utils/tokenManager";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 // Create axios instance
@@ -146,9 +144,9 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         console.error("Cleaning up auth state after refresh failure");
         // Clear tokens and sessions on refresh failure (synchronous)
-        tokenManager.clearTokens();
-        mmkvStorage.removeItem('auth_is_authenticated');
-        queryClient.clear();
+        //  tokenManager.clearTokens();
+        // mmkvStorage.removeItem('auth_is_authenticated');
+        //  queryClient.clear();
 
         // Optionally redirect to login or trigger logout
         // You can emit an event here or use a store to handle logout

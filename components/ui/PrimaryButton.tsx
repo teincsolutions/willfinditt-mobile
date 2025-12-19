@@ -7,6 +7,7 @@ import {
   Pressable,
   StyleProp,
   StyleSheet,
+  TextStyle,
   ViewStyle,
 } from "react-native";
 import AppText from "./AppText";
@@ -18,12 +19,14 @@ type Props = {
   loading?: boolean;
   backgroundColor?: string;
   style?: StyleProp<ViewStyle>;
+  titleStyle?: StyleProp<TextStyle>;
 };
 
 export default function PrimaryButton({
   title,
   onPress,
   style,
+  titleStyle,
   disabled,
   backgroundColor,
   loading,
@@ -58,12 +61,15 @@ export default function PrimaryButton({
       >
         <AppText
           variant="lg"
-          style={{
-            color: colors.textWhite,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: spacing.md,
-          }}
+          style={[
+            {
+              color: colors.textWhite,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing.md,
+            },
+            titleStyle,
+          ]}
         >
           {title}
         </AppText>
