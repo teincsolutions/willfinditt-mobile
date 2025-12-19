@@ -1,5 +1,7 @@
 import ProductCard from "@/components/ads/ProductCard";
 import ProductCardSkeleton from "@/components/ads/ProductCardSkeleton";
+import { SelectableListSheet } from "@/components/bottom-sheet/SelectableBottomSheet";
+import SheetRadioOptionItem from "@/components/bottom-sheet/SheetRadioOptionItem";
 import HorizontalFilters from "@/components/search/HorizontalFilters";
 import ResultsCount from "@/components/search/ResultsCount";
 import { SearchBarPlaceholder } from "@/components/search/SearchBarPlaceholder";
@@ -10,57 +12,86 @@ import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useInfiniteSearchAds } from "@/hooks/useAds";
+import { useCategory } from "@/hooks/useCategories";
+import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { Ad, AdCondition, AdSearchRequest } from "@/types";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
 import { Grid2, RowVertical } from "iconsax-react-nativejs";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MasonryList from "reanimated-masonry-list";
+
+const conditionOptions = [
+  { id: AdCondition.NEW, name: "New", value: AdCondition.NEW },
+  { id: AdCondition.LIKE_NEW, name: "Like New", value: AdCondition.LIKE_NEW },
+  { id: AdCondition.GOOD, name: "Good", value: AdCondition.GOOD },
+  { id: AdCondition.FAIR, name: "Fair", value: AdCondition.FAIR },
+  { id: AdCondition.POOR, name: "Poor", value: AdCondition.POOR },
+];
 
 export default function ResultsScreen() {
   const { colors, spacing, icons } = useTheme();
   const insets = useSafeAreaInsets();
+  const conditionSheetRef = useRef<BottomSheet>(null);
+
   const params = useLocalSearchParams<{
     query?: string;
     categoryId?: string;
   }>();
 
-  // Search state
-  const [searchQuery, setSearchQuery] = useState(params.query || "");
-  const [activeQuery, setActiveQuery] = useState(params.query || "");
+  const {
+    filters,
+    categoryId,
+    cityId,
+    activeFiltersCount,
+    setQuery,
+    setCategoryId,
+    setSorting,
+    setConditions,
+    clearFilterOptions,
+  } = useSearchFilters();
 
-  // Filter states
-  const [selectedCategoryId, setSelectedCategoryId] = useState<
-    string | undefined
-  >(params.categoryId);
-  const [selectedCityId, setSelectedCityId] = useState<string | undefined>(
-    undefined
+  const { data: selectedCategory } = useCategory(categoryId || "");
+
+  // Local search state for input
+  const [searchQuery, setSearchQuery] = useState(
+    params.query || filters?.query || ""
   );
-  const [selectedConditions, setSelectedConditions] = useState<AdCondition[]>(
-    []
-  );
-  const [minPrice, setMinPrice] = useState<number | undefined>(0);
-  const [maxPrice, setMaxPrice] = useState<number | undefined>(1000000);
-  const [sortBy, setSortBy] = useState("createdAt");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [selectedSortValue, setSelectedSortValue] = useState("recent");
 
   // Modal states
   const [showSortModal, setShowSortModal] = useState(false);
+  const [isGrid, setIsGrid] = useState(true);
 
-  // Build search request
+  // Derived sort value for display
+  const selectedSortValue = `${filters?.sortBy || "createdAt"}-${
+    filters?.sortOrder || "desc"
+  }`;
+
+  // Update filters from URL params on mount
+  useEffect(() => {
+    if (params.query && params.query !== filters?.query) {
+      setQuery(params.query);
+    }
+    if (params.categoryId && params.categoryId !== categoryId) {
+      setCategoryId(params.categoryId);
+    }
+  }, []);
+
+  // Build search request from filters
   const searchRequest: AdSearchRequest = {
     search: {
-      limit: 20,
-      query: activeQuery || undefined,
-      categoryIds: selectedCategoryId ? [selectedCategoryId] : undefined,
-      cityIds: selectedCityId ? [selectedCityId] : undefined,
-      conditions:
-        selectedConditions.length > 0 ? selectedConditions : undefined,
-      priceMin: minPrice,
-      priceMax: maxPrice,
-      sortBy,
-      sortOrder,
+      page: filters?.page || 1,
+      limit: filters?.limit || 20,
+      query: filters?.query || undefined,
+      categoryIds: filters?.categoryIds,
+      cityIds: filters?.cityIds,
+      conditions: filters?.conditions,
+      priceMin: filters?.priceMin,
+      priceMax: filters?.priceMax,
+      sortBy: filters?.sortBy || "createdAt",
+      sortOrder: filters?.sortOrder || "desc",
+      fieldValues: filters?.fieldValues,
     },
   };
 
@@ -76,32 +107,19 @@ export default function ResultsScreen() {
   const ads: Ad[] = adsData?.pages.flatMap((page) => page.data) || [];
   const totalResults = adsData?.pages[0]?.meta?.total || 0;
   const showSkeletons = isLoading && ads.length === 0;
-  const [isGrid, setIsGrid] = useState(true);
 
   const handleClearSearch = () => {
     setSearchQuery("");
-    setActiveQuery("");
+    setQuery(undefined);
   };
 
   const handleSortSelect = (option: SortOption) => {
-    setSortBy(option.sortBy);
-    setSortOrder(option.sortOrder);
-    setSelectedSortValue(option.value);
+    setSorting(option.sortBy, option.sortOrder);
   };
 
   const clearAllFilters = () => {
-    setSelectedCategoryId(undefined);
-    setSelectedCityId(undefined);
-    setSelectedConditions([]);
-    setMinPrice(undefined);
-    setMaxPrice(undefined);
+    clearFilterOptions();
   };
-
-  const activeFiltersCount =
-    (selectedCategoryId ? 1 : 0) +
-    (selectedCityId ? 1 : 0) +
-    selectedConditions.length +
-    (minPrice || maxPrice ? 1 : 0);
 
   const renderHeader = () => (
     <>
@@ -139,7 +157,7 @@ export default function ResultsScreen() {
               pathname: "/search",
               params: {
                 query: searchQuery,
-                categoryId: selectedCategoryId || undefined,
+                categoryId: categoryId || undefined,
               },
             })
           }
@@ -165,20 +183,25 @@ export default function ResultsScreen() {
         <HorizontalFilters
           selectedSortValue={selectedSortValue}
           onSortPress={() => setShowSortModal(true)}
-          minPrice={minPrice}
-          maxPrice={maxPrice}
+          minPrice={filters?.priceMin}
+          maxPrice={filters?.priceMax}
           onPriceFilterPress={() =>
             router.push({ pathname: "/search/filters" })
           }
-          selectedCityId={selectedCityId}
-          onLocationPress={() => router.push({ pathname: "/search/locations/regions" })}
+          selectedCityId={cityId}
+          onLocationPress={() =>
+            router.push({ pathname: "/search/locations/regions" })
+          }
+          onConditionPress={() => conditionSheetRef.current?.expand()}
         />
 
         <AppText
           style={{ paddingHorizontal: spacing.md, marginTop: spacing.lg }}
         >
           Search results for{" "}
-          <AppText style={{ fontWeight: "600" }}>"{searchQuery}"</AppText>
+          <AppText style={{ fontWeight: "600" }}>
+            "{searchQuery || selectedCategory?.name || ""}"
+          </AppText>
         </AppText>
       </AppView>
     </>
@@ -190,7 +213,7 @@ export default function ResultsScreen() {
         flex: 1,
         backgroundColor: colors.backgroundPrimary,
         paddingBottom: insets.bottom,
-      }}
+      }}    
     >
       {/* Results Grid */}
       <MasonryList
@@ -215,7 +238,10 @@ export default function ResultsScreen() {
           return (
             <ProductCard
               onPress={() =>
-                router.push({ pathname: "/ads/[adId]", params: { adId: item.id } })
+                router.push({
+                  pathname: "/ads/[adId]",
+                  params: { adId: item.id },
+                })
               }
               ad={item}
             />
@@ -265,6 +291,30 @@ export default function ResultsScreen() {
         onClose={() => setShowSortModal(false)}
         selectedSort={selectedSortValue}
         onSelectSort={handleSortSelect}
+      />
+
+      <SelectableListSheet
+        ref={conditionSheetRef}
+        title="Condition"
+        snapPoints={["50%"]}
+        data={conditionOptions}
+        onDone={() => {
+          conditionSheetRef.current?.close();
+        }}
+        onClear={() => {
+          setConditions([]);
+          conditionSheetRef.current?.close();
+        }}
+        renderItem={({ item, index }) => (
+          <SheetRadioOptionItem
+            item={item}
+            selected={filters?.conditions?.includes(item.value)}
+            onPress={() => {
+              setConditions([item.value]);
+              conditionSheetRef.current?.close();
+            }}
+          />
+        )}
       />
     </AppView>
   );
