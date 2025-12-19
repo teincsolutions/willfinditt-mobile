@@ -36,7 +36,7 @@ export default function MySellerRating({
             key={i}
             name="star"
             size={icons.xs}
-            color={colors.primary}
+            color={colors.yellow}
           />
         );
       } else if (i === fullStars && hasHalfStar) {
@@ -45,7 +45,7 @@ export default function MySellerRating({
             key={i}
             name="star-half"
             size={icons.xs}
-            color={colors.primary}
+            color={colors.yellow}
           />
         );
       } else {
@@ -54,7 +54,7 @@ export default function MySellerRating({
             key={i}
             name="star-outline"
             size={icons.xs}
-            color={colors.primary}
+            color={colors.yellow}
           />
         );
       }

@@ -74,8 +74,8 @@ export interface SellerReview {
   comment?: string;
   createdAt: string;
   updatedAt: string;
-  seller?: User;
-  reviewer?: User;
+  seller?: Partial<User>;
+  reviewer?: Partial<User>;
 }
 
 export interface CreateSellerReview {

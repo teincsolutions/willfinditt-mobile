@@ -14,6 +14,7 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
 import { useLocalSearchParams } from "expo-router/build/hooks";
 import React from "react";
+import { Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MasonryList from "reanimated-masonry-list";
 
@@ -21,7 +22,7 @@ export default function SellerProfileScreen() {
   const { colors, spacing, icons } = useTheme();
   const insets = useSafeAreaInsets();
   const { sellerId } = useLocalSearchParams<{ sellerId: string }>();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const { sellerProfile, isLoading: isLoadingProfile } = useSeller(sellerId);
 
@@ -41,6 +42,28 @@ export default function SellerProfileScreen() {
   );
 
   const handleReviewPress = () => {
+    if (!isAuthenticated) {
+      Alert.alert(
+        "Authentication Required",
+        "Please log in to view seller reviews.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Log In",
+            onPress: () =>
+              router.push({
+                pathname: "/login",
+                params: {
+                  redirectTo: `/ads/seller/[sellerId]/reviews`,
+                  sellerId,
+                },
+              }),
+          },
+        ]
+      );
+      return;
+    }
+
     router.push({
       pathname: "/ads/seller/[sellerId]/reviews",
       params: { sellerId },

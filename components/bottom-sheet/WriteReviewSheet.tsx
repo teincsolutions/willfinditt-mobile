@@ -1,6 +1,6 @@
 import BottomSheet, {
-    BottomSheetBackdrop,
-    BottomSheetScrollView,
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useMemo, useState } from "react";
 import * as Yup from "yup";
@@ -47,7 +47,9 @@ export const WriteReviewSheet = forwardRef<BottomSheet, WriteReviewSheetProps>(
           rating: values.rating,
           comment: values.comment || undefined,
         };
-        props.onSubmit?.(review);
+        if (props.onSubmit) {
+          props.onSubmit(review);
+        }
         console.log("Review submitted:", review);
       },
     });

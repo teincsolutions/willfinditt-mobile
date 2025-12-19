@@ -10,6 +10,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import AppText from "./AppText";
 import AppView from "./AppView";
 
 interface AvatarProps {
@@ -19,6 +20,7 @@ interface AvatarProps {
   uri?: string;
   size?: AvatarSizeKey;
   borderSize?: 1 | 2 | 4;
+  name?: string;
   backgroundColor?: string;
   onPress?: () => void;
 }
@@ -40,6 +42,7 @@ export function Avatar({
   backgroundColor,
   size,
   onPress,
+  name,
 }: AvatarProps) {
   const { colors, avatarSize } = useTheme();
   return (
@@ -87,6 +90,32 @@ export function Avatar({
               style,
             ]}
           />
+          {!uri && (
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: uri ? "transparent" : colors.iconLightGray,
+                width: size ? avatarSize[size] : avatarSize.lg,
+                height: size ? avatarSize[size] : avatarSize.lg,
+              }}
+            >
+              <AppText
+                style={{
+                  fontWeight: "bold",
+                  color: colors.textWhite,
+                  fontSize: size ? avatarSize[size] / 2 : avatarSize.lg / 2,
+                }}
+              >
+                {name?.split(" ").map(word => word.charAt(0).toUpperCase()).join("") || "U"}
+              </AppText>
+            </View>
+          )}
         </AppView>
       </LinearGradient>
       {/* Verified Badge */}

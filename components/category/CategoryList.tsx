@@ -67,7 +67,7 @@ export default function CategoryList({
   const emptyState = React.useMemo(() => {
     return loading ? (
       <AppView style={{ gap: spacing.sm }}>
-        {[...Array(10)].map((_, index) => (
+        {[...Array(6)].map((_, index) => (
           <CategoryCardLandscapeSkeleton key={index} />
         ))}
       </AppView>

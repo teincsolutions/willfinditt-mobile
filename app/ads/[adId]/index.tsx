@@ -218,10 +218,8 @@ export default function AdDetailsScreen() {
       />
       <WriteReviewSheet
         ref={reviewSheetRef}
-        sellerId="seller-id-123"
+        sellerId={ad?.user?.sellerProfile?.id || ""}
         onSubmit={(review) => {
-          // Handle review submission
-          console.log(review);
           reviewSheetRef.current?.close();
         }}
       />

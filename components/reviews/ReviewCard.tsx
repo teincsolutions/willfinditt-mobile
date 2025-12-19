@@ -1,7 +1,8 @@
 import { useTheme } from "@/hooks/useTheme";
 import { formatTime } from "@/lib/formatTime";
 import { SellerReview } from "@/types";
-import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { Clock } from "iconsax-react-nativejs";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import AppText from "../ui/AppText";
@@ -15,20 +16,39 @@ interface Props {
 export function ReviewCard({ review }: Props) {
   const { colors, spacing, radius, icons } = useTheme();
 
+  // Render stars (5 total)
   const renderStars = (rating: number) => {
     const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <Feather
-          key={i}
-          name="star"
-          size={icons.sm}
-          color={i <= rating ? colors.warning : colors.iconGray}
-          style={{ marginRight: 2 }}
-        />
-      );
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(
+          <Ionicons key={i} name="star" size={icons.xs} color={colors.yellow} />
+        );
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(
+          <Ionicons
+            key={i}
+            name="star-half"
+            size={icons.xs}
+            color={colors.yellow}
+          />
+        );
+      } else {
+        stars.push(
+          <Ionicons
+            key={i}
+            name="star-outline"
+            size={icons.xs}
+            color={colors.yellow}
+          />
+        );
+      }
     }
-    return <View style={styles.starsRow}>{stars}</View>;
+
+    return stars;
   };
 
   return (
@@ -39,7 +59,6 @@ export function ReviewCard({ review }: Props) {
           backgroundColor: colors.background,
           borderRadius: radius.md,
           padding: spacing.md,
-          marginBottom: spacing.sm,
         },
       ]}
     >
@@ -47,28 +66,43 @@ export function ReviewCard({ review }: Props) {
       <View style={styles.header}>
         <View style={styles.userInfo}>
           <Avatar
-            size={42}
+            size="sm"
             uri={review.reviewer?.avatar}
             name={review.reviewer?.firstName || "U"}
           />
           <View style={{ marginLeft: spacing.sm, flex: 1 }}>
-            <AppText variant="md" fontWeight="semibold" style={{ color: colors.text }}>
+            <AppText
+              variant="md"
+              style={{ color: colors.text, fontWeight: "600" }}
+            >
               {review.reviewer?.firstName} {review.reviewer?.lastName}
             </AppText>
-            <AppText variant="xs" style={{ color: colors.textGray, marginTop: 2 }}>
+            <AppText
+              variant="sm"
+              style={{ color: colors.textGray, marginTop: 2 }}
+            >
+              <Clock size={12} color={colors.iconGray} />{" "}
               {formatTime(review.createdAt)}
             </AppText>
           </View>
         </View>
-        {renderStars(review.rating)}
+        <AppView style={{ alignItems: "center" }}>
+          <AppText style={{ fontWeight: "600" }}>
+            {review.rating.toFixed(1)}{" "}
+            <AppText style={{ color: colors.textLightGray }}>rating</AppText>
+          </AppText>
+          <AppView style={{ flexDirection: "row" }}>
+            {renderStars(review.rating)}
+          </AppView>
+        </AppView>
       </View>
 
       {/* Comment */}
       {review.comment && (
         <AppText
-          variant="sm"
+          variant="md"
           style={{
-            color: colors.text,
+            color: colors.textGray,
             marginTop: spacing.sm,
             lineHeight: 20,
           }}

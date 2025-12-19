@@ -57,7 +57,7 @@ export default function CategoryCardLandscape({ category, selected, onPress }: P
           {/* TITLE */}
           <AppText
             variant="lg"
-            style={{ fontFamily: "Bold" }}
+            style={{ fontFamily: "Bold", flex: 1, paddingRight: icons.lg }}
             numberOfLines={2}
           >
             {category.name || "—"}
@@ -67,6 +67,7 @@ export default function CategoryCardLandscape({ category, selected, onPress }: P
             style={{
               marginStart: spacing.md,
               backgroundColor: colors.primary,
+              right:icons.lg
             }}
             countStyle={{ color: colors.textWhite }}
             count={category._count?.ads || 0}
