@@ -65,13 +65,8 @@ export default function RegisterScreen() {
   const [step, setStep] = useState<"step1" | "step2">("step1");
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<any>(null);
-  const {
-    registerAsync,
-    isRegistering,
-    registerError,
-    socialAuthAsync,
-    isSocialAuthLoading,
-  } = useAuth();
+  const { registerAsync, isRegistering, socialAuthAsync, isSocialAuthLoading } =
+    useAuth();
 
   const window = useWindowDimensions();
   const isSmallScreen = window.height - 320 < 750;
@@ -110,11 +105,7 @@ export default function RegisterScreen() {
       // Navigate to the main drawers
       router.replace("/(drawers)");
     } catch (error: any) {
-      toast.error(
-        error?.message ||
-          registerError?.message ||
-          "Registration failed. Please try again."
-      );
+      console.log("Registration error:", error.message);
     }
   };
 

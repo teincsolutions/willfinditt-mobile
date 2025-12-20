@@ -32,6 +32,9 @@ export default function RootLayout() {
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="onboarding" />
               <Stack.Screen name="account" />
+              <Stack.Screen name="results" />
+              <Stack.Screen name="search" />
+              <Stack.Screen name="filters" />
             </Stack>
           </View>
           <Toaster />

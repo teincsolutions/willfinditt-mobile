@@ -81,7 +81,7 @@ export default function CustomDrawerContent(
       <DrawerMenuItem
         label="Categories"
         onPress={() => {
-          router.push("/search/categories");
+          router.push("/categories");
         }}
         icon={({ active }) => (
           <Ionicons

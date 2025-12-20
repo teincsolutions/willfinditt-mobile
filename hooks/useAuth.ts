@@ -116,6 +116,16 @@ export function useAuth() {
    */
   const registerMutation = useMutation({
     mutationFn: (data: RegisterRequest) => authService.register(data),
+    onError: (error: any) => {
+      console.log("Registration error:", error);
+      toast.error(
+        error.response?.data?.message || error.message || "Registration failed"
+      );
+    },
+    onSuccess: (response) => {
+      console.log("Registration successful:", response);
+      toast.success("Registration Successful!");
+    },
   });
 
   /**
@@ -159,8 +169,8 @@ export function useAuth() {
    * Logout user from current device
    */
   const logoutMutation = useMutation({
-    mutationFn: async (refreshToken?: string) => {
-      const token = refreshToken || tokenManager.getRefreshToken() || undefined;
+    mutationFn: async () => {
+      const token = tokenManager.getRefreshToken() || undefined;
       await authService.logout(token);
     },
     onSuccess: async () => {
