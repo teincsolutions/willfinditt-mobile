@@ -89,10 +89,9 @@
         {
           "sslPinning": {
             "hosts": {
-              // Production API
               "api.willfind8.com": [
-                "xjCqs7iKe/Ir4XPymYzObBAv7nYMf12RzcFWh4/nXne=",
-                "kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A5="
+                "xjCqs7iKe/Ir4XPymYzObBAv7nYMf12RzcFWh4/nXnw=",
+                "kIdp6NNEd8wsugYyyIYFsi1ylMCEDbSR8ZFsa/A5="
               ]
             }
           }

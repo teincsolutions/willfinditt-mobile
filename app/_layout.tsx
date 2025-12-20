@@ -33,7 +33,7 @@ export default function RootLayout() {
               <Stack.Screen name="onboarding" />
               <Stack.Screen name="account" />
               <Stack.Screen name="results" />
-              <Stack.Screen name="search" />
+              <Stack.Screen name="search" options={{ headerShown: true }} />
               <Stack.Screen name="filters" />
             </Stack>
           </View>

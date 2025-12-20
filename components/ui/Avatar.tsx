@@ -100,7 +100,7 @@ export function Avatar({
                 bottom: 0,
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: uri ? "transparent" : colors.iconLightGray,
+                backgroundColor: uri ? "transparent" : colors.brown,
                 width: size ? avatarSize[size] : avatarSize.lg,
                 height: size ? avatarSize[size] : avatarSize.lg,
               }}
@@ -112,7 +112,10 @@ export function Avatar({
                   fontSize: size ? avatarSize[size] / 2 : avatarSize.lg / 2,
                 }}
               >
-                {name?.split(" ").map(word => word.charAt(0).toUpperCase()).join("") || "U"}
+                {name
+                  ?.split(" ")
+                  .map((word) => word.charAt(0).toUpperCase())
+                  .join("") || "U"}
               </AppText>
             </View>
           )}
