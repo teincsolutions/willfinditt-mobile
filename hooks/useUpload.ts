@@ -4,6 +4,9 @@ import {
   uploadAvatar,
   uploadDocuments,
   uploadFacePhotos,
+  uploadMultipleFiles,
+  uploadSingleFile,
+  uploadUserContent,
 } from "@/services/uploadService";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
@@ -77,7 +80,8 @@ export const useUploadAvatar = () => {
 };
 
 /**
- * Hook for uploading KYC documents (max 3)
+ * Hook for uploading KYC documents (max 5 per API docs)
+ * FormData should include: documents (files), documentType (field), optional notes
  */
 export const useUploadDocuments = () => {
   const [progress, setProgress] = useState<UploadProgress>({
@@ -157,4 +161,100 @@ export const useGetSignedUrl = () => {
       throw error;
     },
   });
+};
+
+/**
+ * Hook for uploading single file to any bucket
+ * FormData should include: file, optional bucketType and folder
+ */
+export const useUploadSingleFile = () => {
+  const [progress, setProgress] = useState<UploadProgress>({
+    percentage: 0,
+    loaded: 0,
+    total: 0,
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (file: FormData) => {
+      return uploadSingleFile(file, (percentage: number) => {
+        setProgress((prev) => ({
+          ...prev,
+          percentage,
+        }));
+      });
+    },
+    onError: (error: any) => {
+      console.error("Error uploading file:", error);
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    progress,
+  };
+};
+
+/**
+ * Hook for uploading multiple files (max 10) to any bucket
+ * FormData should include: files, optional bucketType and folder
+ */
+export const useUploadMultipleFiles = () => {
+  const [progress, setProgress] = useState<UploadProgress>({
+    percentage: 0,
+    loaded: 0,
+    total: 0,
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (files: FormData) => {
+      return uploadMultipleFiles(files, (percentage: number) => {
+        setProgress((prev) => ({
+          ...prev,
+          percentage,
+        }));
+      });
+    },
+    onError: (error: any) => {
+      console.error("Error uploading files:", error);
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    progress,
+  };
+};
+
+/**
+ * Hook for uploading user content with custom categorization
+ * FormData should include: content file, optional category and description
+ */
+export const useUploadUserContent = () => {
+  const [progress, setProgress] = useState<UploadProgress>({
+    percentage: 0,
+    loaded: 0,
+    total: 0,
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (content: FormData) => {
+      return uploadUserContent(content, (percentage: number) => {
+        setProgress((prev) => ({
+          ...prev,
+          percentage,
+        }));
+      });
+    },
+    onError: (error: any) => {
+      console.error("Error uploading user content:", error);
+      throw error;
+    },
+  });
+
+  return {
+    ...mutation,
+    progress,
+  };
 };

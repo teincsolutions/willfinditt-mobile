@@ -89,6 +89,16 @@ export default function DocumentUploadModal({
       try {
         // Upload documents
         const formData = new FormData();
+
+        // Add document type as required by API
+        formData.append("documentType", values.documentType);
+
+        // Add optional notes
+        if (values.additionalNotes) {
+          formData.append("notes", values.additionalNotes);
+        }
+
+        // Add document files
         selectedDocuments.forEach((doc, index) => {
           formData.append("documents", {
             uri: doc.uri,
@@ -127,7 +137,7 @@ export default function DocumentUploadModal({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsMultipleSelection: true,
         quality: 0.8,
-        selectionLimit: 3,
+        selectionLimit: 5, // API supports max 5 documents
       });
 
       if (!result.canceled && result.assets) {
@@ -137,7 +147,7 @@ export default function DocumentUploadModal({
           type: asset.type === "image" ? "image/jpeg" : "image/jpeg",
         }));
 
-        setSelectedDocuments((prev) => [...prev, ...newDocs].slice(0, 3));
+        setSelectedDocuments((prev) => [...prev, ...newDocs].slice(0, 5)); // Max 5 documents
       }
     } catch (error) {
       console.error("Error picking documents:", error);
@@ -367,7 +377,7 @@ export default function DocumentUploadModal({
               variant="md"
               style={{ fontWeight: "600", marginBottom: spacing.sm }}
             >
-              Upload Documents * (Max 3)
+              Upload Documents * (Max 5)
             </AppText>
 
             {/* Upload Button */}

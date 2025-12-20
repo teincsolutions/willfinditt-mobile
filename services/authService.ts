@@ -25,7 +25,11 @@ const handleAuthError = (error: any): never => {
       case 404:
         throw new Error("User not found");
       case 409:
-        throw new Error(message || "User already exists");
+        // Handle conflict - preserve original message for smart handling
+        const conflictError = new Error(message || "User already exists");
+        (conflictError as any).isConflict = true;
+        (conflictError as any).originalMessage = message;
+        throw conflictError;
       case 422:
         throw new Error(message || "Validation failed");
       case 429:

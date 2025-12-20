@@ -29,15 +29,13 @@ export default function MessagesScreen() {
     hasNextPage,
     isLoading,
     isFetchingNextPage,
-    refetch,
     isRefetching,
   } = useChats({ limit: 20, search: searchQuery || undefined });
 
-  const chats: Chat[] = chatsData?.pages.flatMap((page) => page.data) || [];
-
-  const handleRefresh = async () => {
-    await refetch();
-  };
+  const chats: Chat[] =
+    chatsData?.pages
+      .flatMap((page) => page.data)
+      .filter((chat) => !!chat.lastMessage) || [];
 
   const handleSearch = () => {
     setSearchQuery(query);

@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 
 import ProductCard from "@/components/ads/ProductCard";
 import ProductCardSkeleton from "@/components/ads/ProductCardSkeleton";
+import VerificationBanner from "@/components/auth/VerificationBanner";
 import { CategoryCardCircular } from "@/components/category/CategoryCardCircular";
 import { HomeCategoryList } from "@/components/category/HomeCategoryList";
 import SectionHeader from "@/components/category/SectionHeader";
@@ -121,6 +122,9 @@ export default function HomeScreen() {
         containerStyle={{ paddingVertical: spacing.sm }}
       />
 
+      {/* Verification Banner */}
+      <VerificationBanner />
+
       <AppView
         style={{
           gap: spacing.md,
@@ -130,7 +134,7 @@ export default function HomeScreen() {
         <SearchBarPlaceholder
           onPress={() => router.push({ pathname: "/search" })}
           onPressFilter={() => {
-            router.push({ pathname:"/search/locations/regions" });
+            router.push({ pathname: "/locations/regions" });
           }}
           style={{ marginHorizontal: spacing.md }}
         />
@@ -154,7 +158,7 @@ export default function HomeScreen() {
             <CategoryCardCircular
               onPress={() =>
                 router.push({
-                  pathname: "/search/categories/[parentId]",
+                  pathname: "/categories/[parentId]",
                   params: { parentId: item.id, source: "home" },
                 })
               }
@@ -184,7 +188,7 @@ export default function HomeScreen() {
               <SecondaryTextButton
                 variant="lg"
                 onPress={() => {
-                  router.push({ pathname: "/search/results" });
+                  router.push({ pathname: "/results" });
                 }}
                 title="See All"
                 titleStyle={{ color: colors.textGray }}
@@ -232,7 +236,7 @@ export default function HomeScreen() {
           <SearchBarPlaceholder
             onPress={() => router.push({ pathname: "/search" })}
             onPressFilter={() => {
-              router.push({ pathname: "/search/locations/regions" });
+              router.push({ pathname: "/locations/regions" });
             }}
             style={{ marginHorizontal: spacing.md }}
           />
@@ -257,7 +261,10 @@ export default function HomeScreen() {
           return (
             <ProductCard
               onPress={() =>
-                router.push({ pathname: "/ads/[adId]", params: { adId: item.id } })
+                router.push({
+                  pathname: "/ads/[adId]",
+                  params: { adId: item.id },
+                })
               }
               ad={item}
             />

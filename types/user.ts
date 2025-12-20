@@ -139,7 +139,8 @@ export interface CreateSellerProfileRequest {
   };
 }
 
-export interface UpdateSellerProfileRequest extends Partial<CreateSellerProfileRequest> { }
+export interface UpdateSellerProfileRequest
+  extends Partial<CreateSellerProfileRequest> {}
 
 export interface CreateVerificationRequest {
   sellerProfileId: string;
@@ -160,6 +161,8 @@ export interface AuthResponse {
   refresh_token: string;
   user: User;
   requires2FA?: boolean;
+  requiresVerification?: boolean;
+  message?: string;
 }
 
 export interface SocialData {

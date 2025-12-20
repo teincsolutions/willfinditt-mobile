@@ -10,15 +10,22 @@ export default function DrawerUserHeader() {
   const { spacing } = useTheme();
   const { user } = useAuth();
 
-  const fullName = `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
-  const joinedDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "Recently";
+  const fullName =
+    `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
+  const joinedDate = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "Recently";
 
   return (
     <AppView style={{ alignItems: "center", paddingVertical: spacing.lg }}>
-      <Avatar 
-        size="xl" 
-        styleContainer={{ marginBottom: spacing.md }} 
-        verified={user?.isVerified}
+      <Avatar
+        size="xl"
+        styleContainer={{ marginBottom: spacing.md }}
+        verified={user?.sellerProfile?.isVerified}
         uri={user?.avatar}
       />
       <AppText variant="lg" style={{ marginTop: spacing.md }}>

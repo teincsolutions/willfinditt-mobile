@@ -5,6 +5,13 @@ import api from "./api";
 export interface UploadResponse {
   urls?: string[];
   url?: string;
+  thumbnail?: string;
+  bucketType?: string;
+  folder?: string;
+  category?: string;
+  description?: string;
+  documentType?: string;
+  notes?: string;
   message: string;
 }
 
@@ -96,7 +103,8 @@ export const uploadAvatar = async (
 };
 
 /**
- * Upload documents (max 3) with progress callback
+ * Upload documents (max 5 per API docs) with progress callback
+ * Requires: documents (files), documentType (field), optional notes
  */
 export const uploadDocuments = async (
   documents: FormData,
@@ -123,15 +131,99 @@ export const uploadDocuments = async (
 };
 
 /**
- * Upload face photos with progress callback
+ * Upload face photos (max 3) with progress callback and optional notes
  */
 export const uploadFacePhotos = async (
-  images: FormData,
+  formData: FormData,
   onProgress?: UploadProgressCallback
 ): Promise<UploadResponse> => {
   const response = await api.post<UploadResponse>(
     "/api/v1/upload/face-photos",
-    images,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const percentage = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentage);
+        }
+      },
+    }
+  );
+  return response.data;
+};
+
+/**
+ * Upload single file to any bucket
+ * @param file - FormData with file, optional bucketType and folder
+ */
+export const uploadSingleFile = async (
+  file: FormData,
+  onProgress?: UploadProgressCallback
+): Promise<UploadResponse> => {
+  const response = await api.post<UploadResponse>(
+    "/api/v1/upload/single",
+    file,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const percentage = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentage);
+        }
+      },
+    }
+  );
+  return response.data;
+};
+
+/**
+ * Upload multiple files (max 10) to any bucket
+ * @param files - FormData with files, optional bucketType and folder
+ */
+export const uploadMultipleFiles = async (
+  files: FormData,
+  onProgress?: UploadProgressCallback
+): Promise<UploadResponse> => {
+  const response = await api.post<UploadResponse>(
+    "/api/v1/upload/multiple",
+    files,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const percentage = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentage);
+        }
+      },
+    }
+  );
+  return response.data;
+};
+
+/**
+ * Upload user content with custom categorization
+ * @param content - FormData with content file, optional category and description
+ */
+export const uploadUserContent = async (
+  content: FormData,
+  onProgress?: UploadProgressCallback
+): Promise<UploadResponse> => {
+  const response = await api.post<UploadResponse>(
+    "/api/v1/upload/user-content",
+    content,
     {
       headers: {
         "Content-Type": "multipart/form-data",

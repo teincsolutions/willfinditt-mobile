@@ -56,18 +56,26 @@ export default function AuthScreen() {
         password: values.password,
       };
 
-      const { requires2FA, user } = await loginAsync(loginData);
+      const response = await loginAsync(loginData);
 
       // Check if 2FA is required
-      if (requires2FA && user?.id) {
+      if (response.requires2FA && response.user?.id) {
         router.push({
           pathname: "/verify-otp",
-          params: { userId: user.id, type: "2fa" },
+          params: { userId: response.user.id, type: "2fa" },
         });
         return;
       }
 
-      // Navigate to the main tabs
+      // Check if verification is required
+      if (response.requiresVerification) {
+        // User can access app but should verify
+        // Navigate to main app and show verification banner
+        router.replace("/(drawers)");
+        return;
+      }
+
+      // Navigate to the main tabs (fully verified)
       router.replace("/(drawers)");
     } catch (error: any) {
       console.log("Login error:", error.response?.data || error.message);
@@ -102,19 +110,26 @@ export default function AuthScreen() {
         };
 
         // Send to backend API
-        const { requires2FA, user } = await socialAuthAsync(socialAuthData);
+        const response = await socialAuthAsync(socialAuthData);
         toast.success("Google Sign-In Successful!");
 
         // Check if 2FA is required
-        if (requires2FA && user?.id) {
+        if (response.requires2FA && response.user?.id) {
           router.push({
             pathname: "/verify-otp",
-            params: { userId: user.id, type: "2fa" },
+            params: { userId: response.user.id, type: "2fa" },
           });
           return;
         }
 
-        // Navigate to main screen
+        // Check if verification is required
+        if (response.requiresVerification) {
+          // User can access app but should verify
+          router.replace("/(drawers)");
+          return;
+        }
+
+        // Navigate to main screen (fully verified)
         router.replace("/(drawers)");
       } else if (signInResponse.type === "cancelled") {
         // User cancelled, no error needed

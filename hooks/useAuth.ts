@@ -118,13 +118,41 @@ export function useAuth() {
     mutationFn: (data: RegisterRequest) => authService.register(data),
     onError: (error: any) => {
       console.log("Registration error:", error);
-      toast.error(
-        error.response?.data?.message || error.message || "Registration failed"
-      );
+
+      // Check if this is a 409 conflict (duplicate registration)
+      if (error.isConflict) {
+        const message = error.originalMessage || error.message;
+
+        // Smart handling based on message content
+        if (message.includes("not verified")) {
+          // Unverified account exists - verification resent
+          toast.info("Verification code sent to your email/phone");
+        } else if (message.includes("already exists")) {
+          // Verified account exists - suggest login
+          toast.error("Account already exists. Please login.");
+        } else {
+          toast.error(message);
+        }
+      } else {
+        toast.error(
+          error.response?.data?.message ||
+            error.message ||
+            "Registration failed"
+        );
+      }
     },
     onSuccess: (response) => {
       console.log("Registration successful:", response);
-      toast.success("Registration Successful!");
+
+      // Check if verification is required
+      if (response.requiresVerification) {
+        // Store tokens but show verification message
+        handleSuccessfulLogin(response);
+        toast.success("Registration Successful! Please verify your account.");
+      } else {
+        handleSuccessfulLogin(response);
+        toast.success("Registration Successful!");
+      }
     },
   });
 
@@ -136,7 +164,15 @@ export function useAuth() {
     onSuccess: async (response) => {
       if (!response.requires2FA) {
         handleSuccessfulLogin(response);
-        toast.success("Login Successful!");
+
+        // Check if verification is required
+        if (response.requiresVerification) {
+          toast.success(
+            "Login Successful! Please verify your account to access all features."
+          );
+        } else {
+          toast.success("Login Successful!");
+        }
       }
     },
   });

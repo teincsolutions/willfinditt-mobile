@@ -22,9 +22,10 @@ import { useAuth } from "@/hooks/useAuth";
 export default function VerifyOTPScreen() {
   const { spacing, colors, radius } = useTheme();
   const params = useLocalSearchParams<{
-    userId: string;
+    userId?: string;
     type: string;
     phone?: string;
+    email?: string;
   }>();
   const [otp, setOtp] = useState("");
   const [countdown, setCountdown] = useState(60); // 60 seconds countdown
@@ -35,7 +36,12 @@ export default function VerifyOTPScreen() {
     isVerifying2FA,
     verifyResetPhoneOtpAsync,
     isVerifyingResetPhoneOtp,
+    verifyEmailAsync,
+    isVerifyingEmail,
+    verifyPhoneAsync,
+    isVerifyingPhone,
     isResendingVerification,
+    resendVerificationAsync,
   } = useAuth();
 
   // Countdown timer for resend button
@@ -79,6 +85,16 @@ export default function VerifyOTPScreen() {
             otp: otp,
           },
         });
+      } else if (params.type === "email-verification" && params.email) {
+        // Verify email with OTP token
+        await verifyEmailAsync(otp);
+        toast.success("Email verified successfully!");
+        router.replace("/(drawers)");
+      } else if (params.type === "phone-verification" && params.phone) {
+        // Verify phone with OTP
+        await verifyPhoneAsync(otp);
+        toast.success("Phone verified successfully!");
+        router.replace("/(drawers)");
       }
     } catch (error: any) {
       toast.error(error?.message || "Invalid OTP. Please try again.");
@@ -89,8 +105,17 @@ export default function VerifyOTPScreen() {
     if (!canResend) return;
 
     try {
-      // Resend verification - this would need user's email/phone
-      toast.success("OTP has been resent to your device");
+      // Resend verification based on type
+      if (params.type === "email-verification" && params.email) {
+        await resendVerificationAsync({ email: params.email });
+        toast.success("OTP has been resent to your email");
+      } else if (params.type === "phone-verification" && params.phone) {
+        await resendVerificationAsync({ phone: params.phone });
+        toast.success("OTP has been resent to your phone");
+      } else {
+        // Generic resend for other types
+        toast.success("OTP has been resent to your device");
+      }
 
       // Reset countdown
       setCountdown(60);
@@ -116,11 +141,23 @@ export default function VerifyOTPScreen() {
                 title={
                   params.type === "password-reset"
                     ? "Reset Password"
+                    : params.type === "email-verification"
+                    ? "Verify Email"
+                    : params.type === "phone-verification"
+                    ? "Verify Phone"
                     : "Verify Your Identity"
                 }
                 subtitle={
                   params.type === "password-reset"
                     ? "Enter the 6-digit code sent to your phone"
+                    : params.type === "email-verification"
+                    ? `Enter the 6-digit code sent to ${
+                        params.email || "your email"
+                      }`
+                    : params.type === "phone-verification"
+                    ? `Enter the 6-digit code sent to ${
+                        params.phone || "your phone"
+                      }`
                     : "Enter the 6-digit code sent to your device"
                 }
               />
@@ -155,7 +192,12 @@ export default function VerifyOTPScreen() {
                 value={otp}
                 onChange={setOtp}
                 onComplete={handleVerifyOTP}
-                disabled={isVerifying2FA || isVerifyingResetPhoneOtp}
+                disabled={
+                  isVerifying2FA ||
+                  isVerifyingResetPhoneOtp ||
+                  isVerifyingEmail ||
+                  isVerifyingPhone
+                }
               />
 
               {/* Info Text */}
@@ -187,15 +229,27 @@ export default function VerifyOTPScreen() {
               <View style={{ marginTop: spacing.lg }}>
                 <PrimaryButton
                   title={
-                    isVerifying2FA || isVerifyingResetPhoneOtp
+                    isVerifying2FA ||
+                    isVerifyingResetPhoneOtp ||
+                    isVerifyingEmail ||
+                    isVerifyingPhone
                       ? "Verifying..."
                       : "Verify"
                   }
                   onPress={handleVerifyOTP}
                   disabled={
-                    isVerifying2FA || isVerifyingResetPhoneOtp || otp.length < 6
+                    isVerifying2FA ||
+                    isVerifyingResetPhoneOtp ||
+                    isVerifyingEmail ||
+                    isVerifyingPhone ||
+                    otp.length < 6
                   }
-                  loading={isVerifying2FA || isVerifyingResetPhoneOtp}
+                  loading={
+                    isVerifying2FA ||
+                    isVerifyingResetPhoneOtp ||
+                    isVerifyingEmail ||
+                    isVerifyingPhone
+                  }
                 />
               </View>
 

@@ -102,10 +102,24 @@ export default function RegisterScreen() {
         return;
       }
 
-      // Navigate to the main drawers
+      // Check if verification is required
+      if (result.requiresVerification) {
+        // User can access app but should verify
+        router.replace("/(drawers)");
+        return;
+      }
+
+      // Navigate to the main drawers (fully verified)
       router.replace("/(drawers)");
     } catch (error: any) {
       console.log("Registration error:", error.message);
+
+      // Check if this is a 409 conflict with verification needed
+      if (error.isConflict && error.originalMessage?.includes("not verified")) {
+        // Navigate to verification or login
+        toast.info("Please check your email/phone for verification code");
+        router.replace("/login");
+      }
     }
   };
 
@@ -145,7 +159,14 @@ export default function RegisterScreen() {
           return;
         }
 
-        // Navigate to main screen
+        // Check if verification is required
+        if (result.requiresVerification) {
+          // User can access app but should verify
+          router.replace("/(drawers)");
+          return;
+        }
+
+        // Navigate to main screen (fully verified)
         router.replace("/(drawers)");
       } else if (signInResponse.type === "cancelled") {
         // User cancelled, no error needed
