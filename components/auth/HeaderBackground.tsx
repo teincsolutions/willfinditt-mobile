@@ -5,6 +5,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AppText from "../ui/AppText";
 import HeaderBack from "../ui/HeaderBack";
 import { TextButton } from "../ui/TextButton";
@@ -18,6 +19,7 @@ type Props = {
 export default function HeaderBackground({ title, subtitle, onBack }: Props) {
   const { colors, icons, spacing } = useTheme();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
   // Circle diameter estimated from your screenshot
   const diameter = width * 1.8;
@@ -27,7 +29,16 @@ export default function HeaderBackground({ title, subtitle, onBack }: Props) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.primary }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.primary,
+          paddingTop: insets.top + spacing.sm,
+          height: 200 + insets.top + spacing.md,
+        },
+      ]}
+    >
       {/* Large Circles */}
       <View
         style={[
@@ -113,11 +124,8 @@ export default function HeaderBackground({ title, subtitle, onBack }: Props) {
 const styles = StyleSheet.create({
   container: {
     overflow: "hidden",
-    paddingBottom: 40,
     paddingHorizontal: 20,
-    paddingTop: 80,
     position: "relative",
-    height: 324,
   },
   circle: {
     position: "absolute",
@@ -125,7 +133,6 @@ const styles = StyleSheet.create({
   },
   textWrapper: {
     position: "relative",
-    width: "70%",
   },
   buttons: {
     flexDirection: "row",

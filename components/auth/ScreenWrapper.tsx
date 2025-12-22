@@ -45,6 +45,5 @@ export default function ScreenWrapper({ children, scroll, style }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
   },
 });
