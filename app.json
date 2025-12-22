@@ -87,7 +87,7 @@
           "sslPinning": {
             "hosts": {
               "api.willfind8.com": [
-                "xjCqs7iKe/Ir4XPymYzObBAv7nYMf12RzcFWh4/nXnw=",
+                "xjCqs7iKe/Ir4XPymYzObBAv7nYMf12RzcFWh4/nXne=",
                 "kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A5="
               ]
             }

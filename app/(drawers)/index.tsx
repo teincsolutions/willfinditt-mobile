@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { RefreshControl } from "react-native";
 
 import ProductCard from "@/components/ads/ProductCard";
 import ProductCardSkeleton from "@/components/ads/ProductCardSkeleton";
@@ -68,7 +69,7 @@ export default function HomeScreen() {
   const searchRequest = getSearchRequest(selectedTab);
 
   // fetch categories
-  const { data: categories = [], isLoading: isLoadingCategories } =
+  const { data: categories = [], isLoading: isLoadingCategories, refetch: refetchCategories } =
     useParentCategories();
 
   // fetch ads based on selected tab
@@ -78,12 +79,22 @@ export default function HomeScreen() {
     hasNextPage,
     isLoading: isLoadingAds,
     isFetchingNextPage,
+    refetch: refetchAds,
   } = useInfiniteSearchAds(searchRequest);
 
   const ads: Ad[] = adsData?.pages.flatMap((page) => page.data) || [];
 
   // Only show skeletons on initial load when there's no data yet
   const showSkeletons = isLoadingAds && ads.length === 0;
+
+  // Pull to refresh
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refetchAds(), refetchCategories()]);
+    setRefreshing(false);
+  };
 
   // Animation values for search bar
   const lastScrollY = useRef(0);
@@ -281,6 +292,9 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </AppView>
   );
