@@ -50,7 +50,7 @@ export function useAuth() {
   // Global authentication state from MMKV (triggers re-renders automatically)
   const [isAuthenticated, setIsAuthenticated] = useMMKVBoolean(
     AUTH_KEYS.IS_AUTHENTICATED,
-    storage
+    storage,
   );
 
   // Listen for logout events from API interceptor
@@ -147,10 +147,10 @@ export function useAuth() {
       // Check if verification is required
       if (response.requiresVerification) {
         // Store tokens but show verification message
-        handleSuccessfulLogin(response);
+        
         toast.success("Registration Successful! Please verify your account.");
       } else {
-        handleSuccessfulLogin(response);
+        
         toast.success("Registration Successful!");
       }
     },

@@ -21,15 +21,16 @@ export default function CitiesScreen() {
   const { data: selectedCity } = useCityById(cityId!);
 
   const handleNavigateNext = () => {
-    if (source === "filters") {
-      router.back();
-    } else {
-      router.push({
-        pathname: "/search/results",
-        params: { source, cityId },
-      });
-    }
+    router.dismiss(2);
   };
+
+  // useEffect(() => {
+  //  return () => {
+  //    if (source === "filters") {
+  //      router.replace("/locations/regions");
+  //    }
+  //  }
+  // }, []);
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>

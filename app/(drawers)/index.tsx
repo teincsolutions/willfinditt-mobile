@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import { RefreshControl } from "react-native";
 
 import ProductCard from "@/components/ads/ProductCard";
 import ProductCardSkeleton from "@/components/ads/ProductCardSkeleton";
@@ -13,6 +12,7 @@ import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
 import { SearchBarPlaceholder } from "@/components/search/SearchBarPlaceholder";
 import { PromoSlider } from "@/components/sliders/PromoSlider";
 import AppView from "@/components/ui/AppView";
+import CustomRefreshControl from "@/components/ui/CustomRefreshControl";
 import FilterTabs from "@/components/ui/FilterTabs";
 import { Header } from "@/components/ui/Header";
 import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
@@ -20,6 +20,8 @@ import { ToggleAction } from "@/components/ui/ToggleAction";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useInfiniteSearchAds } from "@/hooks/useAds";
 import { useParentCategories } from "@/hooks/useCategories";
+import { useCityById } from "@/hooks/useLocations";
+import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { Ad, AdSearchRequest, Promo } from "@/types";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -45,6 +47,8 @@ export default function HomeScreen() {
   const { spacing, colors } = useTheme();
   const [selectedTab, setSelectedTab] = useState("Trending");
   const [showAllCategories, setShowAllCategories] = useState(false);
+  const { cityId } = useSearchFilters();
+  const { data: city } = useCityById(cityId!);
 
   // Function to get search params based on selected tab
   const getSearchRequest = (tab: string): AdSearchRequest => {
@@ -69,8 +73,11 @@ export default function HomeScreen() {
   const searchRequest = getSearchRequest(selectedTab);
 
   // fetch categories
-  const { data: categories = [], isLoading: isLoadingCategories, refetch: refetchCategories } =
-    useParentCategories();
+  const {
+    data: categories = [],
+    isLoading: isLoadingCategories,
+    refetch: refetchCategories,
+  } = useParentCategories();
 
   // fetch ads based on selected tab
   const {
@@ -86,14 +93,9 @@ export default function HomeScreen() {
 
   // Only show skeletons on initial load when there's no data yet
   const showSkeletons = isLoadingAds && ads.length === 0;
-
-  // Pull to refresh
-  const [refreshing, setRefreshing] = useState(false);
-
+  const refreshing = isLoadingAds || isLoadingCategories;
   const onRefresh = async () => {
-    setRefreshing(true);
     await Promise.all([refetchAds(), refetchCategories()]);
-    setRefreshing(false);
   };
 
   // Animation values for search bar
@@ -132,7 +134,11 @@ export default function HomeScreen() {
         title={<DrawerHeaderTitle />}
         containerStyle={{ paddingVertical: spacing.sm }}
       />
-
+       <CustomRefreshControl
+          position="top-center"
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
       {/* Verification Banner */}
       <VerificationBanner />
 
@@ -147,8 +153,11 @@ export default function HomeScreen() {
           onPressFilter={() => {
             router.push({ pathname: "/locations/regions" });
           }}
+          filterValue={city?.name}
           style={{ marginHorizontal: spacing.md }}
         />
+       
+
         {/* ALL CATEGORIES */}
         <SectionHeader
           title="All Categories"
@@ -249,6 +258,7 @@ export default function HomeScreen() {
             onPressFilter={() => {
               router.push({ pathname: "/locations/regions" });
             }}
+            filterValue={city?.name}
             style={{ marginHorizontal: spacing.md }}
           />
         </AppView>
@@ -292,9 +302,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        onRefresh={onRefresh}
       />
     </AppView>
   );

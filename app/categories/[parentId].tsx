@@ -3,6 +3,7 @@ import AppView from "@/components/ui/AppView";
 import { useCategory, useSubcategories } from "@/hooks/useCategories";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
 
 export default function SubCategoriesScreen() {
   const { parentId = "", source = "search" } = useLocalSearchParams() as {
@@ -15,13 +16,14 @@ export default function SubCategoriesScreen() {
   const { data: selectedCategory } = useCategory(categoryId || "");
 
   const handleNavigateNext = () => {
-    if (source === "filters") {
-      router.back();
-    } else {
-      router.navigate("/results");
-      router.dismissAll();
-    }
+    router.dismiss(2);
   };
+
+  useEffect(() => {
+    return () => {
+      if (source !== "filters") router.push("/results");
+    };
+  }, []);
 
   return (
     <AppView style={{ flex: 1 }}>
@@ -32,6 +34,7 @@ export default function SubCategoriesScreen() {
       />
       <CategoryList
         loading={isLoading}
+        selectedCategory={selectedCategory}
         selected={selectedCategory!}
         data={categories}
         onSelect={(cat) => {

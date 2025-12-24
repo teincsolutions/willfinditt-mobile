@@ -192,7 +192,7 @@ export default function AdDetailsScreen() {
                 isLeft
                 icon={<Eye size={icons.sm} color={colors.iconBlack} />}
                 titleStyle={{ color: colors.text }}
-                title={String(ad?.views)}
+                title={String(ad?.views||0)}
               />
             </AppView>
           }

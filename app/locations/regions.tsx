@@ -23,17 +23,15 @@ export default function RegionsScreen() {
         selectedCity={selectedCity!}
         selectedState={selectedCity?.state}
         onSelectState={(state: State) => {
-          router.replace({
-            pathname: "/search/locations/cities/[regionId]",
+          router.push({
+            pathname: "/locations/cities/[regionId]",
             params: { regionId: state.id, source },
           });
+
         }}
         onSelectCity={(city: City) => {
           setCityId(city.id);
-          router.push({
-            pathname: "/search/results",
-            params: { source, cityId: city.id },
-          });
+          router.dismiss(2);
         }}
         loading={isLoading}
       />

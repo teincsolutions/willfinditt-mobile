@@ -15,7 +15,8 @@ export default function CategoriesScreen() {
       <Stack.Screen options={{ title: "Categories" }} />
       <CategoryList
         loading={isLoading}
-        selected={selectedCategory!}
+        selectedCategory={selectedCategory}
+        selected={selectedCategory?.parent!}
         data={categories}
         onSelect={(cat) => {
           if (source === "filters") {

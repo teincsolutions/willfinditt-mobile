@@ -94,7 +94,7 @@ export const useSearchSuggestions = (
 ) => {
   return useQuery({
     queryKey: ["ads-suggestions", params],
-    queryFn: () => adService.searchSuggestions(params),
+    queryFn: async () => await adService.searchSuggestions(params),
     enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes - backend has Redis cache
     gcTime: 10 * 60 * 1000,
@@ -166,10 +166,12 @@ export const useInfiniteMyAds = (params?: {
   limit?: number;
   status?: AdStatus;
 }) => {
+  const { isAuthenticated } = useAuth();
   return useInfiniteQuery({
     queryKey: ["my-ads-infinite", params],
     queryFn: async ({ pageParam = 1 }) =>
       await adService.getMyAds({ ...params, page: pageParam }),
+    enabled: isAuthenticated,
     getNextPageParam: (lastPage) => {
       if (!lastPage || !lastPage.meta) {
         return undefined;
@@ -231,10 +233,14 @@ export const useUnsaveAd = () => {
 };
 
 export const useInfiniteSavedAds = (params?: { limit?: number }) => {
+
+  const { isAuthenticated } = useAuth();
+
   return useInfiniteQuery({
     queryKey: ["saved-ads-infinite", params],
     queryFn: ({ pageParam = 1 }) =>
       adService.getSavedAds({ ...params, page: pageParam }),
+    enabled: !!isAuthenticated,
     getNextPageParam: (lastPage) => {
       if (!lastPage || !lastPage.meta) {
         return undefined;

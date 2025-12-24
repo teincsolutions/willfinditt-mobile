@@ -20,7 +20,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { AdCondition, CategoryField, CategoryFieldType } from "@/types";
 import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -140,14 +140,14 @@ export default function FiltersScreen() {
 
   const handleOpenCategory = () => {
     router.push({
-      pathname: "/search/categories",
+      pathname: "/categories",
       params: { source: "filters" },
     });
   };
 
   const handleOpenLocation = () => {
     router.push({
-      pathname: "/search/locations/regions",
+      pathname: "/locations/regions",
       params: { source: "filters" },
     });
   };
@@ -432,6 +432,9 @@ export default function FiltersScreen() {
 
   return (
     <>
+      <Stack.Screen
+        options={{ headerStyle: { backgroundColor: colors.background } }}
+      />
       <ScrollView
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{

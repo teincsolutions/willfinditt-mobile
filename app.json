@@ -77,23 +77,13 @@
         {
           "android": {
             "minSdkVersion": 26
+          },
+          "ios": {
+            "deploymentTarget": "16.0"
           }
         }
       ],
-      "expo-web-browser",
-      [
-        "expo-ssl-pinning",
-        {
-          "sslPinning": {
-            "hosts": {
-              "api.willfind8.com": [
-                "xjCqs7iKe/Ir4XPymYzObBAv7nYMf12RzcFWh4/nXne=",
-                "kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A5="
-              ]
-            }
-          }
-        }
-      ]
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

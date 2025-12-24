@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import { OTAUpdateBanner } from "@/components/ui/OTAUpdateBanner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AppThemeProvider } from "@/contexts/ThemeContext";
@@ -27,14 +28,69 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <OTAUpdateBanner checkOnMount autoDownload={false} />
           <View style={{ flex: 1 }}>
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            >
               <Stack.Screen name="(drawers)" />
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="onboarding" />
               <Stack.Screen name="account" />
-              <Stack.Screen name="results" />
-              <Stack.Screen name="search" options={{ headerShown: true }} />
-              <Stack.Screen name="filters" />
+
+              <Stack.Screen
+                name="search"
+                options={{
+                  headerShown: true,
+                }}
+              />
+              <Stack.Screen
+                name="filters"
+                options={{
+                  headerShown: true,
+                  title: "",
+                  headerBackTitle: "Search",
+                }}
+              />
+              <Stack.Screen name="ads" />
+              <Stack.Screen
+                name="locations/regions"
+                options={{
+                  presentation: "modal",
+                  headerShown: true,
+                  headerLeft: () => (
+                    <BackButton showIcon={false} label="Cancel" />
+                  ),
+                  title: "Regions",
+                }}
+              />
+              <Stack.Screen
+                name="locations/cities/[regionId]"
+                options={{ presentation: "modal", headerShown: true }}
+              />
+              <Stack.Screen
+                name="categories/index"
+                options={{
+                  title: "Categories",
+                  headerShown: true,
+                  presentation: "modal",
+                  headerLeft: () => (
+                    <BackButton showIcon={false} label="Close" />
+                  ),
+                }}
+              />
+              <Stack.Screen
+                name="categories/[parentId]"
+                options={{
+                  title: "Categories",
+                  presentation: "modal",
+                  headerShown: true,
+                  headerLeft: () => (
+                    <BackButton showIcon={false} label="Close" />
+                  ),
+                }}
+              />
+              <Stack.Screen name="chats" />
             </Stack>
           </View>
           <Toaster />

@@ -9,7 +9,7 @@ import IconButton from "@/components/ui/IconButton";
 import { useInfiniteSavedAds, useSearchSuggestions } from "@/hooks/useAds";
 import { useRecentSearch } from "@/hooks/useRecentSearch";
 import { useTheme } from "@/hooks/useTheme";
-import { Ad, AdSuggestion, Suggestion } from "@/types";
+import { Ad, Suggestion } from "@/types";
 import { router, Stack } from "expo-router";
 import { FilterSearch } from "iconsax-react-nativejs";
 import React, { useEffect, useState } from "react";
@@ -24,11 +24,11 @@ export default function SearchScreen() {
   const { recentSearches, addRecent } = useRecentSearch();
 
   // Search suggestions from API (using the hook from useAds.ts)
-  const { data: suggestionsData, isLoading: isSuggestionsLoading } =
+  const { data: searchSuggestions = [], isLoading: isSuggestionsLoading } =
     useSearchSuggestions(
       {
         query: debouncedQuery,
-        limit: 10,
+        limit: 10
       },
       debouncedQuery.length > 0
     );
@@ -45,17 +45,6 @@ export default function SearchScreen() {
 
     return () => clearTimeout(timer);
   }, [query]);
-
-  // Convert API suggestions to Suggestion format
-  const searchSuggestions: Suggestion[] =
-    suggestionsData?.data?.map((ad: AdSuggestion) => ({
-      id: ad.id,
-      keyword: ad.title,
-      productId: ad.id,
-      categoryId: ad.categoryId,
-      categoryFieldId: "",
-      isRecent: false,
-    })) || [];
 
   // Flatten saved ads for display
   const savedAds: Ad[] =
@@ -183,7 +172,14 @@ export default function SearchScreen() {
       {/* SEARCH SUGGESTIONS */}
       {showSuggestions && (
         <SuggestionDropdown
-          data={searchSuggestions}
+          data={searchSuggestions.map((s) => ({
+            id: s.id,
+            keyword: s.title,
+            productId: s.id,
+            categoryId: s.categoryId,
+            categoryFieldId: "",
+            isRecent: false,
+          }))}
           query={query}
           onSelect={handleSuggestionSelect}
         />

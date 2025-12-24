@@ -25,10 +25,10 @@ export default function CategoryCardLandscape({ category, selected, onPress }: P
         {
           backgroundColor: colors.background,
           borderRadius: radius.md,
-          padding: spacing.md,
+          paddingVertical: spacing.sm,
+          paddingHorizontal:spacing.md,
           borderColor: selected ? colors.primary : colors.border,
           borderWidth: 1,
-          opacity: selected ? 1 : 0.7,
         },
       ]}
     >

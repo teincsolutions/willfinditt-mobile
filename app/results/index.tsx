@@ -17,7 +17,7 @@ import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { Ad, AdCondition, AdSearchRequest } from "@/types";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
-import { Grid2, RowVertical } from "iconsax-react-nativejs";
+import { FilterSearch, Grid2, RowVertical } from "iconsax-react-nativejs";
 import React, { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MasonryList from "reanimated-masonry-list";
@@ -31,7 +31,7 @@ const conditionOptions = [
 ];
 
 export default function ResultsScreen() {
-  const { colors, spacing, icons } = useTheme();
+  const { colors, spacing, icons, radius } = useTheme();
   const insets = useSafeAreaInsets();
   const conditionSheetRef = useRef<BottomSheet>(null);
 
@@ -169,6 +169,23 @@ export default function ResultsScreen() {
             })
           }
           placeholder="Search for products..."
+          rightIcon={
+            <IconButton
+              style={{
+                marginRight: -spacing.sm,
+                backgroundColor: colors.primary,
+                borderWidth:2,
+                borderColor:colors.iconWhite
+              }}
+              onPress={() => router.push({ pathname: "/filters" })}
+              icon={
+                <FilterSearch
+                  size={icons.md}
+                  color={colors.iconWhite}
+                />
+              }
+            />
+          }
         />
       </Header>
 

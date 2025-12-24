@@ -12,6 +12,7 @@ interface SearchBarPlaceholderProps {
   placeholder?: string;
   value?: string;
   style?: StyleProp<ViewStyle>;
+  rightIcon?: React.ReactNode;
   onPress?: () => void;
   onClear?: () => void;
 }
@@ -22,6 +23,7 @@ export function SearchBarPlaceholder({
   filterValue,
   value,
   style,
+  rightIcon,
   onClear,
   onPress,
 }: SearchBarPlaceholderProps) {
@@ -30,30 +32,41 @@ export function SearchBarPlaceholder({
   return (
     <PlaceholderField
       onPress={onPress}
-      style={[{maxHeight: 40},style]}
+      style={[{ maxHeight: 40 }, style]}
       value={value}
       placeholder={placeholder}
       numberOfLines={1}
       size="sm"
       leftIcon={
         value?.length ? (
-          <Feather onPress={onClear} name="x-circle" size={icons.md} color={colors.iconBlack} />
+          <Feather
+            onPress={onClear}
+            name="x-circle"
+            size={icons.md}
+            color={colors.iconBlack}
+          />
         ) : (
           <Feather name="search" size={icons.md} color={colors.iconBlack} />
         )
       }
       rightIcon={
-        <TextButton
-          style={{ height: textButton.height - spacing.sm, maxWidth: 120 }}
-          gradientColors={[colors.primary, colors.secondary]}
-          titleStyle={{ color: colors.textWhite }}
-          numberOfLines={1}
-          title={filterValue || "Ghana"}
-          icon={
-            <Location variant="Bold" size={icons.sm} color={colors.iconWhite} />
-          }
-          onPress={onPressFilter}
-        />
+        rightIcon || (
+          <TextButton
+            style={{ height: textButton.height - spacing.sm, maxWidth: 120 }}
+            gradientColors={[colors.primary, colors.secondary]}
+            titleStyle={{ color: colors.textWhite }}
+            numberOfLines={1}
+            title={filterValue || "Ghana"}
+            icon={
+              <Location
+                variant="Bold"
+                size={icons.sm}
+                color={colors.iconWhite}
+              />
+            }
+            onPress={onPressFilter}
+          />
+        )
       }
     />
   );

@@ -14,6 +14,7 @@ import { EmptyCategoryCard } from "./EmptyCategoryCard";
 interface Props {
   data: Category[];
   selected?: Category;
+  selectedCategory?: Category;
   onSelect: (category: Category) => void;
   loading?: boolean;
 }
@@ -21,6 +22,7 @@ interface Props {
 export default function CategoryList({
   data: categories,
   selected,
+  selectedCategory,
   onSelect,
   loading,
 }: Props) {
@@ -49,14 +51,14 @@ export default function CategoryList({
           showSearchButton={false}
         />
 
-        {selected && (
+        {selectedCategory && (
           <Pressable>
             <AppText
               variant="lg"
               fontWeight="bold"
               style={{ color: colors.primary, marginTop: spacing.xs }}
             >
-              <Feather name="circle" size={icons.xs} /> {selected.name}
+              <Feather name="circle" size={icons.xs} /> {selectedCategory.name}
             </AppText>
           </Pressable>
         )}
@@ -110,7 +112,7 @@ export default function CategoryList({
         borderBottomStartRadius: radius.lg,
       }}
       style={{
-        backgroundColor: colors.backgroundPrimary,
+        backgroundColor: colors.backgroundGray,
       }}
       showsVerticalScrollIndicator={false}
     />

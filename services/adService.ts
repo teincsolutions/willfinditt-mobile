@@ -54,13 +54,13 @@ export const adService = {
   // Search suggestions - lightweight endpoint for autocomplete and quick previews
   searchSuggestions: async (
     params: AdSearchSuggestionsParams
-  ): Promise<PaginatedResponse<AdSuggestion>> => {
+  )=> {
     console.log("Search suggestions params:", params);
     const response = await api.post<PaginatedResponse<AdSuggestion>>(
       `${baseUrl}/search/suggestions`,
       params
     );
-    return response.data;
+    return response.data.data;
   },
 
   // Get ad by ID
