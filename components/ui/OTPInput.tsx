@@ -2,10 +2,10 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import React, { useRef, useState } from "react";
 import {
-    StyleSheet,
-    TextInput,
-    TextInputKeyPressEvent,
-    View
+  StyleSheet,
+  TextInput,
+  TextInputKeyPressEvent,
+  View
 } from "react-native";
 
 interface OTPInputProps {
@@ -41,14 +41,15 @@ export default function OTPInput({
     // Only allow numbers
     const sanitized = text.replace(/[^0-9]/g, "");
 
-    // Handle paste (multiple characters)
+    // Handle paste or auto-fill (multiple characters)
     if (sanitized.length > 1) {
       const pastedDigits = sanitized.slice(0, length).split("");
       const newDigits = [...digits];
 
+      // Always start filling from the beginning for auto-fill/paste
       pastedDigits.forEach((digit, i) => {
-        if (index + i < length) {
-          newDigits[index + i] = digit;
+        if (i < length) {
+          newDigits[i] = digit;
         }
       });
 
@@ -61,7 +62,7 @@ export default function OTPInput({
       }
 
       // Focus the next empty field or the last field
-      const nextIndex = Math.min(index + pastedDigits.length, length - 1);
+      const nextIndex = Math.min(pastedDigits.length, length - 1);
       inputRefs.current[nextIndex]?.focus();
       return;
     }
@@ -87,9 +88,17 @@ export default function OTPInput({
   ) => {
     if (disabled) return;
 
-    // Handle backspace on empty field
-    if (e.nativeEvent.key === "Backspace" && !digits[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
+    if (e.nativeEvent.key === "Backspace") {
+      if (digits[index]) {
+        // If current input has a digit, clear it
+        const newDigits = [...digits];
+        newDigits[index] = "";
+        const completeOTP = newDigits.join("");
+        onChange(completeOTP);
+      } else if (index > 0) {
+        // If empty, move to previous input
+        inputRefs.current[index - 1]?.focus();
+      }
     }
   };
 
@@ -141,11 +150,9 @@ export default function OTPInput({
             onFocus={() => handleFocus(index)}
             onBlur={handleBlur}
             keyboardType="number-pad"
-            maxLength={1}
+            maxLength={length}
             selectTextOnFocus
             editable={!disabled}
-            textContentType="oneTimeCode"
-            autoComplete="sms-otp"
           />
         );
       })}

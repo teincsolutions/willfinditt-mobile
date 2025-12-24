@@ -50,7 +50,7 @@ export function useAuth() {
   // Global authentication state from MMKV (triggers re-renders automatically)
   const [isAuthenticated, setIsAuthenticated] = useMMKVBoolean(
     AUTH_KEYS.IS_AUTHENTICATED,
-    storage,
+    storage
   );
 
   // Listen for logout events from API interceptor
@@ -117,22 +117,13 @@ export function useAuth() {
   const registerMutation = useMutation({
     mutationFn: (data: RegisterRequest) => authService.register(data),
     onError: (error: any) => {
-      console.log("Registration error:", error);
-
-      // Check if this is a 409 conflict (duplicate registration)
-      if (error.isConflict) {
-        const message = error.originalMessage || error.message;
-
-        // Smart handling based on message content
-        if (message.includes("not verified")) {
-          // Unverified account exists - verification resent
-          toast.info("Verification code sent to your email/phone");
-        } else if (message.includes("already exists")) {
-          // Verified account exists - suggest login
-          toast.error("Account already exists. Please login.");
-        } else {
-          toast.error(message);
-        }
+      console.log("Registration error:", error.response);
+      // If 409, always treat as duplicate unverified (verification resent)
+      if (error?.response?.status === 409) {
+        toast.info(
+          error.response?.data?.message ||
+            "Account already exists but is unverified. Verification has been resent."
+        );
       } else {
         toast.error(
           error.response?.data?.message ||
@@ -143,16 +134,8 @@ export function useAuth() {
     },
     onSuccess: (response) => {
       console.log("Registration successful:", response);
-
-      // Check if verification is required
-      if (response.requiresVerification) {
-        // Store tokens but show verification message
-        
-        toast.success("Registration Successful! Please verify your account.");
-      } else {
-        
-        toast.success("Registration Successful!");
-      }
+      handleSuccessfulLogin(response);
+      toast.success(response.message || "Registration Successful!");
     },
   });
 
@@ -306,14 +289,15 @@ export function useAuth() {
   });
 
   const verifyPhoneMutation = useMutation({
-    mutationFn: async (otp: string) => await authService.verifyPhone(otp),
-    onSuccess: async () => {
+    mutationFn: async ({otp, phone}: {otp: string, phone: string}) => await authService.verifyPhone(otp, phone),
+    onSuccess: async (response) => {
       // Refresh user data after phone verification - TanStack Query + MMKV handles persistence
       if (user) {
         const updatedUser = await authService.getProfile();
         queryClient.setQueryData(AUTH_QUERY_KEYS.AUTH_USER, updatedUser);
       }
     },
+
   });
 
   const resendVerificationMutation = useMutation({

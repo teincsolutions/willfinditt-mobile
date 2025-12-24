@@ -230,11 +230,12 @@ export const authService = {
   },
 
   // Verify phone with OTP
-  verifyPhone: async (otp: string): Promise<ApiResponse<any>> => {
+  verifyPhone: async (token: string, phone: string): Promise<ApiResponse<any>> => {
     try {
+      console.log("Verifying phone with OTP:", token)
       const response = await api.post<ApiResponse<any>>(
         "/api/v1/auth/verify-phone",
-        { otp }
+        { token, phone }
       );
       return response.data;
     } catch (error) {

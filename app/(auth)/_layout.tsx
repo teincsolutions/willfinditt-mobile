@@ -5,15 +5,12 @@ export default function AuthLayout() {
     <Stack
       screenOptions={{
         animation: "fade",
-        headerShown:false
+        headerShown: false,
       }}
     >
-      <Stack.Screen
-        name="login"
-      />
-      <Stack.Screen
-        name="signup"
-      />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="signup" />
+      <Stack.Screen name="verify-otp" options={{ headerShown: true }} />
     </Stack>
   );
 }

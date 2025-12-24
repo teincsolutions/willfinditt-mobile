@@ -57,6 +57,10 @@ api.interceptors.request.use(
     // Get token from tokenManager (synchronous)
     const authToken = tokenManager.getAccessToken();
 
+    console.log("Attaching auth token to request:", {
+      url: config.url,
+      hasToken: !!authToken,
+    });
     // Add token to headers if it exists
     if (authToken) {
       config.headers["Authorization"] = `Bearer ${authToken}`;

@@ -9,7 +9,7 @@ import {
   Pressable,
   StyleSheet,
   useWindowDimensions,
-  View
+  View,
 } from "react-native";
 import { toast } from "sonner-native";
 import * as Yup from "yup";
@@ -140,11 +140,22 @@ export default function AuthScreen({
       }
 
       // Check if verification is required
-      if (result.requiresVerification) {
-        // User can access app but should verify
-        router.replace("/(drawers)");
-        return;
-      }
+        if (result.requiresVerification) {
+          router.push({
+            pathname: "/verify-otp",
+            params: {
+              userId: result.user?.id,
+              email: result.user?.email,
+              phone: result.user?.phone,
+              type:
+                formData.mode === "email"
+                  ? "email-verification"
+                  : "phone-verification",
+            },
+          });
+          return;
+        }
+
 
       // Navigate to the main drawers (fully verified)
       router.replace("/(drawers)");
@@ -188,12 +199,22 @@ export default function AuthScreen({
       }
 
       // Check if verification is required
-      if (response.requiresVerification) {
-        // User can access app but should verify
-        // Navigate to main app and show verification banner
-        router.replace("/(drawers)");
-        return;
-      }
+        if (response.requiresVerification) {
+          router.push({
+            pathname: "/verify-otp",
+            params: {
+              userId: response.user?.id,
+              email: response.user?.email,
+              phone: response.user?.phone,
+              type:
+                isPhone
+                  ? "phone-verification"
+                  : "email-verification",
+            },
+          });
+          return;
+        }
+
 
       // Navigate to the main tabs (fully verified)
       router.replace("/(drawers)");
@@ -243,13 +264,6 @@ export default function AuthScreen({
           return;
         }
 
-        // Check if verification is required
-        if (result.requiresVerification) {
-          // User can access app but should verify
-          router.replace("/(drawers)");
-          return;
-        }
-
         // Navigate to main screen (fully verified)
         router.replace("/(drawers)");
       } else if (signInResponse.type === "cancelled") {
@@ -294,13 +308,6 @@ export default function AuthScreen({
             pathname: "/verify-otp",
             params: { userId: response.user.id, type: "2fa" },
           });
-          return;
-        }
-
-        // Check if verification is required
-        if (response.requiresVerification) {
-          // User can access app but should verify
-          router.replace("/(drawers)");
           return;
         }
 
@@ -449,7 +456,15 @@ export default function AuthScreen({
       validationSchema={PasswordSchema}
       onSubmit={handleSignupComplete}
     >
-      {({ handleChange, handleSubmit, values, errors, touched, isValid, setFieldTouched }) => {
+      {({
+        handleChange,
+        handleSubmit,
+        values,
+        errors,
+        touched,
+        isValid,
+        setFieldTouched,
+      }) => {
         const strength =
           values.password.length >= 8
             ? 3
@@ -498,6 +513,7 @@ export default function AuthScreen({
                 leftIcon={
                   <Feather name="lock" color={colors.primary} size={icons.md} />
                 }
+                autoComplete="password"
               />
 
               <PasswordStrengthMeter strength={strength} />
@@ -532,6 +548,7 @@ export default function AuthScreen({
                 leftIcon={
                   <Feather name="lock" color={colors.primary} size={icons.md} />
                 }
+                autoComplete="password"
               />
             </View>
 
@@ -614,6 +631,7 @@ export default function AuthScreen({
               <Feather name="lock" color={colors.primary} size={icons.md} />
             }
             inputStyle={{ borderRadius: radius.xxl }}
+            autoComplete="password"
           />
           {/* FORGOT PASSWORD */}
           <SecondaryTextButton
@@ -649,48 +667,51 @@ export default function AuthScreen({
   // MAIN RETURN
   // ----------------------
   return (
-    
-      <ScreenWrapper
-        style={{
-          zIndex: 1000,
-        }}
-        scroll
-      >
-        <HeaderBackground
-          title={
-            activeTab === "register"
-              ? "Go ahead and setup your Account"
-              : "Welcome back"
-          }
-          subtitle={
-            activeTab === "register"
-              ? "Sign up to enjoy the best experience"
-              : "Sign in to shop or sell your fullest"
-          }
-          onBack={handleBack}
-        />
-        <KeyboardAvoidingView style={{ flex: 1 }} >
-          <View
-            style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md, height:window.height }}
-          >
-            <AuthTabSwitcher
-              active={activeTab}
-              onChange={() =>
-                setActiveTab(activeTab === "register" ? "login" : "register")
-              }
-            />
+    <ScreenWrapper
+      style={{
+        zIndex: 1000,
+      }}
+      scroll
+    >
+      <HeaderBackground
+        title={
+          activeTab === "register"
+            ? "Go ahead and setup your Account"
+            : "Welcome back"
+        }
+        subtitle={
+          activeTab === "register"
+            ? "Sign up to enjoy the best experience"
+            : "Sign in to shop or sell your fullest"
+        }
+        onBack={handleBack}
+      />
+      <KeyboardAvoidingView style={{ flex: 1 }}>
+        <View
+          style={{
+            paddingHorizontal: spacing.lg,
+            paddingTop: spacing.md,
+            height: window.height,
+          }}
+        >
+          <AuthTabSwitcher
+            active={activeTab}
+            onChange={() =>
+              setActiveTab(activeTab === "register" ? "login" : "register")
+            }
+          />
 
-            {activeTab === "register" ? (
-              <>
-                {step === "step1" && renderStep1()}
-                {step === "step2" && renderStep2()}
-              </>
-            ) : (
-              renderLogin()
-            )}
-          </View>
-          </KeyboardAvoidingView>
-      </ScreenWrapper>
+          {activeTab === "register" ? (
+            <>
+              {step === "step1" && renderStep1()}
+              {step === "step2" && renderStep2()}
+            </>
+          ) : (
+            renderLogin()
+          )}
+        </View>
+      </KeyboardAvoidingView>
+    </ScreenWrapper>
   );
 }
 

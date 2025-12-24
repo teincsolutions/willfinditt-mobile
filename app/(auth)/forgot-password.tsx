@@ -5,10 +5,10 @@ import { router, Stack } from "expo-router";
 import { Formik } from "formik";
 import React, { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    ScrollView,
-    StyleSheet,
-    View,
+  KeyboardAvoidingView,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
 import { toast } from "sonner-native";
 import * as Yup from "yup";
@@ -96,6 +96,7 @@ export default function ForgotPasswordScreen() {
       >
         <Stack.Screen
           options={{
+              headerShown:true,
             header: () => (
               <HeaderBackground
                 title="Forgot Password?"

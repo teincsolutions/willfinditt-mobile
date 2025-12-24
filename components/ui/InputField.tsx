@@ -32,7 +32,8 @@ type Props = {
   returnKeyLabel?: string;
   autoFocus?: boolean;
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
-  returnKeyType?: import("react-native").ReturnKeyTypeOptions;
+  autoComplete?:'off' | 'username' | 'password' | 'email' | 'name' | 'tel' | 'street-address' | 'postal-code' | 'cc-number' | 'cc-csc' | 'cc-exp' | 'cc-exp-month' | 'cc-exp-year';
+  returnKeyType?:'done' | 'go' | 'next' | 'search' | 'send';
   blurOnSubmit?: boolean;
 };
 
@@ -60,6 +61,7 @@ const InputField = forwardRef<TextInput, Props>(function InputField(
     inputStyle,
     returnKeyType,
     blurOnSubmit,
+    autoComplete,
   }: Props,
   ref
 ) {
@@ -123,6 +125,8 @@ const InputField = forwardRef<TextInput, Props>(function InputField(
           onBlur={onBlur}
           autoFocus={autoFocus}
           autoCapitalize={autoCapitalize}
+          autoComplete={autoComplete}
+          editable={true}
         />
 
         {rightIcon && (

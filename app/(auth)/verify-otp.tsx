@@ -42,6 +42,7 @@ export default function VerifyOTPScreen() {
     isVerifyingPhone,
     isResendingVerification,
     resendVerificationAsync,
+    forgotPasswordAsync
   } = useAuth();
 
   // Countdown timer for resend button
@@ -56,7 +57,8 @@ export default function VerifyOTPScreen() {
     }
   }, [countdown, canResend]);
 
-  const handleVerifyOTP = async () => {
+  const handleVerifyOTP = async (otp: string) => {
+    console.log("Verifying OTP:", otp);
     if (!otp || otp.length < 6) {
       toast.error("Please enter a valid 6-digit OTP");
       return;
@@ -92,12 +94,12 @@ export default function VerifyOTPScreen() {
         router.replace("/(drawers)");
       } else if (params.type === "phone-verification" && params.phone) {
         // Verify phone with OTP
-        await verifyPhoneAsync(otp);
-        toast.success("Phone verified successfully!");
+        await verifyPhoneAsync({  otp, phone: params.phone});
+        toast.success("Login Successful! Phone verified successfully");
         router.replace("/(drawers)");
       }
     } catch (error: any) {
-      toast.error(error?.message || "Invalid OTP. Please try again.");
+      console.log("OTP verification error:", error);
     }
   };
 
@@ -111,6 +113,10 @@ export default function VerifyOTPScreen() {
         toast.success("OTP has been resent to your email");
       } else if (params.type === "phone-verification" && params.phone) {
         await resendVerificationAsync({ phone: params.phone });
+        toast.success("OTP has been resent to your phone");
+      }
+      else if (params.type === "password-reset" && params.phone) {
+        await forgotPasswordAsync({ phone: params.phone });
         toast.success("OTP has been resent to your phone");
       } else {
         // Generic resend for other types
@@ -136,6 +142,7 @@ export default function VerifyOTPScreen() {
       >
         <Stack.Screen
           options={{
+            headerShown:true,
             header: () => (
               <HeaderBackground
                 title={
@@ -236,7 +243,7 @@ export default function VerifyOTPScreen() {
                       ? "Verifying..."
                       : "Verify"
                   }
-                  onPress={handleVerifyOTP}
+                  onPress={() => handleVerifyOTP(otp)}
                   disabled={
                     isVerifying2FA ||
                     isVerifyingResetPhoneOtp ||

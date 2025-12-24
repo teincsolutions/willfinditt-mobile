@@ -24,10 +24,6 @@ import { useAuth } from "@/hooks/useAuth";
 const ResetPasswordSchema = Yup.object().shape({
   newPassword: Yup.string()
     .min(8, "Password must be at least 8 characters")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    )
     .required("New password is required"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("newPassword")], "Passwords must match")
@@ -94,6 +90,7 @@ export default function ResetPasswordScreen() {
       >
         <Stack.Screen
           options={{
+             headerShown:true,
             header: () => (
               <HeaderBackground
                 title="Reset Password"

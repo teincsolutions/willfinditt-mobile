@@ -139,9 +139,7 @@ export default function HomeScreen() {
           refreshing={refreshing}
           onRefresh={onRefresh}
         />
-      {/* Verification Banner */}
-      <VerificationBanner />
-
+    
       <AppView
         style={{
           gap: spacing.md,
@@ -157,6 +155,8 @@ export default function HomeScreen() {
           style={{ marginHorizontal: spacing.md }}
         />
        
+  {/* Verification Banner */}
+      <VerificationBanner />
 
         {/* ALL CATEGORIES */}
         <SectionHeader
