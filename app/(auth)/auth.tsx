@@ -449,7 +449,7 @@ export default function AuthScreen({
       validationSchema={PasswordSchema}
       onSubmit={handleSignupComplete}
     >
-      {({ handleChange, handleSubmit, values, errors, touched, isValid }) => {
+      {({ handleChange, handleSubmit, values, errors, touched, isValid, setFieldTouched }) => {
         const strength =
           values.password.length >= 8
             ? 3
@@ -459,13 +459,19 @@ export default function AuthScreen({
             ? 1
             : 0;
 
+        // Custom handler to mark confirmPassword as touched when password changes
+        const handlePasswordChange = (text: string) => {
+          handleChange("password")(text);
+          setFieldTouched("confirmPassword", true, false);
+        };
+
         return (
           <View style={styles.section}>
             <View style={{ marginTop: spacing.lg, gap: spacing.md }}>
               <InputField
                 placeholder="Enter password"
                 value={values.password}
-                onChangeText={handleChange("password")}
+                onChangeText={handlePasswordChange}
                 secure={!showPassword}
                 error={
                   touched.password && errors.password

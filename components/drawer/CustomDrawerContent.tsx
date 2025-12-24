@@ -252,7 +252,7 @@ export default function CustomDrawerContent(
       />
       {/* LOGOUT */}
 
-      {isAuthenticated && (
+      {isAuthenticated ? (
         <DrawerMenuItem
           label="Logout"
           onPress={handleLogout}
@@ -261,7 +261,14 @@ export default function CustomDrawerContent(
             <Feather name="log-out" size={icons.md} color={colors.accentRed} />
           )}
         />
-      )}
+      ): <DrawerMenuItem
+          label="Login Or Signup"
+          onPress={handleLogin}
+          labelStyle={{ color: colors.success }}
+          icon={() => (
+            <Feather name="log-in" size={icons.md} color={colors.success} />
+          )}
+        />}
     </DrawerContentScrollView>
   );
 }
