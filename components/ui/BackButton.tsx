@@ -12,6 +12,7 @@ interface BackButtonProps {
   style?: ViewStyle;
   canGoBack?: boolean;
   showIcon?: boolean;
+  hideLabel?: boolean;
 }
 
 export const BackButton: React.FC<BackButtonProps> = ({
@@ -20,6 +21,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
   style,
   canGoBack = true,
   showIcon = true,
+  hideLabel = false,
 }) => {
   const { icons, spacing, colors } = useTheme();
   const handleBack = () => {
@@ -41,12 +43,13 @@ export const BackButton: React.FC<BackButtonProps> = ({
           color={tintColor || colors.iconBlack}
         />
       )}
+     { !hideLabel && (
       <AppText
         variant="lg"
         style={{ color: tintColor || colors.text, fontWeight: "500" }}
       >
         {label || "Back"}
-      </AppText>
+      </AppText>)}
     </TouchableOpacity>
   );
 };

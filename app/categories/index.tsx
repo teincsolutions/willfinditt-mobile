@@ -1,11 +1,9 @@
 import CategoryList from "@/components/category/CategoryList";
 import AppView from "@/components/ui/AppView";
-import { BackButton } from "@/components/ui/BackButton";
-import { Header } from "@/components/ui/Header";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useCategory, useParentCategories } from "@/hooks/useCategories";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 export default function CategoriesScreen() {
   const { spacing } = useTheme();
@@ -16,19 +14,6 @@ export default function CategoriesScreen() {
 
   return (
     <AppView style={{ flex: 1 }}>
-      <Stack.Screen
-        options={{
-          title: "Categories",
-          header: () => (
-            <Header
-              title="Categories"
-              navRowStyle={{ paddingHorizontal: spacing.md }}
-              containerStyle={{ paddingBottom: spacing.sm }}
-              left={<BackButton showIcon={false} label="Cancel" />}
-            />
-          ),
-        }}
-      />
       <CategoryList
         loading={isLoading}
         selectedCategory={selectedCategory}

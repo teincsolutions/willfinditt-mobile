@@ -1,7 +1,5 @@
 import CategoryList from "@/components/category/CategoryList";
 import AppView from "@/components/ui/AppView";
-import { BackButton } from "@/components/ui/BackButton";
-import { Header } from "@/components/ui/Header";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useCategory, useSubcategories } from "@/hooks/useCategories";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
@@ -31,18 +29,7 @@ export default function SubCategoriesScreen() {
 
   return (
     <AppView style={{ flex: 1 }}>
-      <Stack.Screen
-        options={{
-          header: () => (
-            <Header
-              title={parentCategory?.name || "Categories"}
-              navRowStyle={{ paddingHorizontal: spacing.md }}
-              containerStyle={{ paddingBottom: spacing.sm }}
-              left={<BackButton showIcon={false} label="Cancel" />}
-            />
-          ),
-        }}
-      />
+      <Stack.Screen options={{ title: parentCategory?.name || "Categories" }} />
       <CategoryList
         loading={isLoading}
         selectedCategory={selectedCategory}

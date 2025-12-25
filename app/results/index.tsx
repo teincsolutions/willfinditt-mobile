@@ -212,7 +212,7 @@ export default function ResultsScreen() {
           onPriceFilterPress={() => router.push({ pathname: "/filters" })}
           selectedCityId={cityId}
           onLocationPress={() =>
-            router.push({ pathname: "/locations/regions" })
+            router.push({ pathname: "/results/locations/regions" })
           }
           onConditionPress={() => conditionSheetRef.current?.expand()}
         />

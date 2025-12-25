@@ -4,14 +4,13 @@ import SearchEmptyState from "@/components/search/SearchEmptyState";
 import SuggestionDropdown from "@/components/search/SuggestionDropdown";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
-import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { useInfiniteSavedAds, useSearchSuggestions } from "@/hooks/useAds";
 import { useRecentSearch } from "@/hooks/useRecentSearch";
 import { useTheme } from "@/hooks/useTheme";
 import { Ad, Suggestion } from "@/types";
 import { router, Stack } from "expo-router";
-import { FilterSearch } from "iconsax-react-nativejs";
+import { Filter } from "iconsax-react-nativejs";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, ScrollView, View } from "react-native";
 
@@ -28,7 +27,7 @@ export default function SearchScreen() {
     useSearchSuggestions(
       {
         query: debouncedQuery,
-        limit: 10
+        limit: 10,
       },
       debouncedQuery.length > 0
     );
@@ -125,35 +124,25 @@ export default function SearchScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen
         options={{
-          header: () => (
-            <Header
-              containerStyle={{
-                paddingHorizontal: spacing.md,
-                backgroundColor: colors.backgroundPrimary,
-                paddingBottom: spacing.sm,
-              }}
-              right={
-                <IconButton
-                  onPress={() => router.push("/filters")}
-                  icon={
-                    <FilterSearch size={icons.md} color={colors.iconBlack} />
-                  }
-                />
-              }
-            >
-              <SearchBar
-                value={query}
-                onChangeText={setQuery}
-                onSubmit={handleSearchSubmit}
-                onPressFilter={() => router.push("/filters")}
-                onClear={() => {
-                  setQuery("");
-                }}
-                autoFocus
-              />
-            </Header>
+          title: "",
+          headerRight: () => (
+            <IconButton
+              onPress={() => router.push("/filters")}
+              icon={<Filter size={icons.md} />}
+            />
           ),
         }}
+      />
+      <SearchBar
+        style={{ marginHorizontal: spacing.md, marginTop: spacing.md }}
+        value={query}
+        onChangeText={setQuery}
+        onSubmit={handleSearchSubmit}
+        onPressFilter={() => router.push("/filters")}
+        onClear={() => {
+          setQuery("");
+        }}
+        autoFocus
       />
 
       {/* LOADING STATE FOR SUGGESTIONS */}

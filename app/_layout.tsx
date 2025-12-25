@@ -1,4 +1,3 @@
-import { BackButton } from "@/components/ui/BackButton";
 import { OTAUpdateBanner } from "@/components/ui/OTAUpdateBanner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AppThemeProvider } from "@/contexts/ThemeContext";
@@ -48,7 +47,7 @@ export default function RootLayout() {
                 name="filters"
                 options={{
                   headerShown: true,
-                  title: "",
+                  title: "Filters",
                   headerBackTitle: "Search",
                 }}
               />
@@ -56,48 +55,26 @@ export default function RootLayout() {
               <Stack.Screen
                 name="locations/regions"
                 options={{
-                  presentation: "modal",
                   headerShown: true,
-                  headerLeft: () => (
-                    <BackButton showIcon={false} label="Cancel" />
-                  ),
                   title: "Regions",
                 }}
               />
               <Stack.Screen
                 name="locations/cities/[regionId]"
-                options={{ presentation: "modal", headerShown: true }}
+                options={{  headerShown: true }}
               />
               <Stack.Screen
                 name="categories/index"
                 options={{
                   title: "Categories",
                   headerShown: true,
-                  headerLeft: () => (
-                    <BackButton showIcon={false} label="Close" />
-                  ),
-                }}
-              />
-
-               <Stack.Screen
-                name="categories/modal"
-                options={{
-                  title: "Categories",
-                  presentation: "modal",
-                  headerShown: true,
-                  headerLeft: () => (
-                    <BackButton showIcon={false} label="Close" />
-                  ),
                 }}
               />
               <Stack.Screen
                 name="categories/[parentId]"
                 options={{
                   title: "Categories",
-                  headerShown: true,
-                  headerLeft: () => (
-                    <BackButton showIcon={false} label="Close" />
-                  ),
+                  headerShown: true
                 }}
               />
               <Stack.Screen name="chats" />
