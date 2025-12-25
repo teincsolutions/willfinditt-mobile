@@ -22,11 +22,11 @@ export interface ThreadMessage {
   isSystem: boolean;
   createdAt: string;
   user?: User;
+  _tmpId?: string; // local only for optimistic UI
 }
 
 // Request Types
 export interface CreateThreadRequest {
-  userId: string;
   title: string;
   type: ThreadType;
   priority?: ThreadPriority;

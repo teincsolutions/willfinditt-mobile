@@ -50,10 +50,41 @@ export default function CategoriesScreen() {
         />
 
         <PlaceholderField
+          onPress={() => router.push("/pages/about")}
           leftIcon={
             <Feather name="info" color={colors.iconGray} size={icons.md} />
           }
           value="About Us"
+          rightIcon={
+            <Feather
+              name="chevron-right"
+              color={colors.iconGray}
+              size={icons.md}
+            />
+          }
+        />
+
+        <PlaceholderField
+          onPress={() => router.push("/pages/terms")}
+          leftIcon={
+            <Feather name="file-text" color={colors.iconGray} size={icons.md} />
+          }
+          value="Terms & Conditions"
+          rightIcon={
+            <Feather
+              name="chevron-right"
+              color={colors.iconGray}
+              size={icons.md}
+            />
+          }
+        />
+
+        <PlaceholderField
+          onPress={() => router.push("/pages/faq")}
+          leftIcon={
+            <Feather name="help-circle" color={colors.iconGray} size={icons.md} />
+          }
+          value="FAQ"
           rightIcon={
             <Feather
               name="chevron-right"

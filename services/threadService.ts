@@ -1,13 +1,13 @@
-import api from "./api";
 import {
+  CreateThreadMessageRequest,
+  CreateThreadRequest,
   Thread,
   ThreadMessage,
-  CreateThreadRequest,
-  UpdateThreadRequest,
-  CreateThreadMessageRequest,
-  UpdateThreadMessageRequest,
   ThreadQueryParams,
+  UpdateThreadMessageRequest,
+  UpdateThreadRequest,
 } from "@/types";
+import api from "./api";
 
 export const threadService = {
   // Create a new thread

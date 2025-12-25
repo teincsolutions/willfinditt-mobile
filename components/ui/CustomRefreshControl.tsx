@@ -21,13 +21,12 @@ export default function CustomRefreshControl({
   size = 24,
   position = "top-right",
 }: CustomRefreshControlProps) {
-  const { colors , spacing} = useTheme();
+  const { colors, spacing, radius } = useTheme();
   const insets = useSafeAreaInsets();
 
   const getPositionStyle = () => {
     const base = {
       position: "absolute" as const,
-     
     };
 
     switch (position) {
@@ -40,16 +39,35 @@ export default function CustomRefreshControl({
       case "bottom-left":
         return { ...base, bottom: 20, left: 20 };
       case "top-center":
-        return { ...base, top: insets.top + 10, left: spacing.lg, right: spacing.lg, alignItems: "center" };
+        return {
+          ...base,
+          top: insets.top + 10,
+          left: spacing.lg,
+          right: spacing.lg,
+          alignItems: "center",
+        };
       default:
         return { ...base, top: 20, right: 20 };
     }
   };
 
   return refreshing ? (
-    <AppView style={[getPositionStyle(), { alignItems: "center", backgroundColor:undefined }]}>
+    <AppView
+      style={[
+        getPositionStyle(),
+        { alignItems: "center", backgroundColor: undefined },
+      ]}
+    >
       <AppView
-        style={[styles.container, { backgroundColor: colors.background,  zIndex: 1000, }]}
+        style={[
+          styles.container,
+          {
+            padding: spacing.xs,
+            borderRadius: radius.lg,
+            backgroundColor: colors.background,
+            zIndex: 1000,
+          },
+        ]}
       >
         <ActivityIndicator size={size} color={colors.primary} />
       </AppView>
@@ -59,8 +77,6 @@ export default function CustomRefreshControl({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 25,
-    padding: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
