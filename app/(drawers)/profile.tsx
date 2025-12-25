@@ -6,9 +6,11 @@ import DatePicker from "@/components/ui/DatePicker";
 import { Header } from "@/components/ui/Header";
 import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
+import SearchableSelectModal from "@/components/ui/SearchableSelectModal";
 import { TextButton } from "@/components/ui/TextButton";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
-import { useTheme } from "@/hooks/useTheme";
+import { useCountries } from "@/hooks/useLocations";
 import { Feather } from "@expo/vector-icons";
 import Drawer from "expo-router/drawer";
 import { useFormik } from "formik";
@@ -20,6 +22,7 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 import * as Yup from "yup";
 
@@ -30,49 +33,79 @@ const BasicInfoSchema = Yup.object().shape({
   firstName: Yup.string().required("First name is required"),
   lastName: Yup.string().required("Last name is required"),
   dateOfBirth: Yup.date().nullable().notRequired(),
+  countryId: Yup.string().required("Country is required"),
 });
 
 export default function ProfileScreen() {
   const { icons, spacing, colors, radius, fontSizes } = useTheme();
+  const insets = useSafeAreaInsets();
   const { user, isLoading, updateProfileAsync, isUpdatingProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [showCountryModal, setShowCountryModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const { values, handleChange, setFieldValue, handleBlur, errors, touched, handleSubmit } =
-    useFormik({
-      initialValues: {
-        firstName: user?.firstName || "",
-        lastName: user?.lastName || "",
-        dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth) : null,
-      },
-      validationSchema: BasicInfoSchema,
-      enableReinitialize: true,
-      onSubmit: async (values) => {
-        try {
-          await updateProfileAsync({
-            firstName: values.firstName,
-            lastName: values.lastName,
-            dateOfBirth: values.dateOfBirth?.toISOString(),
-          });
-          toast.success("Profile updated successfully");
-          setIsEditing(false);
-        } catch (error: any) {
-          toast.error(error?.message || "Failed to update profile");
-        }
-      },
-    });
+  const { data: countries = [] } = useCountries();
+  const countryOptions = countries.map((c) => ({ label: c.name, value: c.id }));
+
+  const {
+    values,
+    handleChange,
+    setFieldValue,
+    handleBlur,
+    errors,
+    touched,
+    handleSubmit,
+  } = useFormik({
+    initialValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth) : null,
+      countryId: user?.countryId || "",
+    },
+    validationSchema: BasicInfoSchema,
+    enableReinitialize: true,
+    onSubmit: async (values) => {
+      try {
+        await updateProfileAsync({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          dateOfBirth: values.dateOfBirth?.toISOString(),
+          countryId: values.countryId,
+        });
+        toast.success("Profile updated successfully");
+        setIsEditing(false);
+      } catch (error: any) {
+        toast.error(error?.message || "Failed to update profile");
+      }
+    },
+  });
 
   const lastNameRef = useRef<TextInput>(null);
 
   if (isLoading || !user) {
     return (
-      <AppView style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }}>
+      <AppView
+        style={{
+          flex: 1,
+          backgroundColor: colors.background,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
       </AppView>
     );
   }
 
-  const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User";
-  const joinedDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "Recently";
+  const fullName =
+    `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User";
+  const joinedDate = user.createdAt
+    ? new Date(user.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "Recently";
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -90,7 +123,13 @@ export default function ProfileScreen() {
                       setIsEditing(true);
                     }
                   }}
-                  title={isUpdatingProfile ? "Saving..." : (isEditing ? "Save" : "Edit")}
+                  title={
+                    isUpdatingProfile
+                      ? "Saving..."
+                      : isEditing
+                      ? "Save"
+                      : "Edit"
+                  }
                   titleStyle={{
                     color: colors.textWhite,
                     fontSize: fontSizes.md,
@@ -125,6 +164,7 @@ export default function ProfileScreen() {
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
               paddingHorizontal: spacing.md,
+              paddingBottom: insets.bottom + spacing.md,
             }}
             showsVerticalScrollIndicator={false}
           >
@@ -141,6 +181,7 @@ export default function ProfileScreen() {
                 styleContainer={{ marginBottom: spacing.md }}
                 verified={user.isVerified}
                 uri={user.avatar}
+                name={fullName}
               />
               <AppText variant="lg" style={{ marginTop: spacing.md }}>
                 {fullName}
@@ -193,7 +234,9 @@ export default function ProfileScreen() {
                   onBlur={handleBlur("lastName")}
                   error={touched.lastName && errors.lastName}
                 />
+                
                 <DatePicker
+                  visible={showDatePicker}
                   inputStyle={{ backgroundColor: colors.iconLightGray }}
                   leftIcon={
                     <Feather
@@ -207,6 +250,40 @@ export default function ProfileScreen() {
                   placeholder="Select your date of birth"
                   error={touched.dateOfBirth && errors.dateOfBirth}
                   onChange={(date) => setFieldValue("dateOfBirth", date)}
+                  onClose={() => setShowDatePicker(false)}
+                  onOpen={() => setShowDatePicker(true)}
+                    rightIcon={
+                    <Feather
+                      name="chevron-down"
+                      color={colors.iconGray}
+                      size={icons.md}
+                    />
+                  }
+                />
+
+                <PlaceholderField
+                  inputStyle={{ backgroundColor: colors.iconLightGray }}
+                  leftIcon={
+                    <Feather
+                      name="map-pin"
+                      color={colors.iconGray}
+                      size={icons.md}
+                    />
+                  }
+                  rightIcon={
+                    <Feather
+                      name="chevron-down"
+                      color={colors.iconGray}
+                      size={icons.md}
+                    />
+                  }
+                  label="Country"
+                  placeholder="Select your country"
+                  value={
+                    countryOptions.find((c) => c.value === values.countryId)
+                      ?.label || ""
+                  }
+                  onPress={() => setShowCountryModal(true)}
                 />
               </AppView>
             ) : (
@@ -251,11 +328,40 @@ export default function ProfileScreen() {
                     values.dateOfBirth ? values.dateOfBirth.toDateString() : ""
                   }
                 />
+
+                <PlaceholderField
+                  leftIcon={
+                    <Feather
+                      name="map-pin"
+                      color={colors.iconGray}
+                      size={icons.md}
+                    />
+                  }
+                  label="Country"
+                  placeholder="Not set"
+                  value={
+                    countryOptions.find((c) => c.value === values?.countryId)
+                      ?.label || ""
+                  }
+                />
               </AppView>
             )}
           </ScrollView>
         </KeyboardAvoidingView>
       </AppView>
+
+      <SearchableSelectModal
+        visible={showCountryModal}
+        onClose={() => setShowCountryModal(false)}
+        options={countryOptions}
+        value={values.countryId}
+        onSelect={(value) => {
+          setFieldValue("countryId", value);
+          setShowCountryModal(false);
+        }}
+        placeholder="Select Country"
+        searchPlaceholder="Search countries..."
+      />
     </AppView>
   );
 }

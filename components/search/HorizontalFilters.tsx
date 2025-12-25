@@ -32,6 +32,22 @@ export default function HorizontalFilters({
   const { colors, spacing, icons } = useTheme();
   const {data: selectedCity } = useCityById(selectedCityId || "");
 
+  const formatPrice = (price: number) => {
+    return price.toLocaleString();
+  };
+
+  const getPriceLabel = () => {
+    if (minPrice === 0 && maxPrice) {
+      return `< ${formatPrice(maxPrice)}`;
+    } else if (minPrice && minPrice > 0 && maxPrice) {
+      return `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`;
+    } else if (minPrice && minPrice > 0 && !maxPrice) {
+      return `> ${formatPrice(minPrice)}`;
+    } else {
+      return "Price Range";
+    }
+  };
+
   const getSortLabel = () => {
     switch (selectedSortValue) {
       case "recent":
@@ -103,11 +119,7 @@ export default function HorizontalFilters({
 
       {/* Price Range Filter */}
       <FilterChip
-        label={
-          minPrice || maxPrice
-            ? `Price: ${minPrice || 0} - ${maxPrice || "∞"}`
-            : "Price Range"
-        }
+        label={getPriceLabel()}
         selected={!!minPrice || !!maxPrice}
         onPress={onPriceFilterPress}
       />

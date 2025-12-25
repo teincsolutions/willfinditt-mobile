@@ -4,7 +4,6 @@ import type {
   UserRole,
   VerificationStatus,
 } from "./enums";
-import { City } from "./location";
 
 // Core User Types
 export interface User {
@@ -16,8 +15,6 @@ export interface User {
   phone?: string;
   avatar?: string;
   countryId?: string;
-  cityId?: string;
-  city?: City;
   isActive: boolean;
   isVerified: boolean;
   emailVerified: boolean;

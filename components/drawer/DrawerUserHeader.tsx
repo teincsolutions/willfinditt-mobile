@@ -26,6 +26,7 @@ export default function DrawerUserHeader() {
         size="xl"
         styleContainer={{ marginBottom: spacing.md }}
         verified={user?.sellerProfile?.isVerified}
+        name={fullName}
         uri={user?.avatar}
       />
       <AppText variant="lg" style={{ marginTop: spacing.md }}>

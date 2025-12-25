@@ -13,8 +13,10 @@ import RangeSlider from "./RangeSlider";
 
 type Props = {
   label?: string;
-  minValue: string;
-  maxValue: string;
+  minValue?: string;
+  maxValue?: string;
+  min?: number;
+  max?: number;
   size?: "sm" | "md";
   onMinChange?: (t: string) => void;
   onMaxChange?: (t: string) => void;
@@ -33,6 +35,8 @@ export default function RangeInput({
   label,
   minValue,
   maxValue,
+  min = 0,
+  max = undefined,
   size = "md",
   onMinChange,
   onMaxChange,
@@ -59,23 +63,25 @@ export default function RangeInput({
         </AppText>
       )}
 
-      <RangeSlider
-        min={Number(minValue)}
-        max={Number(maxValue)}
-        low={Number(minValue)}
-        high={Number(maxValue)}
-        onChange={({ low, high }) => {
-          onMinChange?.(low.toString());
-          onMaxChange?.(high.toString());
-        }}
-        style={{
-          width: "100%",
-          paddingHorizontal: spacing.md,
-          marginBottom: spacing.md,
-          marginTop: spacing.md,
-          marginHorizontal: "auto",
-        }}
-      />
+      {maxValue && minValue && (
+        <RangeSlider
+          min={min}
+          max={max || 100000}
+          low={Number(minValue)}
+          high={Number(maxValue)}
+          onChange={({ low, high }) => {
+            onMinChange?.(low.toString());
+            onMaxChange?.(high.toString());
+          }}
+          style={{
+            width: "100%",
+            paddingHorizontal: spacing.md,
+            marginBottom: spacing.md,
+            marginTop: spacing.md,
+            marginHorizontal: "auto",
+          }}
+        />
+      )}
 
       <View
         style={[

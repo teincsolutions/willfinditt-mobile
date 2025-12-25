@@ -14,6 +14,7 @@ import AppView from "./AppView";
 type Props = {
   label?: string;
   rightLabel?: string;
+  onrightLablePress?: () => void;
   value?: string;
   size?: "sm" | "md";
   placeholder?: string;
@@ -44,6 +45,7 @@ export default function PlaceholderField({
   inputStyle,
   rightLabel,
   onPress,
+  onrightLablePress,
 }: Props) {
   const { colors, input, inputSmall, spacing } = useTheme();
 
@@ -58,9 +60,14 @@ export default function PlaceholderField({
         )}
 
         {rightLabel && (
-          <AppText variant="sm" style={{ marginBottom: spacing.sm, color:colors.purple }}>
-            {rightLabel}
-          </AppText>
+          <Pressable onPress={onrightLablePress}>
+            <AppText
+              variant="sm"
+              style={{ marginBottom: spacing.sm, color: colors.purple }}
+            >
+              {rightLabel}
+            </AppText>
+          </Pressable>
         )}
       </View>
 

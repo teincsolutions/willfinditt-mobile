@@ -19,6 +19,7 @@ import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { ToggleAction } from "@/components/ui/ToggleAction";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useInfiniteSearchAds } from "@/hooks/useAds";
+import { useAuth } from "@/hooks/useAuth";
 import { useParentCategories } from "@/hooks/useCategories";
 import { useCityById } from "@/hooks/useLocations";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
@@ -49,6 +50,9 @@ export default function HomeScreen() {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const { cityId } = useSearchFilters();
   const { data: city } = useCityById(cityId!);
+  const { user } = useAuth();
+  const [isVerificationBannerVisible, setIsVerificationBannerVisible] =
+    useState(!user?.isVerified);
 
   // Function to get search params based on selected tab
   const getSearchRequest = (tab: string): AdSearchRequest => {
@@ -65,6 +69,15 @@ export default function HomeScreen() {
         return {
           search: { ...baseParams, sortBy: "createdAt", sortOrder: "desc" },
         };
+      case city?.name ?? "":
+        return {
+          search: {
+            ...baseParams,
+            cityIds: [city!.id],
+            sortBy: "createdAt",
+            sortOrder: "desc",
+          },
+        };
       default:
         return { search: baseParams };
     }
@@ -77,6 +90,7 @@ export default function HomeScreen() {
     data: categories = [],
     isLoading: isLoadingCategories,
     refetch: refetchCategories,
+    isRefetching: isRefetchingCategories,
   } = useParentCategories();
 
   // fetch ads based on selected tab
@@ -86,6 +100,7 @@ export default function HomeScreen() {
     hasNextPage,
     isLoading: isLoadingAds,
     isFetchingNextPage,
+    isRefetching: isRefetchingAds,
     refetch: refetchAds,
   } = useInfiniteSearchAds(searchRequest);
 
@@ -93,7 +108,11 @@ export default function HomeScreen() {
 
   // Only show skeletons on initial load when there's no data yet
   const showSkeletons = isLoadingAds && ads.length === 0;
-  const refreshing = isLoadingAds || isLoadingCategories;
+  const refreshing =
+    isLoadingAds ||
+    isLoadingCategories ||
+    isRefetchingAds ||
+    isRefetchingCategories;
   const onRefresh = async () => {
     await Promise.all([refetchAds(), refetchCategories()]);
   };
@@ -103,10 +122,23 @@ export default function HomeScreen() {
   const stickThreshold = insert.top;
   const [isSearchBarStuck, setIsSearchBarStuck] = useState(false);
   const [isHeaderStuck, setIsHeaderStuck] = useState(false);
+  const pullToRefreshThreshold = 100; // pixels to pull down to trigger refresh
+  const pullRefreshTriggered = useRef(false);
 
-  // Handle scroll events for search bar animation
+  // Handle scroll events for search bar animation and pull-to-refresh
   const handleScroll = (event: any) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
+
+    // Check for pull-to-refresh
+    if (
+      currentScrollY < -pullToRefreshThreshold &&
+      !pullRefreshTriggered.current
+    ) {
+      pullRefreshTriggered.current = true;
+      onRefresh().finally(() => {
+        pullRefreshTriggered.current = false;
+      });
+    }
 
     // Stick search bar when scrolling past threshold
     if (currentScrollY > stickThreshold && !isSearchBarStuck) {
@@ -134,12 +166,6 @@ export default function HomeScreen() {
         title={<DrawerHeaderTitle />}
         containerStyle={{ paddingVertical: spacing.sm }}
       />
-       <CustomRefreshControl
-          position="top-center"
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        />
-    
       <AppView
         style={{
           gap: spacing.md,
@@ -154,9 +180,12 @@ export default function HomeScreen() {
           filterValue={city?.name}
           style={{ marginHorizontal: spacing.md }}
         />
-       
-  {/* Verification Banner */}
-      <VerificationBanner />
+
+        {/* Verification Banner */}
+        <VerificationBanner
+          visible={isVerificationBannerVisible}
+          onDismiss={() => setIsVerificationBannerVisible(false)}
+        />
 
         {/* ALL CATEGORIES */}
         <SectionHeader
@@ -191,7 +220,7 @@ export default function HomeScreen() {
         <AppView
           style={{
             backgroundColor: colors.background,
-            paddingBottom: spacing.lg,
+            paddingBottom: spacing.md,
             paddingTop: 100 + spacing.md,
           }}
         >
@@ -199,7 +228,7 @@ export default function HomeScreen() {
           <FilterTabs
             selected={selectedTab}
             onSelect={setSelectedTab}
-            tabs={["Trending", "Kumasi", "Cheapest", "New"]}
+            tabs={[city?.name ?? "", "Trending", "Cheapest", "New"]}
           />
           {/* NEW ARRIVAL */}
           <SectionHeader
@@ -224,8 +253,7 @@ export default function HomeScreen() {
     <AppView
       style={{
         flex: 1,
-        backgroundColor: colors.background,
-        paddingBottom: insert.bottom,
+        backgroundColor: colors.backgroundPrimary,
       }}
     >
       {/* Sticky Search Bar */}
@@ -264,12 +292,20 @@ export default function HomeScreen() {
         </AppView>
       )}
 
+      <CustomRefreshControl
+        position="top-center"
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+      />
       {/* Scrollable Content */}
       <MasonryList
         style={{
           gap: spacing.sm,
           paddingHorizontal: spacing.md,
           backgroundColor: colors.background,
+        }}
+        contentContainerStyle={{
+          paddingBottom: insert.bottom,
         }}
         data={showSkeletons ? Array(6).fill({}) : ads}
         numColumns={2}
@@ -297,12 +333,11 @@ export default function HomeScreen() {
           }
         }}
         onEndReachedThreshold={0.1}
-        contentContainerStyle={{}}
         loading={isFetchingNextPage}
+        refreshControl={false}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        onRefresh={onRefresh}
       />
     </AppView>
   );

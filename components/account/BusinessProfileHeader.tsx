@@ -48,6 +48,7 @@ export default function BusinessProfileHeader({
           verified={sellerProfile.isVerified}
           size="lg"
           borderSize={1}
+          name={sellerProfile.businessName}
           onPress={onViewProfile}
         />
 

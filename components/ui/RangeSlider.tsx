@@ -1,7 +1,7 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
 import { formatCurrency } from "@/lib/formatCurrency";
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Animated,
   LayoutChangeEvent,
@@ -41,6 +41,16 @@ export default function RangeSlider({
   // Track initial positions when drag starts
   const lowStartX = useRef(0);
   const highStartX = useRef(0);
+
+  // Update positions when low/high change
+  useEffect(() => {
+    lowValue.current = low;
+    highValue.current = high;
+    if (trackWidth.current > 0) {
+      lowX.setValue(valueToX(low));
+      highX.setValue(valueToX(high));
+    }
+  }, [low, high, min, max]);
 
   const clamped = (v: number, minV: number, maxV: number) =>
     Math.min(Math.max(v, minV), maxV);
@@ -110,6 +120,8 @@ export default function RangeSlider({
   const handleLayout = (e: LayoutChangeEvent) => {
     trackWidth.current = e.nativeEvent.layout.width;
 
+    lowValue.current = low;
+    highValue.current = high;
     lowX.setValue(valueToX(low));
     highX.setValue(valueToX(high));
   };

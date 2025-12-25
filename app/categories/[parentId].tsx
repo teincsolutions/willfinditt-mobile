@@ -1,11 +1,14 @@
 import CategoryList from "@/components/category/CategoryList";
 import AppView from "@/components/ui/AppView";
+import { BackButton } from "@/components/ui/BackButton";
+import { Header } from "@/components/ui/Header";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useCategory, useSubcategories } from "@/hooks/useCategories";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useEffect } from "react";
 
 export default function SubCategoriesScreen() {
+  const { spacing } = useTheme();
   const { parentId = "", source = "search" } = useLocalSearchParams() as {
     parentId: string;
     source?: string;
@@ -16,20 +19,28 @@ export default function SubCategoriesScreen() {
   const { data: selectedCategory } = useCategory(categoryId || "");
 
   const handleNavigateNext = () => {
-    router.dismiss(2);
+    if (source === "filters") {
+      router.dismiss(2);
+    } else {
+      router.replace({
+        pathname: "/results",
+        params: { parentId: categoryId, source },
+      });
+    }
   };
-
-  useEffect(() => {
-    return () => {
-      if (source !== "filters") router.push("/results");
-    };
-  }, []);
 
   return (
     <AppView style={{ flex: 1 }}>
       <Stack.Screen
         options={{
-          title: parentCategory?.name || "Categories",
+          header: () => (
+            <Header
+              title={parentCategory?.name || "Categories"}
+              navRowStyle={{ paddingHorizontal: spacing.md }}
+              containerStyle={{ paddingBottom: spacing.sm }}
+              left={<BackButton showIcon={false} label="Cancel" />}
+            />
+          ),
         }}
       />
       <CategoryList

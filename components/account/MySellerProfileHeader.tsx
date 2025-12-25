@@ -49,6 +49,7 @@ export default function MySellerProfileHeader({
         <Avatar
           backgroundColor={colors.iconWhite}
           uri={user?.avatar}
+          name={sellerProfile.businessName}
           verified={sellerProfile.isVerified}
           size="lg"
           borderSize={1}

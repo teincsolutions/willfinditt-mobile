@@ -1,12 +1,7 @@
-// components/ui/OTPInput.tsx
 import { useTheme } from "@/contexts/ThemeContext";
-import React, { useRef, useState } from "react";
-import {
-  StyleSheet,
-  TextInput,
-  TextInputKeyPressEvent,
-  View
-} from "react-native";
+import React from "react";
+import { Platform, Text } from "react-native";
+import { CodeField, Cursor } from "react-native-confirmation-code-field";
 
 interface OTPInputProps {
   length?: number;
@@ -25,157 +20,63 @@ export default function OTPInput({
   error = false,
   onComplete,
 }: OTPInputProps) {
-  const { colors, spacing, radius } = useTheme();
-  const inputRefs = useRef<(TextInput | null)[]>([]);
-  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const { colors, radius } = useTheme();
 
-  // Split the value into individual digits
-  const digits = value.split("");
-  while (digits.length < length) {
-    digits.push("");
-  }
-
-  const handleChangeText = (text: string, index: number) => {
-    if (disabled) return;
-
-    // Only allow numbers
-    const sanitized = text.replace(/[^0-9]/g, "");
-
-    // Handle paste or auto-fill (multiple characters)
-    if (sanitized.length > 1) {
-      const pastedDigits = sanitized.slice(0, length).split("");
-      const newDigits = [...digits];
-
-      // Always start filling from the beginning for auto-fill/paste
-      pastedDigits.forEach((digit, i) => {
-        if (i < length) {
-          newDigits[i] = digit;
-        }
-      });
-
-      const completeOTP = newDigits.join("");
-      onChange(completeOTP);
-
-      // If all digits filled, trigger onComplete
-      if (completeOTP.length === length && onComplete) {
-        setTimeout(() => onComplete(completeOTP), 100);
-      }
-
-      // Focus the next empty field or the last field
-      const nextIndex = Math.min(pastedDigits.length, length - 1);
-      inputRefs.current[nextIndex]?.focus();
-      return;
-    }
-
-    // Handle single character input
-    const newDigits = [...digits];
-    newDigits[index] = sanitized;
-    const completeOTP = newDigits.join("");
-    onChange(completeOTP);
-
-    // Auto-focus next input if digit was entered
-    if (sanitized && index < length - 1) {
-      inputRefs.current[index + 1]?.focus();
-    } else if (sanitized && index === length - 1 && completeOTP.length === length && onComplete) {
-      // If last digit and complete, trigger onComplete
-      setTimeout(() => onComplete(completeOTP), 100);
+  const handleChange = (text: string) => {
+    onChange(text);
+    if (text.length === length && onComplete) {
+      onComplete(text);
     }
   };
 
-  const handleKeyPress = (
-    e: TextInputKeyPressEvent,
-    index: number
-  ) => {
-    if (disabled) return;
-
-    if (e.nativeEvent.key === "Backspace") {
-      if (digits[index]) {
-        // If current input has a digit, clear it
-        const newDigits = [...digits];
-        newDigits[index] = "";
-        const completeOTP = newDigits.join("");
-        onChange(completeOTP);
-      } else if (index > 0) {
-        // If empty, move to previous input
-        inputRefs.current[index - 1]?.focus();
-      }
-    }
+  const cellStyle = {
+    width: 50,
+    height: 50,
+    lineHeight: 48,
+    fontSize: 24,
+    fontWeight: "600" as const,
+    borderWidth: 1,
+    borderColor: error ? colors.error : colors.border,
+    textAlign: "center" as const,
+    color: colors.text,
+    borderRadius: radius.lg,
+    backgroundColor: colors.background,
   };
 
-  const handleFocus = (index: number) => {
-    setFocusedIndex(index);
-    // Select all text when focusing (for easier editing)
-    setTimeout(() => {
-      inputRefs.current[index]?.setNativeProps({ selection: { start: 0, end: 1 } });
-    }, 0);
+  const focusCellStyle = {
+    ...cellStyle,
+    borderColor: colors.primary,
+    borderWidth: 2,
   };
 
-  const handleBlur = () => {
-    setFocusedIndex(null);
+  const filledCellStyle = {
+    ...cellStyle,
+    borderColor: colors.primary,
+    borderWidth: 2,
   };
 
   return (
-    <View style={styles.container}>
-      {Array.from({ length }).map((_, index) => {
-        const isFocused = focusedIndex === index;
-        const hasValue = !!digits[index];
-        const isError = error;
-
-        return (
-          <TextInput
-            key={index}
-            ref={(ref) => {
-              inputRefs.current[index] = ref;
-            }}
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.background,
-                borderColor: isError
-                  ? colors.error
-                  : isFocused
-                  ? colors.primary
-                  : hasValue
-                  ? colors.primary
-                  : colors.border,
-                borderWidth: isFocused || hasValue ? 2 : 1,
-                borderRadius: radius.lg,
-                color: colors.text,
-              },
-              disabled && styles.disabled,
-            ]}
-            value={digits[index]}
-            onChangeText={(text) => handleChangeText(text, index)}
-            onKeyPress={(e) => handleKeyPress(e, index)}
-            onFocus={() => handleFocus(index)}
-            onBlur={handleBlur}
-            keyboardType="number-pad"
-            maxLength={length}
-            selectTextOnFocus
-            editable={!disabled}
-          />
-        );
-      })}
-    </View>
+    <CodeField
+      value={value}
+      onChangeText={handleChange}
+      cellCount={length}
+      keyboardType="number-pad"
+      textContentType="oneTimeCode"
+      autoComplete={Platform.OS === "android" ? "sms-otp" : "one-time-code"}
+      renderCell={({ index, symbol, isFocused }) => (
+        <Text
+          key={index}
+          style={
+            isFocused
+              ? focusCellStyle
+              : symbol
+              ? filledCellStyle
+              : cellStyle
+          }
+        >
+          {symbol || (isFocused ? <Cursor /> : null)}
+        </Text>
+      )}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 8,
-  },
-  input: {
-    flex: 1,
-    aspectRatio: 1,
-    fontSize: 24,
-    fontWeight: "600",
-    textAlign: "center",
-    minWidth: 45,
-    maxWidth: 65,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});

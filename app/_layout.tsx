@@ -73,7 +73,18 @@ export default function RootLayout() {
                 options={{
                   title: "Categories",
                   headerShown: true,
+                  headerLeft: () => (
+                    <BackButton showIcon={false} label="Close" />
+                  ),
+                }}
+              />
+
+               <Stack.Screen
+                name="categories/modal"
+                options={{
+                  title: "Categories",
                   presentation: "modal",
+                  headerShown: true,
                   headerLeft: () => (
                     <BackButton showIcon={false} label="Close" />
                   ),
@@ -83,7 +94,6 @@ export default function RootLayout() {
                 name="categories/[parentId]"
                 options={{
                   title: "Categories",
-                  presentation: "modal",
                   headerShown: true,
                   headerLeft: () => (
                     <BackButton showIcon={false} label="Close" />

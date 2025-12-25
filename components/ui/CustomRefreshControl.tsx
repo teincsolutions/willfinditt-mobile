@@ -21,13 +21,13 @@ export default function CustomRefreshControl({
   size = 24,
   position = "top-right",
 }: CustomRefreshControlProps) {
-  const { colors } = useTheme();
+  const { colors , spacing} = useTheme();
   const insets = useSafeAreaInsets();
 
   const getPositionStyle = () => {
     const base = {
       position: "absolute" as const,
-      zIndex: 1000,
+     
     };
 
     switch (position) {
@@ -40,16 +40,16 @@ export default function CustomRefreshControl({
       case "bottom-left":
         return { ...base, bottom: 20, left: 20 };
       case "top-center":
-        return { ...base, top: insets.top + 10, left: 0, right: 0, alignItems: "center" };
+        return { ...base, top: insets.top + 10, left: spacing.lg, right: spacing.lg, alignItems: "center" };
       default:
         return { ...base, top: 20, right: 20 };
     }
   };
 
   return refreshing ? (
-    <AppView style={[getPositionStyle(), { alignItems: "center" }]}>
+    <AppView style={[getPositionStyle(), { alignItems: "center", backgroundColor:undefined }]}>
       <AppView
-        style={[styles.container, { backgroundColor: colors.background }]}
+        style={[styles.container, { backgroundColor: colors.background,  zIndex: 1000, }]}
       >
         <ActivityIndicator size={size} color={colors.primary} />
       </AppView>

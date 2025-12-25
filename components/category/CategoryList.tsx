@@ -52,7 +52,7 @@ export default function CategoryList({
         />
 
         {selectedCategory && (
-          <Pressable>
+          <Pressable onPress={() => onSelect(selectedCategory)}>
             <AppText
               variant="lg"
               fontWeight="bold"

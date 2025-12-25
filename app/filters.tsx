@@ -17,7 +17,12 @@ import { useCategoryFields } from "@/hooks/useCategoryFields";
 import { useCityById } from "@/hooks/useLocations";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { useTheme } from "@/hooks/useTheme";
-import { AdCondition, CategoryField, CategoryFieldType } from "@/types";
+import {
+  AdCondition,
+  AdSearchParams,
+  CategoryField,
+  CategoryFieldType,
+} from "@/types";
 import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router, Stack } from "expo-router";
@@ -54,9 +59,9 @@ export default function FiltersScreen() {
     cityId,
     activeFiltersCount,
     setConditions,
-    setPriceRange,
-    setSorting,
-    setFieldValues,
+    setCategoryId,
+    setCityId,
+    setFilters,
     clearFilterOptions,
   } = useSearchFilters();
 
@@ -76,13 +81,14 @@ export default function FiltersScreen() {
     filters?.conditions || []
   );
   // Local state for price range
-  const [priceRange, setPriceRangeLocal] = React.useState({
+  const [priceRange, setPriceRangeLocal] = useState({
     low: filters?.priceMin || 0,
-    high: filters?.priceMax || 100000,
+    high: filters?.priceMax || undefined,
   });
+  const [rangeLimits, setRangeLimits] = useState({ min: 0, max: 100000 });
 
   // Local state for sort
-  const [selectedSort, setSelectedSort] = React.useState(
+  const [selectedSort, setSelectedSort] = useState(
     `${filters?.sortBy || "createdAt"}-${filters?.sortOrder || "desc"}`
   );
 
@@ -96,28 +102,17 @@ export default function FiltersScreen() {
     [key: string]: boolean;
   }>({});
 
-  // Update local state when filters change
+  console.log("Current filters in FiltersScreen:", filters);
+  // Initialize dynamic field values from filters on mount
   useEffect(() => {
-    setSelectedCondition(filters?.conditions || []);
-    setPriceRangeLocal({
-      low: filters?.priceMin || 0,
-      high: filters?.priceMax || 100000,
-    });
-    setSelectedSort(
-      `${filters?.sortBy || "createdAt"}-${filters?.sortOrder || "desc"}`
-    );
-
-    // Initialize dynamic field values from filters
     if (filters?.fieldValues) {
       const fieldValuesMap: Record<string, string> = {};
       filters.fieldValues.forEach((fv) => {
         fieldValuesMap[`field_${fv.categoryFieldId}`] = fv.value;
       });
       setDynamicFieldValues(fieldValuesMap);
-    } else {
-      setDynamicFieldValues({});
     }
-  }, [filters]);
+  }, []); // Run only on mount
 
   // Reset dynamic fields when category changes
   useEffect(() => {
@@ -161,37 +156,30 @@ export default function FiltersScreen() {
 
   const handleApplyFilters = () => {
     console.log("Applying filters...");
-    // Apply conditions
-    setConditions(selectedCondition.length > 0 ? selectedCondition : undefined);
 
-    // Apply price range (only if not default values)
-    if (priceRange.low !== 0 || priceRange.high !== 100000) {
-      setPriceRange(
-        priceRange.low > 0 ? priceRange.low : undefined,
-        priceRange.high < 100000 ? priceRange.high : undefined
-      );
-    } else {
-      setPriceRange(undefined, undefined);
-    }
-
-    // Apply sorting
+    // Prepare sorting values
     const [sortBy, sortOrder] = selectedSort.split("-");
-    setSorting(sortBy, sortOrder as "asc" | "desc");
 
-    // Apply dynamic field values
-    if (categoryFields && categoryFields.length > 0) {
-      const fieldValuesArray = categoryFields
-        .map((field) => ({
-          categoryFieldId: field.id,
-          value: dynamicFieldValues[`field_${field.id}`] || "",
-        }))
-        .filter((fv) => fv.value.trim() !== "");
+    // Prepare all filter updates in one object
+    const filterUpdates: Partial<AdSearchParams> = {
+      conditions: selectedCondition.length > 0 ? selectedCondition : undefined,
+      priceMin: priceRange.low,
+      priceMax: priceRange.high,
+      sortBy,
+      sortOrder: sortOrder as "asc" | "desc",
+      fieldValues:
+        categoryFields && categoryFields.length > 0
+          ? categoryFields
+              .map((field) => ({
+                categoryFieldId: field.id,
+                value: dynamicFieldValues[`field_${field.id}`] || "",
+              }))
+              .filter((fv) => fv.value.trim() !== "")
+          : undefined,
+    };
 
-      setFieldValues(
-        fieldValuesArray.length > 0 ? fieldValuesArray : undefined
-      );
-    }
-
+    // Apply all filters at once
+    setFilters(filterUpdates);
     // Navigate back to results
     router.dismiss();
   };
@@ -199,7 +187,7 @@ export default function FiltersScreen() {
   const handleResetFilters = () => {
     clearFilterOptions();
     setSelectedCondition([]);
-    setPriceRangeLocal({ low: 0, high: 100000 });
+    setPriceRangeLocal({ low: 0, high: 1000000 });
     setSelectedSort("createdAt-desc");
     setDynamicFieldValues({});
   };
@@ -433,7 +421,10 @@ export default function FiltersScreen() {
   return (
     <>
       <Stack.Screen
-        options={{ headerStyle: { backgroundColor: colors.background } }}
+        options={{
+          headerStyle: { backgroundColor: colors.background },
+          headerTintColor: colors.text,
+        }}
       />
       <ScrollView
         style={{ backgroundColor: colors.background }}
@@ -448,7 +439,8 @@ export default function FiltersScreen() {
             onPress={handleOpenCategory}
             placeholder="Select a category"
             label="Category"
-            rightLabel={categoryId ? "Change" : undefined}
+            rightLabel={categoryId ? "Reset" : undefined}
+            onrightLablePress={() => setCategoryId(undefined)}
             inputStyle={{
               backgroundColor: colors.selectBg,
               paddingRight: spacing.sm,
@@ -478,7 +470,8 @@ export default function FiltersScreen() {
             onPress={handleOpenLocation}
             placeholder="Select a location"
             label="Location"
-            rightLabel={selectedCity ? "Change" : undefined}
+            rightLabel={selectedCity ? "Reset" : undefined}
+            onrightLablePress={() => setCityId(undefined)}
             inputStyle={{
               backgroundColor: colors.selectBg,
               paddingRight: spacing.sm,
@@ -507,20 +500,41 @@ export default function FiltersScreen() {
         <AppView style={{ marginBottom: spacing.lg }}>
           <RangeInput
             label="Price Range"
+            max={rangeLimits.max}
+            min={rangeLimits.min}
             minValue={priceRange.low.toString()}
-            maxValue={priceRange.high.toString()}
-            onMinChange={(value) =>
+            maxValue={priceRange?.high?.toString()}
+            onMinChange={(value) => {
               setPriceRangeLocal((prev) => ({
                 ...prev,
                 low: Number(value) || 0,
-              }))
-            }
-            onMaxChange={(value) =>
+              }));
+            }}
+            onMaxBlur={() => {
+              if (priceRange.high && priceRange?.high < priceRange.low) {
+                setPriceRangeLocal((prev) => ({
+                  ...prev,
+                  high: prev.low,
+                }));
+              }
+              if (priceRange.high && priceRange.high > 100000) {
+                setRangeLimits((prev) => ({
+                  ...prev,
+                  max: priceRange?.high || 0 + 10000,
+                }));
+              } else if (priceRange.high || 0 < 100000) {
+                setRangeLimits((prev) => ({
+                  ...prev,
+                  max: 100000,
+                }));
+              }
+            }}
+            onMaxChange={(value) => {
               setPriceRangeLocal((prev) => ({
                 ...prev,
-                high: Number(value) || 100000,
-              }))
-            }
+                high: Number(value) || undefined,
+              }));
+            }}
           />
         </AppView>
 
@@ -529,6 +543,8 @@ export default function FiltersScreen() {
           <PlaceholderField
             label="Condition"
             placeholder="Select condition"
+            rightLabel={selectedCondition.length > 0 ? "Reset" : undefined}
+            onrightLablePress={() => setConditions([])}
             value={
               conditionOptions.find(
                 (option) => option.value === selectedCondition?.[0]

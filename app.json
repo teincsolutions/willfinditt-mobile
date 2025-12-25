@@ -15,7 +15,10 @@
         "ITSAppUsesNonExemptEncryption": false,
         "GIDClientID": "679415897594-dm2231pgajnh7id1ft1t6qts1tvdkkbs.apps.googleusercontent.com",
         "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your camera for face verification and posting ads.",
-        "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your microphone for video recording."
+        "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your microphone for video recording.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "android": {

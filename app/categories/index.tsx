@@ -1,35 +1,44 @@
 import CategoryList from "@/components/category/CategoryList";
 import AppView from "@/components/ui/AppView";
+import { BackButton } from "@/components/ui/BackButton";
+import { Header } from "@/components/ui/Header";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useCategory, useParentCategories } from "@/hooks/useCategories";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 
 export default function CategoriesScreen() {
-  const { source = "search" } = useLocalSearchParams<{ source?: string }>();
+  const { spacing } = useTheme();
+  const { source = "home" } = useLocalSearchParams<{ source?: string }>();
   const { data: categories = [], isLoading } = useParentCategories();
   const { categoryId } = useSearchFilters();
   const { data: selectedCategory } = useCategory(categoryId || "");
 
   return (
     <AppView style={{ flex: 1 }}>
-      <Stack.Screen options={{ title: "Categories" }} />
+      <Stack.Screen
+        options={{
+          title: "Categories",
+          header: () => (
+            <Header
+              title="Categories"
+              navRowStyle={{ paddingHorizontal: spacing.md }}
+              containerStyle={{ paddingBottom: spacing.sm }}
+              left={<BackButton showIcon={false} label="Cancel" />}
+            />
+          ),
+        }}
+      />
       <CategoryList
         loading={isLoading}
         selectedCategory={selectedCategory}
         selected={selectedCategory?.parent!}
         data={categories}
         onSelect={(cat) => {
-          if (source === "filters") {
-            router.replace({
-              pathname: "/categories/[parentId]",
-              params: { parentId: cat.id, source },
-            });
-          } else {
-            router.push({
-              pathname: "/categories/[parentId]",
-              params: { parentId: cat.id, source },
-            });
-          }
+          router.push({
+            pathname: "/categories/[parentId]",
+            params: { parentId: cat.id, source },
+          });
         }}
       />
     </AppView>

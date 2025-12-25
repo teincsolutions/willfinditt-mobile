@@ -15,7 +15,7 @@ export default function VerificationBanner({
   visible = true,
   onDismiss,
 }: VerificationBannerProps) {
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing, radius, icons } = useTheme();
   const { user, resendVerificationAsync, isResendingVerification } = useAuth();
   const [countdown, setCountdown] = useState(0);
 
@@ -111,6 +111,19 @@ export default function VerificationBanner({
             {getVerificationMessage()}
           </Text>
         </View>
+
+        {onDismiss && (
+          <Pressable
+            onPress={onDismiss}
+            style={({ pressed }) => [
+              {
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}
+          >
+            <Feather name="x" size={icons.sm} color={colors.iconBlack} />
+          </Pressable>
+        )}
       </View>
 
       <View style={styles.actions}>
@@ -143,21 +156,6 @@ export default function VerificationBanner({
               : "Resend Code"}
           </Text>
         </Pressable>
-
-        {onDismiss && (
-          <Pressable
-            onPress={onDismiss}
-            style={({ pressed }) => [
-              {
-                opacity: pressed ? 0.7 : 1,
-                paddingVertical: spacing.xs,
-                paddingHorizontal: spacing.sm,
-              },
-            ]}
-          >
-            <Feather name="x" size={18} color={colors.textGray} />
-          </Pressable>
-        )}
       </View>
     </View>
   );

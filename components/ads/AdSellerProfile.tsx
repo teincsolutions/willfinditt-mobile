@@ -59,7 +59,7 @@ export function AdSellerProfile({
         <AppText variant="md" style={{ fontWeight: "400" }}>
           @{ad.user?.username}
         </AppText>
-        <AppText variant="sm" style={{ color: colors.textLightGray }}>
+        <AppText variant="xs" style={{ color: colors.textLightGray }}>
           {ad.user?.createdAt ||
             (ad.user?.sellerProfile?.createdAt &&
               `Member since ${formatDistanceToNow(

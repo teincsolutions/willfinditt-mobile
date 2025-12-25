@@ -1,12 +1,13 @@
 // InputField.tsx
 import { useTheme } from "@/contexts/ThemeContext";
 import { Feather } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import RNDatePicker from 'react-native-date-picker';
+
 import { format } from "date-fns";
-import React, { useState } from "react";
+import React from "react";
 import {
-  KeyboardTypeOptions,
   Modal,
+  Platform,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -21,13 +22,12 @@ import { TextButton } from "./TextButton";
 type Props = {
   label?: string;
   value: Date;
+  visible: boolean;
   size?: "sm" | "md";
   onChange?: (date: Date) => void;
-  onSubmit?: () => void;
-  onBlur?: (e: any) => void;
+  onClose?: () => void;
+  onOpen?: () => void;
   placeholder?: string;
-  secure?: boolean;
-  keyboardType?: KeyboardTypeOptions;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   error?: string | boolean;
@@ -35,34 +35,29 @@ type Props = {
   inputStyle?: StyleProp<ViewStyle>;
   leftIconStyle?: StyleProp<ViewStyle>;
   rightIconStyle?: StyleProp<ViewStyle>;
-  autoFocus?: boolean;
 };
 
 export default function DatePicker({
   label,
   value,
+  visible,
   size = "md",
   onChange,
-  onSubmit,
-  onBlur,
   placeholder,
-  secure,
-  keyboardType,
   leftIcon,
   rightIcon,
   rightIconStyle,
   leftIconStyle,
-  error,
   style,
-  autoFocus,
+  onClose,
+  onOpen,
   inputStyle,
 }: Props) {
   const { colors, icons, input, inputSmall, spacing } = useTheme();
-  const [visible, setVisible] = useState(false);
 
   const inputSizeStyle = size === "sm" ? inputSmall : input;
   return (
-    <View style={style}>
+    <AppView style={style}>
       {label && (
         <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
           {label}
@@ -70,7 +65,7 @@ export default function DatePicker({
       )}
 
       <Pressable
-        onPress={() => setVisible(true)}
+        onPress={onOpen}
         style={[
           styles.container,
           {
@@ -104,57 +99,62 @@ export default function DatePicker({
         )}
       </Pressable>
 
-      <Modal animationType="slide" transparent visible={visible}>
-        <AppView
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(0,0,0,0.5)",
-          }}
-        >
+      {Platform.OS === "ios" ? (
+        <Modal animationType="slide" transparent visible={visible}>
           <AppView
             style={{
+              flex: 1,
               justifyContent: "center",
-              padding: spacing.md,
-              backgroundColor: colors.inputBg,
-              borderRadius: inputSizeStyle.radius,
+              alignItems: "center",
+              backgroundColor: "rgba(0,0,0,0.5)",
             }}
           >
             <AppView
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
+                justifyContent: "center",
+                padding: spacing.md,
+                backgroundColor: colors.inputBg,
+                borderRadius: inputSizeStyle.radius,
               }}
             >
-              <IconButton
-                style={{ backgroundColor: colors.inputBg }}
-                onPress={() => setVisible(false)}
-                icon={<Feather name="x" size={icons.md} color={colors.text} />}
-              />
-              <TextButton title="Done" onPress={() => setVisible(false)} />
-            </AppView>
+              <AppView
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <IconButton
+                  style={{ backgroundColor: colors.inputBg }}
+                  onPress={() => onClose && onClose()}
+                  icon={
+                    <Feather name="x" size={icons.md} color={colors.text} />
+                  }
+                />
+                <TextButton title="Done" onPress={() => onClose && onClose()} />
+              </AppView>
 
-            <DateTimePicker
-              value={value}
-              minimumDate={new Date("1900-01-01")}
-              maximumDate={new Date()}
-              mode="date"
-              display="inline"
-              onChange={(event, selectedDate) => {
-                if (selectedDate) {
-                  onChange && onChange(selectedDate);
-                }
-              }}
-              style={{ backgroundColor: undefined, width: "100%" }}
-              textColor={colors.text}
-              accentColor={colors.primary}
-            />
+              
+            </AppView>
           </AppView>
-        </AppView>
-      </Modal>
-    </View>
+        </Modal>
+      ) : (
+        <RNDatePicker
+          mode="date"
+          
+          open={visible}
+          date={value || new Date("1900-01-01")}
+          minimumDate={new Date("1900-01-01")}
+          maximumDate={new Date()}
+          onDateChange={(selectedDate) => {
+            if (selectedDate) {
+              onChange && onChange(selectedDate);
+            }
+          }}
+          style={{ backgroundColor: colors.inputBg }}
+        />
+      )}
+    </AppView>
   );
 }
 

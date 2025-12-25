@@ -1,5 +1,4 @@
 import { AdCondition, AdSearchParams } from "@/types";
-import { storage } from "@/utils/mmkvStorage";
 import { useCallback } from "react";
 import { useMMKVObject } from "react-native-mmkv";
 
@@ -27,15 +26,13 @@ const DEFAULT_FILTERS: AdSearchParams = {
  */
 export const useSearchFilters = () => {
   // Use MMKV reactive hook for automatic re-renders
-  const [filters, setFiltersState] = useMMKVObject<AdSearchParams>(
-    SEARCH_FILTERS_KEY,
-    storage
-  );
+  const [filters, setFiltersState] =
+    useMMKVObject<AdSearchParams>(SEARCH_FILTERS_KEY);
 
   const currentFilters = filters || DEFAULT_FILTERS;
 
   // Update all filters
-  const setFilters = useCallback(
+  const setFiltersFunc = useCallback(
     (newFilters: Partial<AdSearchParams>) => {
       const updated = { ...currentFilters, ...newFilters };
       setFiltersState(updated);
@@ -90,8 +87,16 @@ export const useSearchFilters = () => {
   // Set price range
   const setPriceRange = useCallback(
     (priceMin: number | undefined, priceMax: number | undefined) => {
-      const updated = { ...currentFilters, priceMin, priceMax, page: 1 };
-      setFiltersState(updated);
+      console.log(
+        "Setting price range to:",
+        priceMin,
+        priceMax,
+        "currentFilters:",
+        currentFilters
+      );
+      setFiltersState((prev) => {
+        return { ...prev, priceMin: priceMin, priceMax: priceMax, page: 1 };
+      });
     },
     [currentFilters, setFiltersState]
   );
@@ -159,7 +164,7 @@ export const useSearchFilters = () => {
     categoryId,
     cityId,
     activeFiltersCount,
-    setFilters,
+    setFilters: setFiltersFunc,
     setQuery,
     setCategoryId,
     setCityId,

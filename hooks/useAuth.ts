@@ -134,7 +134,11 @@ export function useAuth() {
     },
     onSuccess: (response) => {
       console.log("Registration successful:", response);
-      handleSuccessfulLogin(response);
+      if (!response.requiresVerification) {
+        handleSuccessfulLogin(response);
+      } else {
+        tokenManager.setTokens(response.access_token, response.refresh_token);
+      }
       toast.success(response.message || "Registration Successful!");
     },
   });
@@ -286,10 +290,17 @@ export function useAuth() {
         queryClient.setQueryData(AUTH_QUERY_KEYS.AUTH_USER, updatedUser);
       }
     },
+    onError: (error) => {
+      console.log("Email verification error:", error);
+      toast.error(
+        error?.message || "Failed to verify email. Please try again."
+      );
+    },
   });
 
   const verifyPhoneMutation = useMutation({
-    mutationFn: async ({otp, phone}: {otp: string, phone: string}) => await authService.verifyPhone(otp, phone),
+    mutationFn: async ({ otp, phone }: { otp: string; phone: string }) =>
+      await authService.verifyPhone(otp, phone),
     onSuccess: async (response) => {
       // Refresh user data after phone verification - TanStack Query + MMKV handles persistence
       if (user) {
@@ -297,7 +308,12 @@ export function useAuth() {
         queryClient.setQueryData(AUTH_QUERY_KEYS.AUTH_USER, updatedUser);
       }
     },
-
+    onError: (error) => {
+      console.log("Phone verification error:", error);
+      toast.error(
+        error?.message || "Failed to verify phone. Please try again."
+      );
+    },
   });
 
   const resendVerificationMutation = useMutation({

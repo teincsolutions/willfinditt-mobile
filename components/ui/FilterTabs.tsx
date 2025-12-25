@@ -21,7 +21,7 @@ export default function FilterTabs({
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ paddingHorizontal: spacing.lg }}
     >
-      {tabs.map((t) => {
+      {tabs.filter((val) => !!val).map((t) => {
         const active = selected === t;
         return (
           <Pressable
