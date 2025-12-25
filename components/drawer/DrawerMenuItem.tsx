@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TextStyle,
   View,
+  ViewStyle,
 } from "react-native";
 import AppText from "../ui/AppText";
 import Badge from "../ui/Badge";
@@ -18,6 +19,7 @@ export default function DrawerMenuItem({
   onPress,
   count,
   labelStyle,
+  style,
 }: {
   icon?: ({ active }: { active?: boolean }) => React.ReactNode;
   label: string;
@@ -25,6 +27,7 @@ export default function DrawerMenuItem({
   active?: boolean;
   count?: number;
   labelStyle?: StyleProp<TextStyle>;
+  style?: StyleProp<ViewStyle>;
 }) {
   const { colors, spacing, radius, button } = useTheme();
 
@@ -43,6 +46,7 @@ export default function DrawerMenuItem({
           paddingHorizontal: spacing.md,
           marginBottom: spacing.md,
         },
+        style,
       ]}
     >
       <View style={styles.row}>

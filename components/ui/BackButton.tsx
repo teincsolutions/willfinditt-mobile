@@ -1,6 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
+import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { ArrowLeft } from "iconsax-react-nativejs";
 import React from "react";
 import { StyleSheet, TouchableOpacity, ViewStyle } from "react-native";
 import AppText from "./AppText";
@@ -30,13 +30,14 @@ export const BackButton: React.FC<BackButtonProps> = ({
     <TouchableOpacity
       accessibilityRole="button"
       onPress={handleBack}
-      style={[styles.container, style, { gap: spacing.xs }]}
+      style={[styles.container, style, { }]}
       activeOpacity={0.7}
     >
       {showIcon && (
-        <ArrowLeft
+        <MaterialIcons
+          name="arrow-back"
           onPress={handleBack}
-          size={icons.lg}
+          size={icons.md}
           color={tintColor || colors.iconBlack}
         />
       )}

@@ -36,7 +36,7 @@ export default function MySellerRating({
             key={i}
             name="star"
             size={icons.xs}
-            color={colors.yellow}
+            color={colors.primary}
           />
         );
       } else if (i === fullStars && hasHalfStar) {
@@ -45,7 +45,7 @@ export default function MySellerRating({
             key={i}
             name="star-half"
             size={icons.xs}
-            color={colors.yellow}
+            color={colors.primary}
           />
         );
       } else {
@@ -54,7 +54,7 @@ export default function MySellerRating({
             key={i}
             name="star-outline"
             size={icons.xs}
-            color={colors.yellow}
+            color={colors.primary}
           />
         );
       }
@@ -78,9 +78,7 @@ export default function MySellerRating({
       {/* Left Side - Stars and Rating */}
       <View
         style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 2,
+          gap: spacing.sm,
         }}
       >
         <View
@@ -92,38 +90,28 @@ export default function MySellerRating({
         >
           {renderStars()}
         </View>
+        <TextButton
+          onPress={onPress}
+          titleStyle={{ fontSize: 9 }}
+          style={{
+            height: icons.sm,
+            paddingHorizontal: spacing.xs,
+          }}
+          title={"See Reviews"}
+        />
       </View>
       <AppView
         style={{
           gap: spacing.sm,
           flexDirection: "row",
-          alignItems: "baseline",
+          alignSelf:"flex-start"
         }}
       >
-        {title ? (
-          <AppText variant="xs" style={{ fontWeight: "600" }}>
-            {rating.toFixed(1)} <AppText variant="xs">({totalReviews})</AppText>
-          </AppText>
-        ) : null}
-        <TextButton
-          onPress={onPress}
-          titleStyle={{ fontSize: fontSizes.xs }}
-          style={{
-            height: icons.md,
-            paddingHorizontal: spacing.xs,
-            minWidth: 50,
-          }}
-          title={
-            title || (
-              <>
-                {rating.toFixed(1)}
-                <AppText style={{ fontWeight: "400", fontSize: fontSizes.xs }}>
-                  ({totalReviews})
-                </AppText>
-              </>
-            )
-          }
-        />
+        <AppText variant="xs" style={{ fontWeight: "600" }}>
+          {rating.toFixed(1)} <AppText variant="xs">({totalReviews})</AppText>
+        </AppText>
+
+        
       </AppView>
     </Pressable>
   );

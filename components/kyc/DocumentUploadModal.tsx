@@ -5,6 +5,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useUploadDocuments } from "@/hooks/useUpload";
 import { DocumentType } from "@/types/enums";
 import { Feather } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { useFormik } from "formik";
 import { useRef, useState } from "react";
@@ -133,21 +134,46 @@ export default function DocumentUploadModal({
 
   const pickDocuments = async () => {
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsMultipleSelection: true,
-        quality: 0.8,
-        selectionLimit: 5, // API supports max 5 documents
+      // First, let user choose between images and documents
+      const choice = await new Promise<'images' | 'documents'>((resolve) => {
+        // For now, we'll use DocumentPicker which supports both
+        resolve('documents');
       });
 
-      if (!result.canceled && result.assets) {
-        const newDocs = result.assets.map((asset) => ({
-          uri: asset.uri,
-          name: asset.fileName || `document_${Date.now()}.jpg`,
-          type: asset.type === "image" ? "image/jpeg" : "image/jpeg",
-        }));
+      if (choice === 'images') {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          allowsMultipleSelection: true,
+          quality: 0.8,
+          selectionLimit: 5,
+        });
 
-        setSelectedDocuments((prev) => [...prev, ...newDocs].slice(0, 5)); // Max 5 documents
+        if (!result.canceled && result.assets) {
+          const newDocs = result.assets.map((asset) => ({
+            uri: asset.uri,
+            name: asset.fileName || `document_${Date.now()}.jpg`,
+            type: asset.type === "image" ? "image/jpeg" : "image/jpeg",
+          }));
+
+          setSelectedDocuments((prev) => [...prev, ...newDocs].slice(0, 5));
+        }
+      } else {
+        // Use DocumentPicker for documents including PDFs
+        const result = await DocumentPicker.getDocumentAsync({
+          type: ['image/*', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+          multiple: true,
+          copyToCacheDirectory: true,
+        });
+
+        if (!result.canceled && result.assets) {
+          const newDocs = result.assets.map((asset) => ({
+            uri: asset.uri,
+            name: asset.name || `document_${Date.now()}`,
+            type: asset.mimeType || 'application/octet-stream',
+          }));
+
+          setSelectedDocuments((prev) => [...prev, ...newDocs].slice(0, 5));
+        }
       }
     } catch (error) {
       console.error("Error picking documents:", error);
@@ -171,6 +197,8 @@ export default function DocumentUploadModal({
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={onClose}
+      style={{ 
+          height: '90%'}}
     >
       <AppView
         style={{
@@ -216,8 +244,8 @@ export default function DocumentUploadModal({
             }}
           >
             <AppText variant="sm" style={{ color: colors.textGray }}>
-              Please upload clear photos of your identification document. You
-              can upload up to 3 images (front, back, and any additional pages).
+              Please upload clear photos of your identification document or PDF files. You
+              can upload up to 5 files (images, PDFs, or documents).
             </AppText>
           </AppView>
 

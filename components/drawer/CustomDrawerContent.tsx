@@ -61,7 +61,15 @@ export default function CustomDrawerContent(
       }}
     >
       {/* USER HEADER */}
-      <DrawerUserHeader />
+      <DrawerUserHeader
+        onPress={() => {
+          if (!isAuthenticated) {
+            handleLogin();
+            return;
+          }
+          props.navigation.navigate("profile");
+        }}
+      />
       {/* MENU ITEMS */}
       <DrawerMenuItem
         label="Home"
@@ -78,19 +86,6 @@ export default function CustomDrawerContent(
         )}
       />
 
-      <DrawerMenuItem
-        label="Categories"
-        onPress={() => {
-          router.push("/categories");
-        }}
-        icon={({ active }) => (
-          <Ionicons
-            name={active ? "grid" : "grid-outline"}
-            size={icons.md}
-            color={active ? colors.iconWhite : colors.iconGray}
-          />
-        )}
-      />
       <DrawerMenuItem
         label="Create Ad"
         onPress={() => {
@@ -111,7 +106,7 @@ export default function CustomDrawerContent(
 
       <DrawerMenuItem
         label="Favorites"
-        active={props.state.index === 2}
+        active={props.state.index === 1}
         onPress={() => {
           if (!isAuthenticated) {
             handleLogin();
@@ -130,7 +125,7 @@ export default function CustomDrawerContent(
 
       <DrawerMenuItem
         label="Messages"
-        active={props.state.index === 3}
+        active={props.state.index === 1}
         count={chatStats?.unreadMessages}
         onPress={() => {
           if (!isAuthenticated) {
@@ -142,21 +137,6 @@ export default function CustomDrawerContent(
         icon={({ active }) => (
           <Feather
             name="message-square"
-            size={icons.md}
-            color={active ? colors.iconWhite : colors.iconGray}
-          />
-        )}
-      />
-      <DrawerMenuItem
-        label="Notifications"
-        active={props.state.index === 4}
-        count={2}
-        onPress={() => {
-          props.navigation.navigate("notifications");
-        }}
-        icon={({ active }) => (
-          <Feather
-            name="bell"
             size={icons.md}
             color={active ? colors.iconWhite : colors.iconGray}
           />
@@ -181,28 +161,9 @@ export default function CustomDrawerContent(
           )}
         />
       )}
-
-      <DrawerMenuItem
-        label="Profile"
-        active={props.state.index === 1}
-        onPress={() => {
-          if (!isAuthenticated) {
-            handleLogin();
-            return;
-          }
-          props.navigation.navigate("profile");
-        }}
-        icon={({ active }) => (
-          <MaterialCommunityIcons
-            name={active ? "account" : "account-outline"}
-            size={icons.md}
-            color={active ? colors.iconWhite : colors.iconGray}
-          />
-        )}
-      />
       <DrawerMenuItem
         label="Settings & Security"
-        active={props.state.index === 5}
+        active={props.state.index === 2}
         onPress={() => {
           if (!isAuthenticated) {
             handleLogin();
@@ -219,8 +180,8 @@ export default function CustomDrawerContent(
         )}
       />
       <DrawerMenuItem
-        label="Help & Support"
-        active={props.state.index === 6}
+        label="Support & About Us"
+        active={props.state.index === 3}
         onPress={() => {
           props.navigation.navigate("support");
         }}
@@ -232,24 +193,12 @@ export default function CustomDrawerContent(
           />
         )}
       />
-      <DrawerMenuItem
-        label="About Us"
-        active={props.state.index === 7}
-        onPress={() => {
-          props.navigation.navigate("about");
-        }}
-        icon={({ active }) => (
-          <Feather
-            name="info"
-            size={icons.md}
-            color={active ? colors.iconWhite : colors.iconGray}
-          />
-        )}
-      />
       {/* PROMO CARD */}
-      <DrawerPromoCard
-        onPress={() => router.push({ pathname: "/account/business" })}
-      />
+      {isAuthenticated && !user?.sellerProfile ? (
+        <DrawerPromoCard
+          onPress={() => router.push({ pathname: "/account/business" })}
+        />
+      ) : null}
       {/* LOGOUT */}
 
       {isAuthenticated ? (
@@ -260,15 +209,19 @@ export default function CustomDrawerContent(
           icon={() => (
             <Feather name="log-out" size={icons.md} color={colors.accentRed} />
           )}
+          style={{ marginTop: spacing.lg }}
         />
-      ): <DrawerMenuItem
+      ) : (
+        <DrawerMenuItem
           label="Login Or Signup"
           onPress={handleLogin}
           labelStyle={{ color: colors.success }}
           icon={() => (
             <Feather name="log-in" size={icons.md} color={colors.success} />
           )}
-        />}
+          style={{ marginTop: spacing.lg }}
+        />
+      )}
     </DrawerContentScrollView>
   );
 }

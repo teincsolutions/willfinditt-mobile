@@ -246,6 +246,7 @@ export default function BusinessProfileScreen() {
               right={
                 <TextButton
                   icon={<AddCircle size={icons.md} color={colors.iconBlack} />}
+                  style={{ height: icons.lg, paddingHorizontal: spacing.xs }}
                   title="Create Ad"
                   onPress={() => router.push({ pathname: "/ads/create" })}
                 />
