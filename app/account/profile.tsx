@@ -1,9 +1,7 @@
-import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Avatar } from "@/components/ui/Avatar";
 import DatePicker from "@/components/ui/DatePicker";
-import { Header } from "@/components/ui/Header";
 import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
 import SearchableSelectModal from "@/components/ui/SearchableSelectModal";
@@ -12,7 +10,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useCountries } from "@/hooks/useLocations";
 import { Feather } from "@expo/vector-icons";
-import Drawer from "expo-router/drawer";
+import { Stack } from "expo-router";
 import { useFormik } from "formik";
 import { useRef, useState } from "react";
 import {
@@ -109,36 +107,27 @@ export default function ProfileScreen() {
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
-      <Drawer.Screen
+      <Stack.Screen
         options={{
-          header: () => (
-            <Header
-              left={<DrawerHeaderToggle />}
-              right={
-                <TextButton
-                  onPress={() => {
-                    if (isEditing) {
-                      handleSubmit();
-                    } else {
-                      setIsEditing(true);
-                    }
-                  }}
-                  title={
-                    isUpdatingProfile
-                      ? "Saving..."
-                      : isEditing
-                      ? "Save"
-                      : "Edit"
-                  }
-                  titleStyle={{
-                    color: colors.textWhite,
-                    fontSize: fontSizes.md,
-                  }}
-                  style={{ borderRadius: radius.md }}
-                  backgroundColor={colors.primary}
-                />
+          title: "",
+          headerRight: () => (
+            <TextButton
+              onPress={() => {
+                if (isEditing) {
+                  handleSubmit();
+                } else {
+                  setIsEditing(true);
+                }
+              }}
+              title={
+                isUpdatingProfile ? "Saving..." : isEditing ? "Save" : "Edit"
               }
-              rightSideStyle={{ marginRight: spacing.md }}
+              titleStyle={{
+                color: colors.textWhite,
+                fontSize: fontSizes.md,
+              }}
+              style={{ borderRadius: radius.md }}
+              backgroundColor={colors.primary}
             />
           ),
         }}
@@ -234,7 +223,7 @@ export default function ProfileScreen() {
                   onBlur={handleBlur("lastName")}
                   error={touched.lastName && errors.lastName}
                 />
-                
+
                 <DatePicker
                   visible={showDatePicker}
                   inputStyle={{ backgroundColor: colors.iconLightGray }}
@@ -252,7 +241,7 @@ export default function ProfileScreen() {
                   onChange={(date) => setFieldValue("dateOfBirth", date)}
                   onClose={() => setShowDatePicker(false)}
                   onOpen={() => setShowDatePicker(true)}
-                    rightIcon={
+                  rightIcon={
                     <Feather
                       name="chevron-down"
                       color={colors.iconGray}

@@ -67,7 +67,7 @@ export default function CustomDrawerContent(
             handleLogin();
             return;
           }
-          props.navigation.navigate("profile");
+          router.push("/account/profile");
         }}
       />
       {/* MENU ITEMS */}
@@ -125,7 +125,7 @@ export default function CustomDrawerContent(
 
       <DrawerMenuItem
         label="Messages"
-        active={props.state.index === 1}
+        active={props.state.index === 2}
         count={chatStats?.unreadMessages}
         onPress={() => {
           if (!isAuthenticated) {
@@ -163,7 +163,7 @@ export default function CustomDrawerContent(
       )}
       <DrawerMenuItem
         label="Settings & Security"
-        active={props.state.index === 2}
+        active={props.state.index === 3}
         onPress={() => {
           if (!isAuthenticated) {
             handleLogin();
@@ -181,7 +181,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Support & About Us"
-        active={props.state.index === 3}
+        active={props.state.index === 4}
         onPress={() => {
           props.navigation.navigate("support");
         }}

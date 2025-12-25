@@ -42,7 +42,6 @@ export default function SearchableSelectModal({
   onSelect,
   multiple = false,
   title = "Select Option",
-  placeholder = "Search...",
   searchPlaceholder = "Search...",
   emptyMessage = "No options found",
   style,

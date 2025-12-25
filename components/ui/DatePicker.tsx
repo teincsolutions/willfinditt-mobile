@@ -1,7 +1,8 @@
 // InputField.tsx
 import { useTheme } from "@/contexts/ThemeContext";
 import { Feather } from "@expo/vector-icons";
-import RNDatePicker from 'react-native-date-picker';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import RNDatePicker from "react-native-date-picker";
 
 import { format } from "date-fns";
 import React from "react";
@@ -99,61 +100,68 @@ export default function DatePicker({
         )}
       </Pressable>
 
-      {Platform.OS === "ios" ? (
-        <Modal animationType="slide" transparent visible={visible}>
+      <Modal animationType="slide" transparent visible={visible}>
+        <AppView
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0,0,0,0.5)",
+          }}
+        >
           <AppView
             style={{
-              flex: 1,
               justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: "rgba(0,0,0,0.5)",
+              padding: spacing.md,
+              backgroundColor: colors.inputBg,
+              borderRadius: inputSizeStyle.radius,
             }}
           >
             <AppView
               style={{
-                justifyContent: "center",
-                padding: spacing.md,
-                backgroundColor: colors.inputBg,
-                borderRadius: inputSizeStyle.radius,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
-              <AppView
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <IconButton
-                  style={{ backgroundColor: colors.inputBg }}
-                  onPress={() => onClose && onClose()}
-                  icon={
-                    <Feather name="x" size={icons.md} color={colors.text} />
-                  }
-                />
-                <TextButton title="Done" onPress={() => onClose && onClose()} />
-              </AppView>
-
-              
+              <IconButton
+                style={{ backgroundColor: colors.inputBg }}
+                onPress={() => onClose && onClose()}
+                icon={<Feather name="x" size={icons.md} color={colors.text} />}
+              />
+              <TextButton title="Done" onPress={() => onClose && onClose()} />
             </AppView>
+            {Platform.OS === "ios" ? (
+              <DateTimePicker
+                mode="date"
+                value={value || new Date("1900-01-01")}
+                onChange={(event, selectedDate) => {
+                  if (selectedDate) {
+                    onChange && onChange(selectedDate);
+                  }
+                }}
+                maximumDate={new Date()}
+                minimumDate={new Date("1900-01-01")}
+                style={{ backgroundColor: colors.inputBg }}
+              />
+            ) : (
+              <RNDatePicker
+                mode="date"
+                open={visible}
+                date={value || new Date("1900-01-01")}
+                minimumDate={new Date("1900-01-01")}
+                maximumDate={new Date()}
+                onDateChange={(selectedDate) => {
+                  if (selectedDate) {
+                    onChange && onChange(selectedDate);
+                  }
+                }}
+                style={{ backgroundColor: colors.inputBg }}
+              />
+            )}
           </AppView>
-        </Modal>
-      ) : (
-        <RNDatePicker
-          mode="date"
-          
-          open={visible}
-          date={value || new Date("1900-01-01")}
-          minimumDate={new Date("1900-01-01")}
-          maximumDate={new Date()}
-          onDateChange={(selectedDate) => {
-            if (selectedDate) {
-              onChange && onChange(selectedDate);
-            }
-          }}
-          style={{ backgroundColor: colors.inputBg }}
-        />
-      )}
+        </AppView>
+      </Modal>
     </AppView>
   );
 }
