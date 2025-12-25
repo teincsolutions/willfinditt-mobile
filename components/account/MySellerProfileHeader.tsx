@@ -1,6 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { SellerProfile, User } from "@/types/user";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Edit } from "iconsax-react-nativejs";
 import React from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
@@ -79,8 +79,17 @@ export default function MySellerProfileHeader({
             ) : (
               <TextButton
                 onPress={onVerifyBusiness}
-                style={{ height: icons.lg }}
-                title="Verify Business"
+                style={{ height: icons.lg, paddingHorizontal: spacing.xs }}
+                title={
+                  <AppText>
+                    Verify Business{" "}
+                    <Ionicons
+                      name="arrow-forward"
+                      size={icons.xs}
+                      color={colors.iconBlack}
+                    />
+                  </AppText>
+                }
                 isLeft
                 icon={
                   <MaterialIcons

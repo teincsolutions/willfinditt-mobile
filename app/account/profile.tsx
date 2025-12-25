@@ -1,6 +1,7 @@
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Avatar } from "@/components/ui/Avatar";
+import { BackButton } from "@/components/ui/BackButton";
 import DatePicker from "@/components/ui/DatePicker";
 import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
@@ -110,6 +111,7 @@ export default function ProfileScreen() {
       <Stack.Screen
         options={{
           title: "",
+          headerLeft: () => <BackButton />,
           headerRight: () => (
             <TextButton
               onPress={() => {
@@ -126,7 +128,7 @@ export default function ProfileScreen() {
                 color: colors.textWhite,
                 fontSize: fontSizes.md,
               }}
-              style={{ borderRadius: radius.md }}
+              style={{ borderRadius: radius.md, height:icons.lg }}
               backgroundColor={colors.primary}
             />
           ),
@@ -165,8 +167,8 @@ export default function ProfileScreen() {
               }}
             >
               <Avatar
-                borderSize={4}
-                size="xxl"
+                borderSize={2}
+                size="xl"
                 styleContainer={{ marginBottom: spacing.md }}
                 verified={user.isVerified}
                 uri={user.avatar}

@@ -85,7 +85,7 @@ const TextAreaField = forwardRef<TextInput, Props>(function TextAreaField(
             backgroundColor: colors.inputBg,
             borderColor: colors.border,
             borderRadius: inputSizeStyle.radius,
-            paddingHorizontal: inputSizeStyle.paddingHorizontal,
+            paddingHorizontal: spacing.sm,
             alignItems:'flex-start'
           },
           inputStyle,
@@ -112,7 +112,7 @@ const TextAreaField = forwardRef<TextInput, Props>(function TextAreaField(
           blurOnSubmit={blurOnSubmit}
           style={[
             styles.input,
-            { color: colors.text, minHeight: 120 },
+            { color: colors.text, minHeight: 120, alignSelf: 'center', textAlignVertical: 'top' },
             inputTextStyle,
           ]}
           onSubmitEditing={onSubmit}

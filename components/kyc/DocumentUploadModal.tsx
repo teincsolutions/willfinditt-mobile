@@ -57,7 +57,7 @@ export default function DocumentUploadModal({
   onSuccess,
   sellerProfileId,
 }: DocumentUploadModalProps) {
-  const { colors, spacing, radius, icons, fontSizes } = useTheme();
+  const { colors, spacing, radius, icons } = useTheme();
   const insets = useSafeAreaInsets();
   const [selectedDocuments, setSelectedDocuments] = useState<
     { uri: string; name: string; type: string }[]
@@ -197,13 +197,12 @@ export default function DocumentUploadModal({
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={onClose}
-      style={{ 
-          height: '90%'}}
     >
       <AppView
         style={{
           flex: 1,
           backgroundColor: colors.background,
+          paddingTop: insets.top,
         }}
       >
         {/* Header */}
@@ -384,13 +383,6 @@ export default function DocumentUploadModal({
             {/* Additional Notes */}
             <TextAreaField
               ref={notesRef}
-              leftIcon={
-                <Feather
-                  name="message-square"
-                  color={colors.iconGray}
-                  size={icons.md}
-                />
-              }
               label="Additional Notes (Optional)"
               placeholder="Any additional information"
               value={formik.values.additionalNotes}
