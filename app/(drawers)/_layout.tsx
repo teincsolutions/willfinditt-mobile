@@ -23,7 +23,7 @@ export default function TabLayout() {
       }}
       drawerContent={CustomDrawerContent}
     >
-      <Drawer.Screen name="index" options={{ headerShown: false }} />
+      <Drawer.Screen name="index" options={{ headerShown: false, title:"Home" }} />
       <Drawer.Screen name="favorites" />
       <Drawer.Screen name="messages" />
       <Drawer.Screen name="settings" options={{ headerShown: false }} />

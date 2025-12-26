@@ -23,7 +23,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
   showIcon = true,
   hideLabel = false,
 }) => {
-  const { icons, spacing, colors } = useTheme();
+  const { icons, spacing, colors, radius } = useTheme();
   const handleBack = () => {
     if (canGoBack) router.dismiss();
   };
@@ -32,7 +32,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
     <TouchableOpacity
       accessibilityRole="button"
       onPress={handleBack}
-      style={[styles.container, style, { }]}
+      style={[styles.container, style]}
       activeOpacity={0.7}
     >
       {showIcon && (
@@ -43,13 +43,14 @@ export const BackButton: React.FC<BackButtonProps> = ({
           color={tintColor || colors.iconBlack}
         />
       )}
-     { !hideLabel && (
-      <AppText
-        variant="lg"
-        style={{ color: tintColor || colors.text, fontWeight: "500" }}
-      >
-        {label || "Back"}
-      </AppText>)}
+      {!hideLabel && (
+        <AppText
+          variant="lg"
+          style={{ color: tintColor || colors.text, fontWeight: "500" }}
+        >
+          {label || "Back"}
+        </AppText>
+      )}
     </TouchableOpacity>
   );
 };

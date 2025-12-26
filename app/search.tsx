@@ -4,6 +4,7 @@ import SearchEmptyState from "@/components/search/SearchEmptyState";
 import SuggestionDropdown from "@/components/search/SuggestionDropdown";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
+import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { useInfiniteSavedAds, useSearchSuggestions } from "@/hooks/useAds";
 import { useRecentSearch } from "@/hooks/useRecentSearch";
@@ -126,24 +127,32 @@ export default function SearchScreen() {
       <Stack.Screen
         options={{
           title: "",
-          headerRight: () => (
-            <IconButton
-              onPress={() => router.push("/filters")}
-              icon={<Filter size={icons.md} />}
-            />
+          header: () => (
+            <Header
+              right={
+                <IconButton
+                  onPress={() => router.push("/filters")}
+                  icon={<Filter size={icons.md} />}
+                />
+              }
+              containerStyle={{
+                paddingHorizontal: spacing.md,
+                paddingBottom: spacing.sm,
+              }}
+            >
+              <SearchBar
+                value={query}
+                onChangeText={setQuery}
+                onSubmit={handleSearchSubmit}
+                onPressFilter={() => router.push("/filters")}
+                onClear={() => {
+                  setQuery("");
+                }}
+                autoFocus
+              />
+            </Header>
           ),
         }}
-      />
-      <SearchBar
-        style={{ marginHorizontal: spacing.md, marginTop: spacing.md }}
-        value={query}
-        onChangeText={setQuery}
-        onSubmit={handleSearchSubmit}
-        onPressFilter={() => router.push("/filters")}
-        onClear={() => {
-          setQuery("");
-        }}
-        autoFocus
       />
 
       {/* LOADING STATE FOR SUGGESTIONS */}

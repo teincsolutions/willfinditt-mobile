@@ -8,6 +8,7 @@ import { SearchBarPlaceholder } from "@/components/search/SearchBarPlaceholder";
 import SortModal, { SortOption } from "@/components/search/SortModal";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
+import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useInfiniteSearchAds } from "@/hooks/useAds";
@@ -130,8 +131,8 @@ export default function ResultsScreen() {
   const renderHeader = () => (
     <>
       <SearchBarPlaceholder
-        style={{ flex: 1, marginHorizontal: spacing.md, marginTop: spacing.md }}
         value={searchQuery}
+        style={{ paddingHorizontal: spacing.md }}
         onClear={handleClearSearch}
         onPress={() =>
           router.push({
@@ -208,26 +209,31 @@ export default function ResultsScreen() {
       <Stack.Screen
         options={{
           title: "",
-          headerRight: () => (
-            <IconButton
-              onPress={() => setIsGrid(!isGrid)}
-              icon={
-                isGrid ? (
-                  <Grid2
-                    onPress={() => setIsGrid(false)}
-                    variant="Outline"
-                    color={colors.iconBlack}
-                    size={icons.md}
-                  />
-                ) : (
-                  <RowVertical
-                    onPress={() => setIsGrid(true)}
-                    variant="Outline"
-                    color={colors.iconBlack}
-                    size={icons.md}
-                  />
-                )
+          header: () => (
+            <Header
+              right={
+                <IconButton
+                  onPress={() => setIsGrid(!isGrid)}
+                  icon={
+                    isGrid ? (
+                      <Grid2
+                        onPress={() => setIsGrid(false)}
+                        variant="Outline"
+                        color={colors.iconBlack}
+                        size={icons.md}
+                      />
+                    ) : (
+                      <RowVertical
+                        onPress={() => setIsGrid(true)}
+                        variant="Outline"
+                        color={colors.iconBlack}
+                        size={icons.md}
+                      />
+                    )
+                  }
+                />
               }
+              containerStyle={{ paddingHorizontal: spacing.md }}
             />
           ),
         }}

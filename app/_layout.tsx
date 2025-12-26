@@ -24,30 +24,30 @@ export default function RootLayout() {
   return (
     <QueryProvider>
       <AppThemeProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <OTAUpdateBanner checkOnMount autoDownload={false} />
-              <View style={{ flex: 1 }}>
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                  }}
-                >
-                  <Stack.Screen name="(drawers)" />
-                  <Stack.Screen name="(auth)" />
-                  <Stack.Screen name="onboarding" />
-                  <Stack.Screen name="account" />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <OTAUpdateBanner checkOnMount autoDownload={true} />
+          <View style={{ flex: 1 }}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            >
+              <Stack.Screen name="(drawers)" options={{ title: "Home" }} />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="account" />
 
-                  <Stack.Screen
-                    name="search"
-                    options={{
-                      headerShown: true,
-                    }}
-                  />
-                  <Stack.Screen
-                    name="filters"
-                    options={{
-                      headerShown: true,
-                      title: "Filters",
+              <Stack.Screen
+                name="search"
+                options={{
+                  headerShown: true,
+                }}
+              />
+              <Stack.Screen
+                name="filters"
+                options={{
+                  headerShown: true,
+                  title: "Filters",
                   headerBackTitle: "Search",
                 }}
               />
@@ -85,7 +85,7 @@ export default function RootLayout() {
           <Toaster />
           <StatusBar style="auto" />
         </GestureHandlerRootView>
-    </AppThemeProvider>
-  </QueryProvider>
+      </AppThemeProvider>
+    </QueryProvider>
   );
 }
