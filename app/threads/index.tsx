@@ -76,7 +76,7 @@ export default function ThreadsScreen() {
           {item.status}
         </AppText>
       </View>
-      <AppView style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <AppView style={{ flexDirection: "row", justifyContent: "flex-end"}}>
        <AppText style={{ color: colors.textGray, fontSize: 12, marginTop: spacing.xs }}>
         {formatDistanceToNow(new Date(item.updatedAt), { addSuffix: true })}
       </AppText>
