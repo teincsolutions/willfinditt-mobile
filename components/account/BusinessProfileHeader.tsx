@@ -67,8 +67,8 @@ export default function BusinessProfileHeader({
             }}
           >
             <MySellerRating
-              rating={sellerProfile.rating || 2.5}
-              totalReviews={sellerProfile.totalReviews || 1}
+              rating={sellerProfile.rating}
+              totalReviews={sellerProfile.totalReviews}
               title="Reviews"
               onPress={onReviewsPress}
             />

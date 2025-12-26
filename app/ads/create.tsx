@@ -27,7 +27,8 @@ export default function CreateAdScreen() {
         contactEmail: formData.contactEmail,
         isNegotiable: formData.isNegotiable,
         fieldValues: formData.fieldValues,
-        cityId: "",
+        cityId: formData.cityId,
+        status: formData.status,
       };
 
       const newAd = await createMutation.mutateAsync(adData);
@@ -57,9 +58,9 @@ export default function CreateAdScreen() {
         }}
       />
       <AdForm
-        onSubmit={handleSubmit}
+        onSubmit={(data) => handleSubmit(data as CreateAdRequest)}
         isLoading={createMutation.isPending}
-        submitButtonText="Create Ad"
+        submitButtonText="Create & Submit Ad"
       />
     </View>
   );

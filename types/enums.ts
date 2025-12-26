@@ -22,6 +22,7 @@ export enum AdCondition {
 export enum AdStatus {
   DRAFT = "DRAFT",
   ACTIVE = "ACTIVE",
+  PENDING = "PENDING",
   SOLD = "SOLD",
   EXPIRED = "EXPIRED",
   SUSPENDED = "SUSPENDED",

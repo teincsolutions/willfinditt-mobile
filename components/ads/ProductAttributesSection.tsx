@@ -58,7 +58,9 @@ export default function ProductAttributesSection({ ad }: { ad?: Ad }) {
     () => mapAttributes(ad?.fieldValues || []),
     [ad?.fieldValues]
   );
-  singles.unshift({ label: "Condition", value: ad?.condition || "N/A" });
+  if (ad?.condition) {
+    singles.unshift({ label: "Condition", value: ad?.condition });
+  }
 
   return (
     <AppView style={{ paddingHorizontal: spacing.md }}>

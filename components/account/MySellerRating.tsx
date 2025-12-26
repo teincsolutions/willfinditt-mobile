@@ -92,7 +92,7 @@ export default function MySellerRating({
         </View>
         <TextButton
           onPress={onPress}
-          titleStyle={{ fontSize: 9 }}
+          titleStyle={{ fontSize: 11 }}
           style={{
             height: icons.sm,
             paddingHorizontal: spacing.xs,

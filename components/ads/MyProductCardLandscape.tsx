@@ -200,6 +200,38 @@ function MyProductCardContent({
     ]);
   };
 
+  const handleSubmitForReview = () => {
+    Alert.alert(
+      "Submit for Review",
+      `Submit "${ad.title}" for review? It will be published once approved.`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Submit",
+          onPress: async () => {
+            try {
+              await updateAdMutation.mutateAsync({
+                id: ad.id,
+                data: { status: AdStatus.PENDING },
+              });
+              toast.success("Ad submitted for review.");
+            } catch (error: any) {
+              console.error("Error submitting ad for review:", error);
+              toast.error(
+                error?.response?.data?.message ||
+                  error.message ||
+                  "Failed to submit ad for review. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const menuItems: PopupMenuItem[] = [
     {
       id: "edit",
@@ -225,31 +257,52 @@ function MyProductCardContent({
       icon: <Ionicons name="share-social" size={18} color={colors.text} />,
       onPress: handleShare,
     },
-    ad.status === AdStatus.ACTIVE
-      ? {
-          id: "sold",
-          label: "Mark as Sold",
-          icon: (
-            <Ionicons
-              name="checkmark-circle"
-              size={18}
-              color={colors.success}
-            />
-          ),
-          onPress: handleMarkAsSold,
-        }
-      : {
-          id: "un-sold",
-          label: "Mark as Unsold",
-          icon: (
-            <Ionicons
-              name="remove-circle"
-              size={18}
-              color={colors.warning}
-            />
-          ),
-          onPress: handleMarkAsUnsold,
-        },
+    ...(ad.status === AdStatus.DRAFT
+      ? [
+          {
+            id: "submit-review",
+            label: "Submit for Review",
+            icon: (
+              <Ionicons
+                name="cloud-upload"
+                size={18}
+                color={colors.primary}
+              />
+            ),
+            onPress: handleSubmitForReview,
+          },
+        ]
+      : ad.status === AdStatus.ACTIVE
+      ? [
+          {
+            id: "sold",
+            label: "Mark as Sold",
+            icon: (
+              <Ionicons
+                name="checkmark-circle"
+                size={18}
+                color={colors.success}
+              />
+            ),
+            onPress: handleMarkAsSold,
+          },
+        ]
+      : ad.status === AdStatus.SOLD
+      ? [
+          {
+            id: "un-sold",
+            label: "Mark as Unsold",
+            icon: (
+              <Ionicons
+                name="remove-circle"
+                size={18}
+                color={colors.warning}
+              />
+            ),
+            onPress: handleMarkAsUnsold,
+          },
+        ]
+      : []),
     {
       id: "delete",
       label: "Delete",

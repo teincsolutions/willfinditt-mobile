@@ -19,8 +19,7 @@ import {
   AdCondition,
   CategoryField,
   CategoryFieldType,
-  CreateAdRequest,
-  UpdateAdRequest,
+  UpdateAdRequest
 } from "@/types";
 import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
@@ -36,16 +35,18 @@ import {
   View,
 } from "react-native";
 import { RichEditor } from "react-native-pell-rich-editor";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Yup from "yup";
 import { SelectableListSheet } from "../bottom-sheet/SelectableBottomSheet";
 import SheetRadioOptionItem from "../bottom-sheet/SheetRadioOptionItem";
 import CheckBox from "../ui/CheckBox";
 import SearchableSelectModal from "../ui/SearchableSelectModal";
+import { TextButton } from "../ui/TextButton";
 
 interface AdFormProps {
   initialData?: UpdateAdRequest;
   adId?: string;
-  onSubmit: (data: CreateAdRequest) => void;
+  onSubmit: (data: UpdateAdRequest) => void;
   isLoading?: boolean;
   submitButtonText?: string;
 }
@@ -91,6 +92,7 @@ const buildValidationSchema = (
       .email("Invalid email address")
       .required("Contact email is required"),
     isNegotiable: Yup.boolean(),
+    status: Yup.string().oneOf(["DRAFT", "PENDING"]),
     condition: Yup.string().oneOf(Object.values(AdCondition)),
     fieldValues: Yup.array().of(
       Yup.object().shape({
@@ -180,6 +182,7 @@ export default function AdForm({
   isLoading,
   submitButtonText = "Submit",
 }: AdFormProps) {
+  const insets = useSafeAreaInsets();
   const { colors, spacing, radius, icons } = useTheme();
   const { user } = useAuth();
   const { selectedCategoryId, setSelectedCategoryId } = useCategorySelection();
@@ -215,6 +218,7 @@ export default function AdForm({
       categoryId: initialData?.categoryId || "",
       cityId: initialData?.cityId || "",
       images: initialData?.images || [],
+      status: initialData?.status || undefined,
       address:
         initialData?.address ||
         user?.sellerProfile?.verification?.address ||
@@ -246,7 +250,7 @@ export default function AdForm({
           }))
           .filter((fv) => fv.value.trim() !== "") || [];
 
-      const formData: CreateAdRequest = {
+      const formData: UpdateAdRequest = {
         title: values.title.trim(),
         description: values.description.trim(),
         price: Number(values.price),
@@ -258,6 +262,7 @@ export default function AdForm({
         contactPhone: values.contactPhone?.trim(),
         contactEmail: values.contactEmail.trim(),
         isNegotiable: values.isNegotiable,
+        status: values.status,
         fieldValues,
         cityId: values.cityId,
       };
@@ -283,6 +288,12 @@ export default function AdForm({
       formik.setFieldValue("cityId", selectedCityId);
     }
   }, [selectedCategoryId, selectedCityId]);
+
+  const handleSaveAsDraft = () => {
+    // Set status to DRAFT and submit
+    formik.setFieldValue("status", "DRAFT");
+    formik.handleSubmit();
+  };
 
   // Handle images uploaded from AdImageUploader
   const handleImagesUploaded = (uploadedUrls: string[]) => {
@@ -498,7 +509,10 @@ export default function AdForm({
       >
         <ScrollView
           style={{ flex: 1, backgroundColor: colors.background }}
-          contentContainerStyle={{ padding: spacing.md }}
+          contentContainerStyle={{
+            padding: spacing.md,
+            paddingBottom: insets.bottom + spacing.lg,
+          }}
         >
           <Pressable
             onPress={() => {
@@ -671,7 +685,9 @@ export default function AdForm({
                 <View style={{ flex: 4 }}>
                   <InputField
                     label="Price *"
-                    value={formik.values.price.toString()}
+                    value={
+                      formik.values.price ? formik.values.price.toString() : ""
+                    }
                     onChangeText={formik.handleChange("price")}
                     onBlur={formik.handleBlur("price")}
                     placeholder="0.00"
@@ -681,7 +697,10 @@ export default function AdForm({
                 </View>
               </View>
 
-              <AppText variant="sm" style={{ marginBottom: spacing.md, flex: 5 }}>
+              <AppText
+                variant="sm"
+                style={{ marginBottom: spacing.md, flex: 5 }}
+              >
                 Set price to zero if you want to display{" "}
                 <AppText variant="sm" style={{ fontWeight: "bold" }}>
                   "Contact for Price"
@@ -782,13 +801,36 @@ export default function AdForm({
             </AppView>
 
             {/* Submit Button */}
-            <PrimaryButton
-              title={submitButtonText}
-              onPress={() => formik.handleSubmit()}
-              loading={isLoading}
-              disabled={isLoading}
-              style={{ marginBottom: spacing.xl }}
-            />
+            <AppView
+              style={{
+                flexDirection: "row",
+                gap: spacing.md,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <PrimaryButton
+                title={submitButtonText}
+                onPress={() => formik.handleSubmit()}
+                loading={isLoading}
+                disabled={isLoading}
+                style={{flex: 1, height: 50, minWidth: "50%"}}
+              />
+              {!initialData && (
+                <TextButton
+                  title={"Save as Draft"}
+                  onPress={handleSaveAsDraft}
+                  loading={isLoading}
+                  disabled={isLoading}
+                  style={{
+                    borderColor: colors.border,
+                    flex: 1,
+                    borderWidth: 1,
+                    height: 50,
+                  }}
+                />
+              )}
+            </AppView>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>

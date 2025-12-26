@@ -3,9 +3,8 @@ import { ReviewCard } from "@/components/reviews/ReviewCard";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { TextButton } from "@/components/ui/TextButton";
-import { useSellerReviews } from "@/hooks/useSeller";
+import { useSeller, useSellerReviews } from "@/hooks/useSeller";
 import { useTheme } from "@/hooks/useTheme";
-import { useUser } from "@/hooks/useUser";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
@@ -34,7 +33,8 @@ export default function SellerReviewScreen() {
     hasNextPage,
     isFetchingNextPage,
   } = useSellerReviews(sellerId, 20);
-  const { data: user } = useUser(sellerId);
+  const { sellerProfile } = useSeller(sellerId);
+  console.log("Seller reviews data:", sellerProfile);
   // Flatten all pages into a single array
   const reviews = data?.pages.flatMap((page) => page.data) || [];
 
@@ -137,12 +137,12 @@ export default function SellerReviewScreen() {
     >
       <AppView>
         <AppText variant="lg" fontWeight="bold" style={{ color: colors.text }}>
-          {user?.sellerProfile?.totalReviews} Reviews
+          {sellerProfile?.totalReviews} Reviews
         </AppText>
         <AppView style={{ flexDirection: "row", gap: spacing.xs }}>
-          <AppText>{user?.sellerProfile?.rating?.toFixed(1)}</AppText>
+          <AppText>{sellerProfile?.rating?.toFixed(1)}</AppText>
           <AppView style={{ flexDirection: "row" }}>
-            {renderStars(user?.sellerProfile?.rating || 0)}
+            {renderStars(sellerProfile?.rating || 0)}
           </AppView>
         </AppView>
       </AppView>
@@ -196,10 +196,10 @@ export default function SellerReviewScreen() {
         }
         showsVerticalScrollIndicator={false}
       />
-      {user && (
+      {sellerProfile?.user && (
         <WriteReviewSheet
           ref={reviewSheetRef}
-          seller={user}
+          seller={sellerProfile.user}
           close={() => reviewSheetRef.current?.close()}
         />
       )}

@@ -64,11 +64,13 @@ export default function BusinessProfileScreen() {
   const activeAds = allAds.filter((ad) => ad.status === activeTab);
   const soldAds = allAds.filter((ad) => ad.status === AdStatus.SOLD);
   const draftAds = allAds.filter((ad) => ad.status === AdStatus.DRAFT);
+  const pendingAds = allAds.filter((ad) => ad.status === AdStatus.PENDING);
   const suspendedAds = allAds.filter((ad) => ad.status === AdStatus.SUSPENDED);
 
   const dataset: TabDataset<Ad>[] = [
     { key: AdStatus.ACTIVE, data: activeAds },
     { key: AdStatus.SOLD, data: soldAds },
+    { key: AdStatus.PENDING, data: pendingAds },
     { key: AdStatus.DRAFT, data: draftAds },
     { key: AdStatus.SUSPENDED, data: suspendedAds },
   ];
@@ -195,14 +197,19 @@ export default function BusinessProfileScreen() {
       count: stats?.soldAds || 0,
     },
     {
-      key: AdStatus.SUSPENDED,
-      title: "Suspended",
-      count: stats?.suspendedAds || 0,
+      key: AdStatus.PENDING,
+      title: "Pending",
+      count: stats?.pendingAds || 0,
     },
     {
       key: AdStatus.DRAFT,
       title: "Draft",
       count: stats?.draftAds || 0,
+    },
+    {
+      key: AdStatus.SUSPENDED,
+      title: "Suspended",
+      count: stats?.suspendedAds || 0,
     },
   ];
 

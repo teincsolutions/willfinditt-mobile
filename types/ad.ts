@@ -88,6 +88,10 @@ export interface CreateAdRequest {
   address?: string;
   latitude?: number;
   longitude?: number;
+  status?: Omit<
+    AdStatus,
+    AdStatus.SOLD | AdStatus.SUSPENDED | AdStatus.EXPIRED | AdStatus.ACTIVE
+  >;
   contactPhone?: string;
   contactEmail?: string;
   isNegotiable?: boolean;
