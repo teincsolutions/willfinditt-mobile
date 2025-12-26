@@ -38,6 +38,14 @@ export default function ChatScreen() {
     userId: string;
     adId: string;
   }>();
+
+  console.log("ChatScreen params:", {
+    initialChatId,
+    sellerId,
+    userId,
+    adId,
+  });
+
   const { user } = useAuth();
   const [chatId, setChatId] = useState<string>(initialChatId);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
@@ -122,9 +130,13 @@ export default function ChatScreen() {
   }`;
   const displayName = chat ? otherUser : sellerNameNoChat || "Chat";
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
+    try {
     if (content.trim()) {
-      sendMessage({ chatId, content: content.trim() });
+      await sendMessage({ chatId, content: content.trim() });
+    }
+    } catch (error) {
+      console.log("Error sending message:", error);
     }
   };
 

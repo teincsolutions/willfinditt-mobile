@@ -1,13 +1,13 @@
 import { adService } from "@/services/adService";
 import {
   Ad,
-  AdCondition,
+  AdSearchParams,
   AdSearchRequest,
   AdSearchSuggestionsParams,
   AdStatus,
   CreateAdRequest,
   SellerProfile,
-  UpdateAdRequest,
+  UpdateAdRequest
 } from "@/types";
 import {
   useInfiniteQuery,
@@ -18,23 +18,14 @@ import {
 import { router } from "expo-router";
 import { Alert, Linking, Share } from "react-native";
 import { toast } from "sonner-native";
+import { AD_QUERY_KEYS } from "./queryKeys";
 import { useAuth } from "./useAuth";
 
 // Hook for infinite scrolling ads (basic endpoint - /ads)
-export const useInfiniteAds = (params?: {
-  limit?: number;
-  categoryId?: string;
-  cityId?: string;
-  userId?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  condition?: AdCondition;
-  search?: string;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-}) => {
+
+export const useInfiniteAds = (params?: AdSearchParams) => {
   return useInfiniteQuery({
-    queryKey: ["ads-infinite", params],
+    queryKey: AD_QUERY_KEYS.ADS_INFINITE(params),
     queryFn: ({ pageParam = 1 }) =>
       adService.getAll({ ...params, page: pageParam }),
     getNextPageParam: (lastPage) => {
@@ -53,7 +44,7 @@ export const useInfiniteAds = (params?: {
 // Hook for fetching a single ad
 export const useAd = (id: string, enabled: boolean = true) => {
   return useQuery({
-    queryKey: ["ad", id],
+    queryKey: AD_QUERY_KEYS.AD(id),
     queryFn: () => adService.getById(id),
     enabled: !!id && enabled,
     staleTime: 60 * 1000, // 1 minute
@@ -67,7 +58,7 @@ export const useInfiniteSearchAds = (
   enabled: boolean = true
 ) => {
   return useInfiniteQuery({
-    queryKey: ["ads-search-infinite", params],
+    queryKey: AD_QUERY_KEYS.ADS_SEARCH_INFINITE(params),
     queryFn: ({ pageParam = 1 }: { pageParam: number }) =>
       adService.search({
         ...params,
@@ -93,7 +84,7 @@ export const useSearchSuggestions = (
   enabled: boolean = true
 ) => {
   return useQuery({
-    queryKey: ["ads-suggestions", params],
+    queryKey: AD_QUERY_KEYS.ADS_SEARCH_SUGGESTIONS(params),
     queryFn: async () => await adService.searchSuggestions(params),
     enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes - backend has Redis cache
@@ -110,8 +101,8 @@ export const useCreateAd = () => {
     },
     onSuccess: (newAd) => {
       // Invalidate relevant queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["ads"] });
-      queryClient.invalidateQueries({ queryKey: ["my-ads"] });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.AD() });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.MY_ADS() });
       return newAd;
     },
     onError: (error: any) => {
@@ -131,8 +122,8 @@ export const useUpdateAd = () => {
     },
     onSuccess: () => {
       // Invalidate relevant queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["ad"] });
-      queryClient.invalidateQueries({ queryKey: ["my-ads"] });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.AD() });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.MY_ADS() });
     },
     onError: (error: any) => {
       throw new Error(error?.message || "Error updating ad");
@@ -151,8 +142,8 @@ export const useDeleteAd = () => {
     },
     onSuccess: () => {
       // Invalidate relevant queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["my-ads"] });
-      queryClient.invalidateQueries({ queryKey: ["my-ads-infinite"] });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.MY_ADS() });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_INFINITE() });
     },
     onError: (error: any) => {
       throw new Error(error?.message || "Error deleting ad");
@@ -168,7 +159,7 @@ export const useInfiniteMyAds = (params?: {
 }) => {
   const { isAuthenticated } = useAuth();
   return useInfiniteQuery({
-    queryKey: ["my-ads-infinite", params],
+    queryKey: AD_QUERY_KEYS.MY_ADS(params),
     queryFn: async ({ pageParam = 1 }) =>
       await adService.getMyAds({ ...params, page: pageParam }),
     enabled: isAuthenticated,
@@ -194,11 +185,11 @@ export const useSaveAd = () => {
     },
     onSuccess: (_, adId) => {
       // Invalidate relevant queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["saved-ads-infinite"] });
-      queryClient.invalidateQueries({ queryKey: ["ad", adId] });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_SAVED_INFINITE() });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.AD(adId) });
       // Also invalidate infinite ads queries to update isSaved status
-      queryClient.invalidateQueries({ queryKey: ["ads-infinite"] });
-      queryClient.invalidateQueries({ queryKey: ["ads-search-infinite"] });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_INFINITE() });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_SEARCH_INFINITE() });
     },
     onError: (error: any) => {
       throw new Error(error?.message || "Error saving ad");
@@ -237,7 +228,7 @@ export const useInfiniteSavedAds = (params?: { limit?: number }) => {
   const { isAuthenticated } = useAuth();
 
   return useInfiniteQuery({
-    queryKey: ["saved-ads-infinite", params],
+    queryKey: AD_QUERY_KEYS.ADS_SAVED_INFINITE(params),
     queryFn: ({ pageParam = 1 }) =>
       adService.getSavedAds({ ...params, page: pageParam }),
     enabled: !!isAuthenticated,
@@ -316,6 +307,7 @@ export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
       });
     }
   };
+
   return {
     handleCall,
     handleMessage,

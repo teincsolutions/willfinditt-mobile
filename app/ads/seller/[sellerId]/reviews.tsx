@@ -1,86 +1,29 @@
+import { WriteReviewSheet } from "@/components/bottom-sheet/WriteReviewSheet";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { TextButton } from "@/components/ui/TextButton";
-import { useSeller, useSellerReviews } from "@/hooks/useSeller";
+import { useSellerReviews } from "@/hooks/useSeller";
 import { useTheme } from "@/hooks/useTheme";
-import { SellerReview } from "@/types";
+import { useUser } from "@/hooks/useUser";
 import { Feather, Ionicons } from "@expo/vector-icons";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
 import { AddSquare } from "iconsax-react-nativejs";
-import React from "react";
+import React, { useRef } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    RefreshControl,
-    View,
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-const DummyReviews: SellerReview[] = [
-  {
-    id: "1",
-    rating: 5,
-    comment: "Great seller! Fast response and smooth transaction.",
-    reviewer: {
-      firstName: "Alice",
-      lastName: "W.",
-      avatar: "https://randomuser.me/api/portraits/women/1.jpg",
-    },
-    sellerId: "seller-id-123",
-    reviewerId: "user-id-456",
-    seller: {
-      firstName: "Seller",
-      lastName: "One",
-      avatar: "https://randomuser.me/api/portraits/men/10.jpg",
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    rating: 3.5,
-    comment: "Item as described. Would buy again.",
-    reviewer: {
-      firstName: "Bob",
-      lastName: "K.",
-      avatar: "https://randomuser.me/api/portraits/men/2.jpg",
-    },
-    reviewerId: "user-id-789",
-    sellerId: "seller-id-123",
-    seller: {
-      firstName: "Seller",
-      lastName: "One",
-      avatar: "https://randomuser.me/api/portraits/men/10.jpg",
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    rating: 3,
-    comment: "Average experience. Communication could be better.",
-    seller: {
-      firstName: "Seller",
-      lastName: "One",
-      avatar: "https://randomuser.me/api/portraits/men/10.jpg",
-    },
-    reviewerId: "user-id-101",
-    sellerId: "seller-id-123",
-    reviewer: {
-      firstName: "Cathy",
-      lastName: "L.",
-      avatar: "https://randomuser.me/api/portraits/women/3.jpg",
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
 
 export default function SellerReviewScreen() {
   const { sellerId = "" } = useLocalSearchParams() as { sellerId: string };
   const { colors, spacing, icons, radius } = useTheme();
   const insets = useSafeAreaInsets();
+  const reviewSheetRef = useRef<BottomSheet>(null);
 
   const {
     data,
@@ -91,8 +34,7 @@ export default function SellerReviewScreen() {
     hasNextPage,
     isFetchingNextPage,
   } = useSellerReviews(sellerId, 20);
-
-  const { sellerProfile, isLoading: isLoadingProfile } = useSeller(sellerId);
+  const { data: user } = useUser(sellerId);
   // Flatten all pages into a single array
   const reviews = data?.pages.flatMap((page) => page.data) || [];
 
@@ -195,21 +137,20 @@ export default function SellerReviewScreen() {
     >
       <AppView>
         <AppText variant="lg" fontWeight="bold" style={{ color: colors.text }}>
-          {sellerProfile?.totalReviews} Reviews
+          {user?.sellerProfile?.totalReviews} Reviews
         </AppText>
         <AppView style={{ flexDirection: "row", gap: spacing.xs }}>
-          <AppText>{sellerProfile?.rating?.toFixed(1)}</AppText>
+          <AppText>{user?.sellerProfile?.rating?.toFixed(1)}</AppText>
           <AppView style={{ flexDirection: "row" }}>
-            {renderStars(sellerProfile?.rating || 0)}
+            {renderStars(user?.sellerProfile?.rating || 0)}
           </AppView>
         </AppView>
       </AppView>
       <TextButton
-        onPress={() => {}}
+        onPress={() => reviewSheetRef.current?.expand()}
         title="Add Review"
-        style={{ backgroundColor: colors.primary, borderRadius:radius.sm }}
+        style={{ backgroundColor: colors.primary, borderRadius: radius.sm }}
         titleStyle={{ color: colors.textWhite }}
-        
         icon={<AddSquare size={icons.sm} color={colors.iconWhite} />}
       />
     </AppView>
@@ -233,7 +174,7 @@ export default function SellerReviewScreen() {
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
       <FlatList
-        data={DummyReviews}
+        data={reviews}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ReviewCard review={item} />}
         ListHeaderComponent={renderHeader}
@@ -255,6 +196,13 @@ export default function SellerReviewScreen() {
         }
         showsVerticalScrollIndicator={false}
       />
+      {user && (
+        <WriteReviewSheet
+          ref={reviewSheetRef}
+          seller={user}
+          close={() => reviewSheetRef.current?.close()}
+        />
+      )}
     </AppView>
   );
 }

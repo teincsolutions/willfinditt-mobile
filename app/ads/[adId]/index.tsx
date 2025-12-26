@@ -22,7 +22,7 @@ import { formatDistanceToNow } from "date-fns";
 import { router, useLocalSearchParams } from "expo-router";
 import { Eye } from "iconsax-react-nativejs";
 import React, { useRef } from "react";
-import { Animated, ScrollView } from "react-native";
+import { Alert, Animated, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AdDetailsScreen() {
@@ -31,7 +31,7 @@ export default function AdDetailsScreen() {
   const inserts = useSafeAreaInsets();
 
   const { data: ad, isLoading } = useAd(adId, !!adId);
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, isAuthenticated } = useAuth();
   const { data: ads } = useInfiniteAds({
     limit: 10,
     userId: ad?.userId,
@@ -40,7 +40,7 @@ export default function AdDetailsScreen() {
   const reviewSheetRef = useRef<BottomSheet>(null);
   const { data: user } = useUser(ad?.userId);
   const { handleProfilePress, handleMessage, handleCall, handleShare } =
-    useAdActions(ad);
+    useAdActions(ad, ad?.user?.sellerProfile);
 
   // Check if current user is the owner of this ad
   const isOwner = currentUser?.id === ad?.userId;
@@ -72,6 +72,31 @@ export default function AdDetailsScreen() {
         }).start();
       }
       lastScrollY.current = currentScrollY;
+    }
+  };
+
+  const handleReviewPress = () => {
+    if (!isAuthenticated) {
+      Alert.alert("Login", "You need to be logged in to write a review.", [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Login",
+          onPress: () => {
+            router.push({
+              pathname: "/(auth)/login",
+              params: { redirectTo: `/ads/[adId]`, adId: adId },
+            });
+          },
+        },
+      ]);
+      return;
+    }
+
+    if (ad?.user) {
+      reviewSheetRef.current?.expand();
     }
   };
 
@@ -107,12 +132,14 @@ export default function AdDetailsScreen() {
             showPagination={false}
           />
           <AdInfoBlock ad={ad} />
+
           <SellerRating
             style={{ marginHorizontal: spacing.md }}
             rating={user?.sellerProfile?.rating || 0}
             totalReviews={user?.sellerProfile?.totalReviews || 0}
-            onReviewPress={() => reviewSheetRef.current?.expand()}
+            onReviewPress={handleReviewPress}
           />
+
           <ProductAttributesSection ad={ad} />
           <DescriptionHTML html={ad?.description || ""} />
         </AppView>
@@ -192,7 +219,7 @@ export default function AdDetailsScreen() {
                 isLeft
                 icon={<Eye size={icons.sm} color={colors.iconBlack} />}
                 titleStyle={{ color: colors.text }}
-                title={String(ad?.views||0)}
+                title={String(ad?.views || 0)}
               />
             </AppView>
           }
@@ -216,13 +243,16 @@ export default function AdDetailsScreen() {
         onMessage={handleMessage}
         onCall={handleCall}
       />
-      <WriteReviewSheet
-        ref={reviewSheetRef}
-        sellerId={ad?.user?.sellerProfile?.id || ""}
-        onSubmit={(review) => {
-          reviewSheetRef.current?.close();
-        }}
-      />
+
+      {ad?.user && (
+        <WriteReviewSheet
+          ref={reviewSheetRef}
+          seller={ad.user}
+          close={() => {
+            reviewSheetRef.current?.close();
+          }}
+        />
+      )}
     </AppView>
   );
 }

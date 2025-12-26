@@ -2,6 +2,7 @@ import { sellerService } from "@/services/sellerService";
 import type {
   CreateSellerProfileRequest,
   SellerProfile,
+  SellerReview,
   UpdateSellerProfileRequest,
 } from "@/types";
 import {
@@ -10,7 +11,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { AUTH_QUERY_KEYS, SELLER_QUERY_KEYS } from "./queryKeys";
+import { toast } from "sonner-native";
+import { AD_QUERY_KEYS, AUTH_QUERY_KEYS, SELLER_QUERY_KEYS } from "./queryKeys";
 
 export const useMySeller = () => {
   const queryClient = useQueryClient();
@@ -39,7 +41,9 @@ export const useMySeller = () => {
     onSuccess: (sellerProfile: SellerProfile) => {
       // Update cache
       queryClient.setQueryData(["seller", "my-profile"], sellerProfile);
-      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_INFINITE() });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_SEARCH_INFINITE() });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.AD() });
     },
   });
 
@@ -178,7 +182,7 @@ export const useSeller = (sellerId: string) => {
   };
 };
 
-// Hook for fetching seller reviews with pagination using infinite query
+// Hook for fetching seller reviews with pagination
 export const useSellerReviews = (sellerId: string, limit = 20) => {
   return useInfiniteQuery({
     queryKey: SELLER_QUERY_KEYS.SELLER_REVIEWS(sellerId),
@@ -200,4 +204,36 @@ export const useSellerReviews = (sellerId: string, limit = 20) => {
       return undefined;
     },
   });
+};
+
+// Hook for creating seller reviews
+export const useCreateSellerReview = () => {
+  const queryClient = useQueryClient();
+
+  const createSellerReviewMutation = useMutation({
+    mutationFn: (data: { sellerId: string; rating: number; comment?: string }) =>
+      sellerService.createSellerReview(data),
+    onSuccess: (newReview: SellerReview) => {
+      // Invalidate seller reviews for the reviewed seller
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_REVIEWS(newReview.sellerId),
+      });
+      // Invalidate my reviews
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_MY_REVIEWS,
+      });
+      // Invalidate seller stats
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_STATS(newReview.sellerId),
+      });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.AD() });
+      toast.success("Review submitted successfully");
+    },
+  });
+
+  return {
+    createSellerReview: createSellerReviewMutation.mutate,
+    createSellerReviewAsync: createSellerReviewMutation.mutateAsync,
+    isCreatingReview: createSellerReviewMutation.isPending,
+  };
 };

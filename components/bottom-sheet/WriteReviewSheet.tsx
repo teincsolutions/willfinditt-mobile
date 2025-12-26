@@ -3,10 +3,12 @@ import BottomSheet, {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useMemo, useState } from "react";
+import { toast } from "sonner-native";
 import * as Yup from "yup";
 
 import { useTheme } from "@/contexts/ThemeContext";
-import { CreateSellerReview } from "@/types/user";
+import { useCreateSellerReview } from "@/hooks/useSeller";
+import { User } from "@/types/user";
 import { Feather } from "@expo/vector-icons";
 import { useFormik } from "formik";
 import { Keyboard, KeyboardAvoidingView, Pressable, View } from "react-native";
@@ -15,8 +17,7 @@ import PrimaryButton from "../ui/PrimaryButton";
 import TextAreaField from "../ui/TextAreaField";
 
 export interface WriteReviewSheetProps {
-  sellerId: string;
-  onSubmit?: (review: CreateSellerReview) => void;
+  seller: User;
   close?: () => void;
 }
 
@@ -35,22 +36,41 @@ export const WriteReviewSheet = forwardRef<BottomSheet, WriteReviewSheetProps>(
   (props, ref) => {
     const { spacing, colors, icons } = useTheme();
     const [selectedRating, setSelectedRating] = useState(0);
+    const seller = props.seller;
+    const { createSellerReviewAsync, isCreatingReview } =
+      useCreateSellerReview();
 
     const snapPoints = useMemo(() => ["75%"], []);
 
     const formik = useFormik({
       initialValues: { rating: 0, comment: "" },
       validationSchema: ReviewSchema,
-      onSubmit: (values) => {
-        const review: CreateSellerReview = {
-          sellerId: props.sellerId,
-          rating: values.rating,
-          comment: values.comment || undefined,
-        };
-        if (props.onSubmit) {
-          props.onSubmit(review);
+      onSubmit: async (values) => {
+        try {
+          await createSellerReviewAsync({
+            sellerId: props.seller.id,
+            rating: values.rating,
+            comment: values.comment || undefined,
+          });
+
+          // Reset form
+          setSelectedRating(0);
+          formik.resetForm();
+          // Close the sheet on success
+          if (props.close) {
+            props.close();
+          }
+
+        } catch (error: any) {
+          console.error("Failed to submit review:", error);
+
+          // Show error toast with message from API response
+          const errorMessage =
+            error?.response?.data?.message ||
+            error?.message ||
+            "Failed to submit review. Please try again.";
+          toast.error(errorMessage);
         }
-        console.log("Review submitted:", review);
       },
     });
 
@@ -123,13 +143,29 @@ export const WriteReviewSheet = forwardRef<BottomSheet, WriteReviewSheetProps>(
               Write a Review
             </AppText>
 
+            {/* Seller Name */}
+            {seller && (
+              <AppText
+                variant="lg"
+                fontWeight="medium"
+                style={{
+                  textAlign: "center",
+                  color: colors.primary,
+                }}
+              >
+                {seller.sellerProfile?.businessName ||
+                  (seller.firstName && seller.lastName
+                    ? `${seller.firstName} ${seller.lastName}`
+                    : seller.username || "Seller")}
+              </AppText>
+            )}
+
             {/* Subtitle */}
             <AppText
               variant="md"
               style={{
                 textAlign: "center",
                 opacity: 0.7,
-                marginBottom: spacing.md,
               }}
             >
               Share your experience with this seller
@@ -185,7 +221,7 @@ export const WriteReviewSheet = forwardRef<BottomSheet, WriteReviewSheetProps>(
               style={{ marginTop: spacing.lg }}
               title="Submit Review"
               onPress={formik.handleSubmit}
-              loading={formik.isSubmitting}
+              loading={isCreatingReview}
             />
           </BottomSheetScrollView>
         </KeyboardAvoidingView>

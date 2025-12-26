@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.willfinditt.willfinditt",
+      "appleTeamId": "75F9X78QJ6",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "GIDClientID": "679415897594-dm2231pgajnh7id1ft1t6qts1tvdkkbs.apps.googleusercontent.com",

@@ -28,7 +28,7 @@ import SecondaryTextButton from "@/components/ui/SecondaryTextButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { formatPhoneNumber } from "@/lib/formatPhoneNumber";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 // -------------------------
 // VALIDATION SCHEMAS
@@ -85,6 +85,11 @@ export default function AuthScreen({
 }: {
   initialTab?: "login" | "register";
 }) {
+  const { redirectTo, adId, sellerId } = useLocalSearchParams<{
+    redirectTo?: any;
+    adId?: string;
+    sellerId?: string;
+  }>();
   const { spacing, radius, icons, colors } = useTheme();
   const [step, setStep] = useState<"step1" | "step2">("step1");
   const [activeTab, setActiveTab] = useState<"login" | "register">(initialTab);
@@ -140,25 +145,28 @@ export default function AuthScreen({
       }
 
       // Check if verification is required
-        if (result.requiresVerification) {
-          router.push({
-            pathname: "/verify-otp",
-            params: {
-              userId: result.user?.id,
-              email: result.user?.email,
-              phone: result.user?.phone,
-              type:
-                formData.mode === "email"
-                  ? "email-verification"
-                  : "phone-verification",
-            },
-          });
-          return;
-        }
-
+      if (result.requiresVerification) {
+        router.push({
+          pathname: "/verify-otp",
+          params: {
+            userId: result.user?.id,
+            email: result.user?.email,
+            phone: result.user?.phone,
+            type:
+              formData.mode === "email"
+                ? "email-verification"
+                : "phone-verification",
+          },
+        });
+        return;
+      }
 
       // Navigate to the main drawers (fully verified)
-      router.replace("/(drawers)");
+      if (redirectTo) {
+        router.replace({ pathname: redirectTo, params: { adId, sellerId } });
+      } else {
+        router.replace({ pathname: "/(drawers)" });
+      }
     } catch (error: any) {
       console.log("Registration error:", error.message);
 
@@ -199,25 +207,25 @@ export default function AuthScreen({
       }
 
       // Check if verification is required
-        if (response.requiresVerification) {
-          router.push({
-            pathname: "/verify-otp",
-            params: {
-              userId: response.user?.id,
-              email: response.user?.email,
-              phone: response.user?.phone,
-              type:
-                isPhone
-                  ? "phone-verification"
-                  : "email-verification",
-            },
-          });
-          return;
-        }
-
+      if (response.requiresVerification) {
+        router.push({
+          pathname: "/verify-otp",
+          params: {
+            userId: response.user?.id,
+            email: response.user?.email,
+            phone: response.user?.phone,
+            type: isPhone ? "phone-verification" : "email-verification",
+          },
+        });
+        return;
+      }
 
       // Navigate to the main tabs (fully verified)
-      router.replace("/(drawers)");
+      if (redirectTo) {
+        router.replace({ pathname: redirectTo, params: { adId, sellerId } });
+      } else {
+        router.replace({ pathname: "/(drawers)" });
+      }
     } catch (error: any) {
       console.log("Login error:", error.response?.data || error.message);
       toast.error(
@@ -265,7 +273,12 @@ export default function AuthScreen({
         }
 
         // Navigate to main screen (fully verified)
-        router.replace("/(drawers)");
+        if (redirectTo) {
+          router.replace({ pathname: redirectTo, params: { adId, sellerId } });
+        } else {
+          router.replace({ pathname: "/(drawers)" });
+        }
+
       } else if (signInResponse.type === "cancelled") {
         // User cancelled, no error needed
         console.log("Google sign-up cancelled");
@@ -312,7 +325,11 @@ export default function AuthScreen({
         }
 
         // Navigate to main screen (fully verified)
-        router.replace("/(drawers)");
+        if (redirectTo) {
+          router.replace({ pathname: redirectTo, params: { adId, sellerId } });
+        } else {
+          router.replace({ pathname: "/(drawers)" });
+        }
       } else if (signInResponse.type === "cancelled") {
         // User cancelled, no error needed
         console.log("Google sign-in cancelled");

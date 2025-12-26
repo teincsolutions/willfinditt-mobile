@@ -186,4 +186,38 @@ export const sellerService = {
     );
     return response.data;
   },
+
+  // Seller Reviews
+  // Create a seller review
+  createSellerReview: async (data: {
+    sellerId: string;
+    rating: number;
+    comment?: string;
+  }): Promise<SellerReview> => {
+    const response = await api.post<SellerReview>("/api/v1/seller-reviews", data);
+    return response.data;
+  },
+
+  // Get seller reviews by seller ID
+  getSellerReviews: async (
+    sellerId: string,
+    page = 1,
+    limit = 20
+  ): Promise<PaginatedResponse<SellerReview>> => {
+    const response = await api.get<PaginatedResponse<SellerReview>>(
+      `/api/v1/seller-reviews/seller/${sellerId}?page=${page}&limit=${limit}`
+    );
+    return response.data;
+  },
+
+  // Get current user's reviews
+  getMyReviews: async (
+    page = 1,
+    limit = 20
+  ): Promise<PaginatedResponse<SellerReview>> => {
+    const response = await api.get<PaginatedResponse<SellerReview>>(
+      `/api/v1/seller-reviews/my-reviews?page=${page}&limit=${limit}`
+    );
+    return response.data;
+  },
 };
