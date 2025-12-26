@@ -3,9 +3,9 @@ import { Stack } from "expo-router";
 export default function PageLayout() {
   return (
     <Stack>
-      <Stack.Screen name="about" options={{title:"About Us" }} />
-      <Stack.Screen name="faq" options={{title:"FAQ" }} />
-      <Stack.Screen name="privacy" options={{title:"Privacy Policy" }} />
+      <Stack.Screen name="about-us" options={{title:"About Us" }} />
+      <Stack.Screen name="privacy-policy" options={{title:"Privacy Policy" }} />
+      <Stack.Screen name="seller-policy" options={{title:"Seller Policy" }} />
       <Stack.Screen name="terms" options={{title:"Terms & Conditions" }} />
     </Stack>
   );

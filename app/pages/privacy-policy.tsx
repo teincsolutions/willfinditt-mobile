@@ -11,9 +11,9 @@ import {
 import RenderHTML from "react-native-render-html";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function TermsScreen() {
+export default function PrivacyPolicyScreen() {
   const insets = useSafeAreaInsets();
-  const { data: page, isLoading, error } = usePage("terms");
+  const { data: page, isLoading, error } = usePage("privacy-policy");
   const { colors, fontSizes, spacing } = useTheme();
   const { width } = useWindowDimensions();
 
@@ -85,7 +85,7 @@ export default function TermsScreen() {
 
   return (
     <ScrollView
-      style={{ padding: spacing.md }}
+       style={{ padding: spacing.md }}
       contentContainerStyle={{
         paddingBottom: insets.bottom + spacing.lg,
       }}

@@ -50,11 +50,11 @@ export default function CategoriesScreen() {
         />
 
         <PlaceholderField
-          onPress={() => router.push("/pages/about")}
+          onPress={() => router.push("/pages/privacy-policy")}
           leftIcon={
-            <Feather name="info" color={colors.iconGray} size={icons.md} />
+            <Feather name="shield" color={colors.iconGray} size={icons.md} />
           }
-          value="About Us"
+          value="Privacy Policy"
           rightIcon={
             <Feather
               name="chevron-right"
@@ -80,11 +80,26 @@ export default function CategoriesScreen() {
         />
 
         <PlaceholderField
-          onPress={() => router.push("/pages/faq")}
+          onPress={() => router.push("/pages/seller-policy")}
           leftIcon={
-            <Feather name="help-circle" color={colors.iconGray} size={icons.md} />
+            <Feather name="file-text" color={colors.iconGray} size={icons.md} />
           }
-          value="FAQ"
+          value="Seller Policy"
+          rightIcon={
+            <Feather
+              name="chevron-right"
+              color={colors.iconGray}
+              size={icons.md}
+            />
+          }
+        />
+
+        <PlaceholderField
+          onPress={() => router.push("/pages/about-us")}
+          leftIcon={
+            <Feather name="info" color={colors.iconGray} size={icons.md} />
+          }
+          value="About App"
           rightIcon={
             <Feather
               name="chevron-right"

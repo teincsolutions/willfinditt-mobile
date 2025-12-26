@@ -11,9 +11,9 @@ import {
 import RenderHTML from "react-native-render-html";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function TermsScreen() {
+export default function SellerPolicyScreen() {
   const insets = useSafeAreaInsets();
-  const { data: page, isLoading, error } = usePage("terms");
+  const { data: page, isLoading, error } = usePage("seller-policy");
   const { colors, fontSizes, spacing } = useTheme();
   const { width } = useWindowDimensions();
 
