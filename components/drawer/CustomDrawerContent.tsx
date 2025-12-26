@@ -198,7 +198,13 @@ export default function CustomDrawerContent(
       {/* PROMO CARD */}
       {!sellerProfile ? (
         <DrawerPromoCard
-          onPress={() => router.push({ pathname: "/account/business" })}
+          onPress={() => {
+            if (!isAuthenticated) {
+              handleLogin();
+              return;
+            }
+            router.push({ pathname: "/account/business" });
+          }}
         />
       ) : null}
       {/* LOGOUT */}
