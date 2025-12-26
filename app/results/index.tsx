@@ -8,7 +8,6 @@ import { SearchBarPlaceholder } from "@/components/search/SearchBarPlaceholder";
 import SortModal, { SortOption } from "@/components/search/SortModal";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
-import { Header } from "@/components/ui/Header";
 import IconButton from "@/components/ui/IconButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useInfiniteSearchAds } from "@/hooks/useAds";
@@ -16,7 +15,7 @@ import { useCategory } from "@/hooks/useCategories";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { Ad, AdCondition, AdSearchRequest } from "@/types";
 import BottomSheet from "@gorhom/bottom-sheet";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { FilterSearch, Grid2, RowVertical } from "iconsax-react-nativejs";
 import React, { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -130,64 +129,33 @@ export default function ResultsScreen() {
 
   const renderHeader = () => (
     <>
-      <Header
-        containerStyle={{ paddingHorizontal: spacing.md }}
-        right={
+      <SearchBarPlaceholder
+        style={{ flex: 1, marginHorizontal: spacing.md, marginTop: spacing.md }}
+        value={searchQuery}
+        onClear={handleClearSearch}
+        onPress={() =>
+          router.push({
+            pathname: "/search",
+            params: {
+              q: searchQuery,
+              categoryId: categoryId || undefined,
+            },
+          })
+        }
+        placeholder="Search for products..."
+        rightIcon={
           <IconButton
-            onPress={() => setIsGrid(!isGrid)}
-            icon={
-              isGrid ? (
-                <Grid2
-                  onPress={() => setIsGrid(false)}
-                  variant="Outline"
-                  color={colors.iconBlack}
-                  size={icons.md}
-                />
-              ) : (
-                <RowVertical
-                  onPress={() => setIsGrid(true)}
-                  variant="Outline"
-                  color={colors.iconBlack}
-                  size={icons.md}
-                />
-              )
-            }
+            style={{
+              marginRight: -spacing.sm,
+              backgroundColor: colors.primary,
+              borderWidth: 2,
+              borderColor: colors.iconWhite,
+            }}
+            onPress={() => router.push({ pathname: "/filters" })}
+            icon={<FilterSearch size={icons.md} color={colors.iconWhite} />}
           />
         }
-      >
-        <SearchBarPlaceholder
-          style={{ flex: 1 }}
-          value={searchQuery}
-          onClear={handleClearSearch}
-          onPress={() =>
-            router.push({
-              pathname: "/search",
-              params: {
-                query: searchQuery,
-                categoryId: categoryId || undefined,
-              },
-            })
-          }
-          placeholder="Search for products..."
-          rightIcon={
-            <IconButton
-              style={{
-                marginRight: -spacing.sm,
-                backgroundColor: colors.primary,
-                borderWidth:2,
-                borderColor:colors.iconWhite
-              }}
-              onPress={() => router.push({ pathname: "/filters" })}
-              icon={
-                <FilterSearch
-                  size={icons.md}
-                  color={colors.iconWhite}
-                />
-              }
-            />
-          }
-        />
-      </Header>
+      />
 
       <AppView
         style={{
@@ -237,6 +205,34 @@ export default function ResultsScreen() {
         paddingBottom: insets.bottom,
       }}
     >
+      <Stack.Screen
+        options={{
+          title: "",
+          headerRight: () => (
+            <IconButton
+              onPress={() => setIsGrid(!isGrid)}
+              icon={
+                isGrid ? (
+                  <Grid2
+                    onPress={() => setIsGrid(false)}
+                    variant="Outline"
+                    color={colors.iconBlack}
+                    size={icons.md}
+                  />
+                ) : (
+                  <RowVertical
+                    onPress={() => setIsGrid(true)}
+                    variant="Outline"
+                    color={colors.iconBlack}
+                    size={icons.md}
+                  />
+                )
+              }
+            />
+          ),
+        }}
+      />
+
       {/* Results Grid */}
       <MasonryList
         style={{

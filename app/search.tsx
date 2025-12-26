@@ -9,14 +9,15 @@ import { useInfiniteSavedAds, useSearchSuggestions } from "@/hooks/useAds";
 import { useRecentSearch } from "@/hooks/useRecentSearch";
 import { useTheme } from "@/hooks/useTheme";
 import { Ad, Suggestion } from "@/types";
-import { router, Stack } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { Filter } from "iconsax-react-nativejs";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, ScrollView, View } from "react-native";
 
 export default function SearchScreen() {
   const { colors, spacing, icons } = useTheme();
-  const [query, setQuery] = useState("");
+  const { q } = useLocalSearchParams<{ q: string }>();
+  const [query, setQuery] = useState(q || "");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
   // Recent searches from local storage
