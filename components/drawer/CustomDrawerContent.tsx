@@ -89,7 +89,7 @@ export default function CustomDrawerContent(
       />
 
       <DrawerMenuItem
-        label="Create Ad"
+        label="Sell"
         onPress={() => {
           if (!isAuthenticated) {
             handleLogin();

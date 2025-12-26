@@ -33,7 +33,7 @@ export default function CreateAdScreen() {
 
       const newAd = await createMutation.mutateAsync(adData);
 
-      toast.success("Ad created successfully!");
+      toast.success("Product created successfully!");
 
       // Navigate to the ad details page
       router.replace(`/ads/${newAd.id}`);
@@ -47,11 +47,11 @@ export default function CreateAdScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen
         options={{
-          title: "Create Ad",
+          title: "Create Product",
           headerShown: true,
           header: () => (
             <Header
-              title="Create Ad"
+              title="Create Product"
               containerStyle={{ paddingHorizontal: spacing.md }}
             />
           ),
@@ -60,7 +60,7 @@ export default function CreateAdScreen() {
       <AdForm
         onSubmit={(data) => handleSubmit(data as CreateAdRequest)}
         isLoading={createMutation.isPending}
-        submitButtonText="Create & Submit Ad"
+        submitButtonText="Create & Submit"
       />
     </View>
   );
