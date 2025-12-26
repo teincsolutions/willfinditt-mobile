@@ -16,6 +16,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -38,6 +39,7 @@ export default function ChatScreen() {
   }>();
   const { user } = useAuth();
   const [chatId, setChatId] = useState<string>(initialChatId);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const { createChatAsync, isCreating } = useCreateChat();
   const {
     messages,
@@ -92,6 +94,26 @@ export default function ChatScreen() {
     // Only run once on mount or when these specific values change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId, adId, userId]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setIsKeyboardVisible(true);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setIsKeyboardVisible(false);
+      }
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
 
   const sellerNameNoChat = `${sellerProfile?.user?.firstName || ""} ${
     sellerProfile?.user?.lastName || ""
@@ -188,7 +210,7 @@ export default function ChatScreen() {
           inverted
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: spacing.lg + insets.bottom,
+            paddingBottom: spacing.lg + (isKeyboardVisible ? 0 : insets.bottom),
           }}
           stickyHeaderIndices={chat?.adId ? [0] : undefined}
           showsVerticalScrollIndicator={false}
@@ -207,7 +229,7 @@ export default function ChatScreen() {
         <ChatInputBar
           onSendMessage={handleSendMessage}
           isSending={isSending || isCreating}
-          style={{ paddingBottom: insets.bottom }}
+          style={{ paddingBottom: (isKeyboardVisible ? 0 : insets.bottom) + spacing.sm }}
         />
       </AppView>
     </KeyboardAvoidingView>

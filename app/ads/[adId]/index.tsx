@@ -212,7 +212,7 @@ export default function AdDetailsScreen() {
         {isLoading ? <AdDetailsSkeleton /> : renderMainSection()}
       </ScrollView>
       <BottomActionBar
-        style={{ paddingBottom: inserts.bottom }}
+        style={{ paddingBottom: inserts.bottom + spacing.sm }}
         onMessage={handleMessage}
         onCall={handleCall}
       />
