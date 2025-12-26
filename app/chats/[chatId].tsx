@@ -4,6 +4,7 @@ import ChatHeader from "@/components/chat/ChatHeader";
 import ChatInputBar from "@/components/chat/ChatInputBar";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
+import { useAdActions } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useChatMessages, useCreateChat } from "@/hooks/useChatMessages";
 import { useSeller } from "@/hooks/useSeller";
@@ -63,6 +64,7 @@ export default function ChatScreen() {
 
   const { sellerProfile } = useSeller(sellerId);
 
+  const { handleCall } = useAdActions(undefined, sellerProfile);
   // Mark messages as read when entering chat
   useEffect(() => {
     if (chat && !isLoading) {
@@ -198,7 +200,7 @@ export default function ChatScreen() {
         <Stack.Screen
           options={{
             header: () => (
-              <ChatHeader isOnline={isOtherOnline} name={displayName!} />
+              <ChatHeader onCall={handleCall} isOnline={isOtherOnline} name={displayName!} />
             ),
           }}
         />
@@ -229,7 +231,9 @@ export default function ChatScreen() {
         <ChatInputBar
           onSendMessage={handleSendMessage}
           isSending={isSending || isCreating}
-          style={{ paddingBottom: (isKeyboardVisible ? 0 : insets.bottom) + spacing.sm }}
+          style={{
+            paddingBottom: (isKeyboardVisible ? 0 : insets.bottom) + spacing.sm,
+          }}
         />
       </AppView>
     </KeyboardAvoidingView>
