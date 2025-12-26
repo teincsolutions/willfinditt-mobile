@@ -14,9 +14,11 @@ import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useRef } from "react";
 import { ActivityIndicator, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CategoriesScreen() {
   const { icons, spacing, colors, radius } = useTheme();
+  const insets = useSafeAreaInsets();
   const { user, isLoading } = useAuth();
   const changeEmailSheetRef = useRef<BottomSheet>(null);
   const changePhoneNumberSheetRef = useRef<BottomSheet>(null);
@@ -45,6 +47,7 @@ export default function CategoriesScreen() {
         contentContainerStyle={{
           padding: spacing.md,
           gap: spacing.md,
+          paddingBottom: insets.bottom + spacing.md,
         }}
         style={{ backgroundColor: colors.background }}
       >

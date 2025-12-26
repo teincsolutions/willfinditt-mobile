@@ -17,6 +17,7 @@ export interface State {
   cities?: City[];
   _count?: {
     cities: number;
+    ads:number;
   };
 }
 

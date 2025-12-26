@@ -6,9 +6,11 @@ import React, { forwardRef, useMemo } from "react";
 import * as Yup from "yup";
 
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Feather } from "@expo/vector-icons";
 import { useFormik } from "formik";
 import { Keyboard } from "react-native";
+import { toast } from "sonner-native";
 import AppText from "../ui/AppText";
 import InputField from "../ui/InputField";
 import PrimaryButton from "../ui/PrimaryButton";
@@ -33,15 +35,26 @@ export const ChangeUsernameSheet = forwardRef<
   ChangeUsernameSheetProps
 >((props, ref) => {
   const { spacing, colors, icons } = useTheme();
+  const { updateProfileAsync, isUpdatingProfile } = useAuth();
 
   const snapPoints = useMemo(() => [ "75%"], []);
 
   const formik = useFormik({
     initialValues: { username: "" },
     validationSchema: UsernameSchema,
-    onSubmit: (values) => {
-      // Handle username change logic here
-      console.log("New Username:", values.username);
+    onSubmit: async (values) => {
+      try {
+        await updateProfileAsync({ username: values.username });
+        toast.success("Username updated successfully");
+        // Close the sheet
+        if (ref && 'current' in ref && ref.current) {
+          ref.current.close();
+        }
+        formik.resetForm();
+      } catch (error: any) {
+        const message = error?.response?.data?.message || "Failed to update username";
+        toast.error(message);
+      }
     },
   });
 
@@ -115,7 +128,7 @@ export const ChangeUsernameSheet = forwardRef<
           style={{ marginTop: spacing.lg }}
           title="Save"
           onPress={formik.handleSubmit}
-          loading={formik.isSubmitting}
+          loading={isUpdatingProfile}
         />
       </BottomSheetView>
     </BottomSheet>

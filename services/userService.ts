@@ -1,5 +1,5 @@
+import { UpdateProfileRequest, User } from '@/types';
 import api from './api';
-import { User, UpdateProfileRequest } from '@/types';
 
 export const userService = {
   // Get current user profile
@@ -46,7 +46,8 @@ export const userService = {
 
   // Verify phone change with OTP
   verifyPhoneChange: async (otp: string): Promise<User> => {
-    const response = await api.post<User>('/api/v1/users/verify-phone-change', { otp });
+    console.log('Verifying phone change with OTP:', otp);
+    const response = await api.post<User>('/api/v1/users/verify-phone-change', { code: otp });
     return response.data;
   },
 
@@ -85,7 +86,7 @@ export const userService = {
 
   // Verify existing phone with OTP
   verifyExistingPhone: async (otp: string): Promise<User> => {
-    const response = await api.post<User>('/api/v1/users/verify-existing-phone-otp', { otp });
+    const response = await api.post<User>('/api/v1/users/verify-existing-phone-otp', { code: otp });
     return response.data;
   },
 };

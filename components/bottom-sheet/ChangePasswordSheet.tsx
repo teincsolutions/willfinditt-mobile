@@ -6,9 +6,11 @@ import React, { forwardRef, useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Feather } from "@expo/vector-icons";
 import { useFormik } from "formik";
 import { Keyboard, KeyboardAvoidingView, TouchableOpacity } from "react-native";
+import { toast } from "sonner-native";
 import AppText from "../ui/AppText";
 import AppView from "../ui/AppView";
 import InputField from "../ui/InputField";
@@ -39,6 +41,8 @@ export const ChangePasswordSheet = forwardRef<
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const { changePasswordAsync, isChangingPassword } = useAuth();
+
   const snapPoints = useMemo(() => ["75%", "90%"], []);
 
   const formik = useFormik({
@@ -48,9 +52,22 @@ export const ChangePasswordSheet = forwardRef<
       confirmPassword: "",
     },
     validationSchema: PasswordSchema,
-    onSubmit: (values) => {
-      // Handle password change logic here
-      console.log("Password change requested");
+    onSubmit: async (values) => {
+      try {
+        await changePasswordAsync({
+          currentPassword: values.currentPassword,
+          newPassword: values.newPassword,
+        });
+        toast.success("Password changed successfully");
+        // Close the sheet
+        if (ref && 'current' in ref && ref.current) {
+          ref.current.close();
+        }
+        formik.resetForm();
+      } catch (error: any) {
+        const message = error?.response?.data?.message || "Failed to change password";
+        toast.error(message);
+      }
     },
   });
 
@@ -197,7 +214,7 @@ export const ChangePasswordSheet = forwardRef<
             style={{ marginTop: spacing.lg }}
             title="Save"
             onPress={formik.handleSubmit}
-            loading={formik.isSubmitting}
+            loading={isChangingPassword}
           />
         </BottomSheetView>
       </KeyboardAvoidingView>
