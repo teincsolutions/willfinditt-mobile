@@ -25,7 +25,9 @@ interface OTAUpdateBannerProps {
 /**
  * OTA Update Banner Component
  * 
- * Displays a banner when updates are available and manages the update flow
+ * Displays a banner when updates are available and manages the update flow.
+ * Only shows when there's an actual update available or update is downloaded and ready to apply.
+ * Does not show on errors or when no update is available.
  * 
  * Usage:
  * ```tsx
@@ -45,7 +47,6 @@ export function OTAUpdateBanner({
     isDownloading,
     downloadUpdate,
     reloadApp,
-    error,
   } = useOTAUpdates(checkOnMount, autoDownload);
 
   // Don't show banner in development
@@ -53,8 +54,9 @@ export function OTAUpdateBanner({
     return null;
   }
 
-  // Don't show banner if no update or error
-  if (!isUpdateAvailable && !isUpdatePending && status !== "error") {
+  // Only show banner when there's an actual update available or pending
+  // Don't show on errors or when no update is available
+  if (!isUpdateAvailable && !isUpdatePending) {
     return null;
   }
 
@@ -73,8 +75,6 @@ export function OTAUpdateBanner({
         {
           backgroundColor: isUpdatePending
             ? colors.success
-            : error
-            ? colors.error
             : colors.primary,
           paddingVertical: spacing.sm,
           paddingHorizontal: spacing.md,
@@ -97,10 +97,6 @@ export function OTAUpdateBanner({
               </Text>
             </TouchableOpacity>
           </>
-        ) : error ? (
-          <Text style={[styles.text, { color: colors.textWhite }]}>
-            Update check failed
-          </Text>
         ) : isDownloading ? (
           <>
             <Text style={[styles.text, { color: colors.textWhite }]}>
