@@ -58,14 +58,15 @@ export default function ProductAttributesSection({ ad }: { ad?: Ad }) {
     () => mapAttributes(ad?.fieldValues || []),
     [ad?.fieldValues]
   );
+  singles.unshift({ label: "Condition", value: ad?.condition || "N/A" });
 
   return (
     <AppView style={{ paddingHorizontal: spacing.md }}>
       {/* singles grid */}
-      {singles.length > 0 && (
-        <View style={{ gap: spacing.md }}>
-          {/* Split singles into rows of 2 */}
-          {Array.from(
+      <View style={{ gap: spacing.md }}>
+        {/* Split singles into rows of 2 */}
+        {singles.length > 0 &&
+          Array.from(
             { length: Math.ceil(singles.length / 2) },
             (_, rowIndex) => (
               <View
@@ -89,9 +90,7 @@ export default function ProductAttributesSection({ ad }: { ad?: Ad }) {
               </View>
             )
           )}
-        </View>
-      )}
-
+      </View>
       {/* lists vertical */}
       {lists.map((l, idx) => (
         <View key={idx} style={{ marginBottom: spacing.md }}>

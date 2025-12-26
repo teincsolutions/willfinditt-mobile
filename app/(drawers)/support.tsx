@@ -10,7 +10,7 @@ import Drawer from "expo-router/drawer";
 export default function CategoriesScreen() {
   const { icons, spacing, colors } = useTheme();
   return (
-    <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+    <AppView style={{ flex: 1, backgroundColor: colors.background }}>
       <Drawer.Screen
         options={{
           header: () => (

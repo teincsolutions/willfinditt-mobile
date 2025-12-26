@@ -19,7 +19,7 @@ import { FlatList } from "react-native-gesture-handler";
 export default function CategoriesScreen() {
   const { icons, spacing, colors } = useTheme();
   const { data: categories, isLoading } = useParentCategories();
-  const { setSelectedParentCategory } = useCategorySelection();
+  const { setSelectedParentCategoryId } = useCategorySelection();
   const [query, setQuery] = useState("");
   const [isGrid, setIsGrid] = useState(true);
   const filteredCategories =
@@ -94,7 +94,7 @@ export default function CategoriesScreen() {
             <CategoryCardCircular
               category={item}
               onPress={() => {
-                setSelectedParentCategory(item);
+                setSelectedParentCategoryId(item.id);
                 router.push({
                   pathname: "/ads/categories/[parentId]",
                   params: { parentId: item.id },
@@ -105,7 +105,7 @@ export default function CategoriesScreen() {
             <CategoryCardLandscape
               category={item}
               onPress={() => {
-                setSelectedParentCategory(item);
+                setSelectedParentCategoryId(item.id);
                 router.push({
                   pathname: "/ads/categories/[parentId]",
                   params: { parentId: item.id },

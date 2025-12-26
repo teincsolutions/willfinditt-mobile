@@ -77,9 +77,6 @@ export default function ThreadsScreen() {
         </AppText>
       </View>
       <AppView style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <AppText style={{ color: colors.textGray, fontSize: 12, marginTop: spacing.xs }}>
-        {item?.lastMessage || "No message"}
-      </AppText>
        <AppText style={{ color: colors.textGray, fontSize: 12, marginTop: spacing.xs }}>
         {formatDistanceToNow(new Date(item.updatedAt), { addSuffix: true })}
       </AppText>
@@ -88,7 +85,7 @@ export default function ThreadsScreen() {
   );
 
   return (
-    <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+    <AppView style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen
         options={{
           title: "Support Threads",

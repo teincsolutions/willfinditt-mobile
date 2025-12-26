@@ -1,8 +1,8 @@
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Avatar } from "@/components/ui/Avatar";
-import { BackButton } from "@/components/ui/BackButton";
 import DatePicker from "@/components/ui/DatePicker";
+import { Header } from "@/components/ui/Header";
 import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
 import SearchableSelectModal from "@/components/ui/SearchableSelectModal";
@@ -68,13 +68,17 @@ export default function ProfileScreen() {
         await updateProfileAsync({
           firstName: values.firstName,
           lastName: values.lastName,
-          dateOfBirth: values.dateOfBirth?.toISOString(),
+          //  dateOfBirth: values.dateOfBirth?.toISOString(),
           countryId: values.countryId,
         });
         toast.success("Profile updated successfully");
         setIsEditing(false);
       } catch (error: any) {
-        toast.error(error?.message || "Failed to update profile");
+        toast.error(
+          error.response.data.message ||
+            error?.message ||
+            "Failed to update profile"
+        );
       }
     },
   });
@@ -111,31 +115,39 @@ export default function ProfileScreen() {
       <Stack.Screen
         options={{
           title: "",
-          headerLeft: () => <BackButton />,
-          headerRight: () => (
-            <TextButton
-              onPress={() => {
-                if (isEditing) {
-                  handleSubmit();
-                } else {
-                  setIsEditing(true);
-                }
-              }}
-              title={
-                isUpdatingProfile ? "Saving..." : isEditing ? "Save" : "Edit"
+          header: () => (
+            <Header
+              containerStyle={{ paddingHorizontal: spacing.md }}
+              right={
+                <TextButton
+                  onPress={() => {
+                    if (isEditing) {
+                      handleSubmit();
+                    } else {
+                      setIsEditing(true);
+                    }
+                  }}
+                  title={
+                    isUpdatingProfile
+                      ? "Saving..."
+                      : isEditing
+                      ? "Save"
+                      : "Edit"
+                  }
+                  titleStyle={{
+                    color: colors.textWhite,
+                    fontSize: fontSizes.md,
+                  }}
+                  style={{ borderRadius: radius.md, height: icons.lg }}
+                  backgroundColor={colors.primary}
+                />
               }
-              titleStyle={{
-                color: colors.textWhite,
-                fontSize: fontSizes.md,
-              }}
-              style={{ borderRadius: radius.md, height:icons.lg }}
-              backgroundColor={colors.primary}
             />
           ),
         }}
       />
       <AppView
-        style={{ height: 120, backgroundColor: colors.backgroundPrimary }}
+        style={{ height: 80, backgroundColor: colors.backgroundPrimary }}
       />
       <AppView
         style={{
@@ -156,6 +168,7 @@ export default function ProfileScreen() {
             contentContainerStyle={{
               paddingHorizontal: spacing.md,
               paddingBottom: insets.bottom + spacing.md,
+              flexGrow: 1,
             }}
             showsVerticalScrollIndicator={false}
           >
@@ -226,31 +239,33 @@ export default function ProfileScreen() {
                   error={touched.lastName && errors.lastName}
                 />
 
-                <DatePicker
-                  visible={showDatePicker}
-                  inputStyle={{ backgroundColor: colors.iconLightGray }}
-                  leftIcon={
-                    <Feather
-                      name="calendar"
-                      color={colors.iconGray}
-                      size={icons.md}
-                    />
-                  }
-                  label="Date of Birth"
-                  value={values.dateOfBirth || new Date("1900-01-01")}
-                  placeholder="Select your date of birth"
-                  error={touched.dateOfBirth && errors.dateOfBirth}
-                  onChange={(date) => setFieldValue("dateOfBirth", date)}
-                  onClose={() => setShowDatePicker(false)}
-                  onOpen={() => setShowDatePicker(true)}
-                  rightIcon={
-                    <Feather
-                      name="chevron-down"
-                      color={colors.iconGray}
-                      size={icons.md}
-                    />
-                  }
-                />
+                {false && (
+                  <DatePicker
+                    visible={showDatePicker}
+                    inputStyle={{ backgroundColor: colors.iconLightGray }}
+                    leftIcon={
+                      <Feather
+                        name="calendar"
+                        color={colors.iconGray}
+                        size={icons.md}
+                      />
+                    }
+                    label="Date of Birth"
+                    value={values.dateOfBirth || new Date("1900-01-01")}
+                    placeholder="Select your date of birth"
+                    error={touched.dateOfBirth && errors.dateOfBirth}
+                    onChange={(date) => setFieldValue("dateOfBirth", date)}
+                    onClose={() => setShowDatePicker(false)}
+                    onOpen={() => setShowDatePicker(true)}
+                    rightIcon={
+                      <Feather
+                        name="chevron-down"
+                        color={colors.iconGray}
+                        size={icons.md}
+                      />
+                    }
+                  />
+                )}
 
                 <PlaceholderField
                   inputStyle={{ backgroundColor: colors.iconLightGray }}
@@ -305,20 +320,24 @@ export default function ProfileScreen() {
                   value={user.lastName || ""}
                 />
 
-                <PlaceholderField
-                  leftIcon={
-                    <Feather
-                      name="calendar"
-                      color={colors.iconGray}
-                      size={icons.md}
-                    />
-                  }
-                  label="Date of Birth"
-                  placeholder="Not set"
-                  value={
-                    values.dateOfBirth ? values.dateOfBirth.toDateString() : ""
-                  }
-                />
+                {false && (
+                  <PlaceholderField
+                    leftIcon={
+                      <Feather
+                        name="calendar"
+                        color={colors.iconGray}
+                        size={icons.md}
+                      />
+                    }
+                    label="Date of Birth"
+                    placeholder="Not set"
+                    value={
+                      values.dateOfBirth
+                        ? values.dateOfBirth?.toDateString()
+                        : ""
+                    }
+                  />
+                )}
 
                 <PlaceholderField
                   leftIcon={

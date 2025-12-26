@@ -9,8 +9,10 @@ import RichTextArea from "@/components/ui/RichTextArea";
 import TextAreaField from "@/components/ui/TextAreaField";
 import ToggleSwitch from "@/components/ui/ToggleSwitch";
 import { useAuth } from "@/hooks/useAuth";
+import { useCategory } from "@/hooks/useCategories";
 import { useCategoryFields } from "@/hooks/useCategoryFields";
 import { useCategorySelection } from "@/hooks/useCategorySelection";
+import { useCityById } from "@/hooks/useLocations";
 import { useLocationSelection } from "@/hooks/useLocationSelection";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -72,10 +74,10 @@ const buildValidationSchema = (
       .min(10, "Description must be at least 10 characters"),
     price: Yup.number()
       .required("Price is required")
-      .positive("Price must be positive")
       .typeError("Price must be a valid number"),
     currency: Yup.string().required("Currency is required"),
     categoryId: Yup.string().required("Category is required"),
+    cityId: Yup.string().required("City is required"),
     images: Yup.array()
       .of(Yup.string())
       .min(1, "At least one image is required")
@@ -180,8 +182,8 @@ export default function AdForm({
 }: AdFormProps) {
   const { colors, spacing, radius, icons } = useTheme();
   const { user } = useAuth();
-  const { selectedCategory } = useCategorySelection();
-  const { selectedCity } = useLocationSelection();
+  const { selectedCategoryId, setSelectedCategoryId } = useCategorySelection();
+  const { selectedCityId, setSelectedCityId } = useLocationSelection();
 
   // Condition selection sheet ref
   const conditionSheetRef = useRef<BottomSheet>(null);
@@ -196,18 +198,22 @@ export default function AdForm({
 
   // Fetch category fields for dynamic form rendering
   const { data: categoryFields, isLoading: loadingFields } = useCategoryFields(
-    selectedCategory?.id || initialData?.categoryId || ""
+    selectedCategoryId || initialData?.categoryId || ""
   );
+
+  const { data: selectedCategory } = useCategory(selectedCategoryId || "");
+  const { data: selectedCity } = useCityById(selectedCityId || "");
 
   // Initialize formik with dynamic validation schema
   const formik = useFormik({
     initialValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      price: initialData?.price?.toString() || "",
+      price: Number(initialData?.price),
       currency: initialData?.currency || "GHS",
       condition: initialData?.condition,
-      categoryId: selectedCategory?.id || initialData?.categoryId || "",
+      categoryId: initialData?.categoryId || "",
+      cityId: initialData?.cityId || "",
       images: initialData?.images || [],
       address:
         initialData?.address ||
@@ -243,7 +249,7 @@ export default function AdForm({
       const formData: CreateAdRequest = {
         title: values.title.trim(),
         description: values.description.trim(),
-        price: parseFloat(values.price),
+        price: Number(values.price),
         currency: values.currency,
         condition: values.condition,
         categoryId: values.categoryId,
@@ -253,23 +259,30 @@ export default function AdForm({
         contactEmail: values.contactEmail.trim(),
         isNegotiable: values.isNegotiable,
         fieldValues,
-        cityId: "",
+        cityId: values.cityId,
       };
 
       onSubmit(formData);
     },
   });
 
-  // Update categoryId in formik when selected category changes
   useEffect(() => {
-    if (
-      selectedCategory?.id &&
-      selectedCategory.id !== formik.values.categoryId
-    ) {
-      formik.setFieldValue("categoryId", selectedCategory.id);
+    if (initialData?.cityId) {
+      setSelectedCityId(initialData.cityId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory]);
+    if (initialData?.categoryId) {
+      setSelectedCategoryId(initialData.categoryId);
+    }
+  }, [initialData]);
+
+  useEffect(() => {
+    if (selectedCategoryId) {
+      formik.setFieldValue("categoryId", selectedCategoryId);
+    }
+    if (selectedCityId) {
+      formik.setFieldValue("cityId", selectedCityId);
+    }
+  }, [selectedCategoryId, selectedCityId]);
 
   // Handle images uploaded from AdImageUploader
   const handleImagesUploaded = (uploadedUrls: string[]) => {
@@ -525,7 +538,11 @@ export default function AdForm({
                 }}
                 rightIcon={
                   <IconButton
-                    onPress={() => {}}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/ads/categories",
+                      })
+                    }
                     style={{
                       backgroundColor: colors.iconLightGray,
                       borderRadius: radius.sm,
@@ -548,7 +565,7 @@ export default function AdForm({
               )}
             </AppView>
 
-             {/* City Selection */}
+            {/* City Selection */}
             <AppView style={{ marginBottom: spacing.lg }}>
               <PlaceholderField
                 label="City *"
@@ -565,7 +582,11 @@ export default function AdForm({
                 }}
                 rightIcon={
                   <IconButton
-                    onPress={() => {}}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/ads/locations/regions",
+                      })
+                    }
                     style={{
                       backgroundColor: colors.iconLightGray,
                       borderRadius: radius.sm,
@@ -650,7 +671,7 @@ export default function AdForm({
                 <View style={{ flex: 4 }}>
                   <InputField
                     label="Price *"
-                    value={formik.values.price}
+                    value={formik.values.price.toString()}
                     onChangeText={formik.handleChange("price")}
                     onBlur={formik.handleBlur("price")}
                     placeholder="0.00"
@@ -660,6 +681,12 @@ export default function AdForm({
                 </View>
               </View>
 
+              <AppText variant="sm" style={{ marginBottom: spacing.md, flex: 5 }}>
+                Set price to zero if you want to display{" "}
+                <AppText variant="sm" style={{ fontWeight: "bold" }}>
+                  "Contact for Price"
+                </AppText>
+              </AppText>
               <ToggleSwitch
                 label="Negotiable Price"
                 description="Allow buyers to negotiate the price"
@@ -722,7 +749,7 @@ export default function AdForm({
                 value={formik.values.address}
                 onChangeText={formik.handleChange("address")}
                 onBlur={formik.handleBlur("address")}
-                placeholder="Enter location"
+                placeholder="Enter your address"
                 error={formik.touched.address && formik.errors.address}
                 style={{ marginBottom: spacing.md }}
               />
@@ -759,7 +786,7 @@ export default function AdForm({
               title={submitButtonText}
               onPress={() => formik.handleSubmit()}
               loading={isLoading}
-              disabled={isLoading || !formik.isValid}
+              disabled={isLoading}
               style={{ marginBottom: spacing.xl }}
             />
           </Pressable>

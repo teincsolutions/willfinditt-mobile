@@ -1,6 +1,9 @@
 import StateList from "@/components/location/StateList";
 import AppView from "@/components/ui/AppView";
-import { useStatesByCountry } from "@/hooks/useLocations";
+import {
+  useCityById,
+  useStatesByCountry
+} from "@/hooks/useLocations";
 import { useLocationSelection } from "@/hooks/useLocationSelection";
 import { useTheme } from "@/hooks/useTheme";
 import { State } from "@/types";
@@ -12,15 +15,18 @@ const GHANA_COUNTRY_ID = "cmg8dfzhk0000pga392vf9568";
 export default function RegionsScreen() {
   const { colors } = useTheme();
   const { data: states = [], isLoading } = useStatesByCountry(GHANA_COUNTRY_ID);
-  const { selectedState, setSelectedState } = useLocationSelection();
+  const { selectedCityId } = useLocationSelection();
+  const { data: selectedCityData } = useCityById(selectedCityId || "");
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <StateList
         states={states}
-        selectedState={selectedState!}
+        selectedState={selectedCityData?.state}
+        onSelectCity={(city) => {
+          router.dismiss();
+        }}
         onSelectState={(state: State) => {
-          setSelectedState(state);
           router.push({
             pathname: "/ads/locations/cities/[regionId]",
             params: { regionId: state.id },

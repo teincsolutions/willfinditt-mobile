@@ -8,7 +8,10 @@ export default function SubCategoriesScreen() {
   const { parentId = "" } = useLocalSearchParams() as { parentId: string };
   const { data: parentCategory } = useCategory(parentId);
   const { data: categories = [], isLoading } = useSubcategories(parentId);
-  const { selectedCategory, setSelectedCategory } = useCategorySelection();
+  const { selectedCategoryId, setSelectedCategoryId } = useCategorySelection();
+  const { data: selectedCategory } = useCategory(selectedCategoryId || "");
+  console.log("Selected Category ID:", selectedCategoryId);
+
   return (
     <AppView style={{ flex: 1 }}>
       <Stack.Screen
@@ -21,7 +24,7 @@ export default function SubCategoriesScreen() {
         selected={selectedCategory!}
         data={categories}
         onSelect={(cat) => {
-          setSelectedCategory(cat);
+          setSelectedCategoryId(cat.id);
           router.dismiss(2);
         }}
       />

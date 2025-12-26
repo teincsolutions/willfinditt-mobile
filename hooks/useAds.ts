@@ -7,7 +7,7 @@ import {
   AdStatus,
   CreateAdRequest,
   SellerProfile,
-  UpdateAdRequest
+  UpdateAdRequest,
 } from "@/types";
 import {
   useInfiniteQuery,
@@ -18,9 +18,11 @@ import {
 import { router } from "expo-router";
 import { Alert, Linking, Share } from "react-native";
 import { toast } from "sonner-native";
-import { AD_QUERY_KEYS } from "./queryKeys";
+import { AD_QUERY_KEYS, SELLER_QUERY_KEYS } from "./queryKeys";
 import { useAuth } from "./useAuth";
 
+const fontendUrl =
+  process.env.EXPO_PUBLIC_FRONTEND_URL || "https://willfinditt.com";
 // Hook for infinite scrolling ads (basic endpoint - /ads)
 
 export const useInfiniteAds = (params?: AdSearchParams) => {
@@ -102,6 +104,12 @@ export const useCreateAd = () => {
     onSuccess: (newAd) => {
       // Invalidate relevant queries to refresh data
       queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.AD() });
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_MY_STATS,
+      });
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
+      });
       queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.MY_ADS() });
       return newAd;
     },
@@ -118,12 +126,20 @@ export const useUpdateAd = () => {
   // Update mutation
   const updateAdMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateAdRequest }) => {
-      return adService.update(id, data);
+      return await adService.update(id, data);
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
+      queryClient.setQueryData(AD_QUERY_KEYS.AD(variables.id), result);
       // Invalidate relevant queries to refresh data
       queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.AD() });
       queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.MY_ADS() });
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_MY_STATS,
+      });
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
+      });
+      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_INFINITE() });
     },
     onError: (error: any) => {
       throw new Error(error?.message || "Error updating ad");
@@ -143,6 +159,12 @@ export const useDeleteAd = () => {
     onSuccess: () => {
       // Invalidate relevant queries to refresh data
       queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.MY_ADS() });
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_MY_STATS,
+      });
+      queryClient.invalidateQueries({
+        queryKey: SELLER_QUERY_KEYS.SELLER_MY_PROFILE,
+      });
       queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_INFINITE() });
     },
     onError: (error: any) => {
@@ -185,11 +207,15 @@ export const useSaveAd = () => {
     },
     onSuccess: (_, adId) => {
       // Invalidate relevant queries to refresh data
-      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_SAVED_INFINITE() });
+      queryClient.invalidateQueries({
+        queryKey: AD_QUERY_KEYS.ADS_SAVED_INFINITE(),
+      });
       queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.AD(adId) });
       // Also invalidate infinite ads queries to update isSaved status
       queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_INFINITE() });
-      queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_SEARCH_INFINITE() });
+      queryClient.invalidateQueries({
+        queryKey: AD_QUERY_KEYS.ADS_SEARCH_INFINITE(),
+      });
     },
     onError: (error: any) => {
       throw new Error(error?.message || "Error saving ad");
@@ -224,7 +250,6 @@ export const useUnsaveAd = () => {
 };
 
 export const useInfiniteSavedAds = (params?: { limit?: number }) => {
-
   const { isAuthenticated } = useAuth();
 
   return useInfiniteQuery({
@@ -294,7 +319,15 @@ export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
         message: `Check out this ad from ${
           ad?.user?.sellerProfile?.businessName ||
           [ad?.user?.firstName, ad?.user?.lastName].filter(Boolean).join(" ")
-        }: ${ad?.title}`,
+        }: ${ad?.title} \n\nView it here: ${fontendUrl}/ads/${ad?.id}`,
+      });
+    }
+  };
+
+  const handleShareAd = () => {
+    if (ad) {
+      Share.share({
+        message: `Check out this ad: ${ad.title}\n\nView it here: ${fontendUrl}/ads/${ad.id}`,
       });
     }
   };
@@ -312,6 +345,7 @@ export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
     handleCall,
     handleMessage,
     handleShare,
+    handleShareAd,
     handleProfilePress,
   };
 };

@@ -134,6 +134,7 @@ export default function DatePicker({
             {Platform.OS === "ios" ? (
               <DateTimePicker
                 mode="date"
+                display="inline"
                 value={value || new Date("1900-01-01")}
                 onChange={(event, selectedDate) => {
                   if (selectedDate) {

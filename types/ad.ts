@@ -97,7 +97,9 @@ export interface CreateAdRequest {
   }[];
 }
 
-export type UpdateAdRequest = Partial<CreateAdRequest>;
+export type UpdateAdRequest = Partial<CreateAdRequest> & {
+  status?: AdStatus;
+};
 
 export interface CreateCommentRequest {
   adId: string;

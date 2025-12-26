@@ -125,7 +125,7 @@ export default function ThreadScreen() {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+      <AppView style={{ flex: 1, backgroundColor: colors.background }}>
         <Stack.Screen
           options={{
             title: getHeaderTitle(),

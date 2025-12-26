@@ -124,6 +124,15 @@ export default function ProductCard({
         <AppText variant="md" numberOfLines={2}>
           {ad.title}
         </AppText>
+        {ad.address ? (
+          <AppText variant="sm" style={{ color: colors.textGray }}>
+            {ad.address}
+          </AppText>
+        ) : (
+          <AppText variant="sm" style={{ color: colors.textGray }}>
+            {ad.city?.name || "Unknown location"}
+          </AppText>
+        )}
 
         <AppView style={[styles.row]}>
           <AppView>

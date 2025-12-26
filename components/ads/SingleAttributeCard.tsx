@@ -17,7 +17,8 @@ export function SignleAttributeCard({ item, style }: SignleAttributeProps) {
           borderRadius: radius.xl,
           backgroundColor: colors.inputBg,
           borderColor: colors.border,
-          padding: spacing.md,
+          paddingVertical: spacing.sm,
+          paddingHorizontal: spacing.md,
         },
       ]}
     >

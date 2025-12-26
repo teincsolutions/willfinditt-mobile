@@ -1,5 +1,7 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import { useAd, useDeleteAd } from "@/hooks/useAds";
+import { useAd, useAdActions, useDeleteAd, useUpdateAd } from "@/hooks/useAds";
+import { formatCurrency } from "@/lib/formatCurrency";
+import { AdStatus } from "@/types";
 import { Ad } from "@/types/ad";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -14,6 +16,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { toast } from "sonner-native";
 import AppText from "../ui/AppText";
 import AppView from "../ui/AppView";
 import PopupMenu, { PopupMenuItem } from "../ui/PopupMenu";
@@ -91,29 +94,26 @@ function MyProductCardContent({
 }) {
   const { colors, spacing, radius } = useTheme();
   const deleteAdMutation = useDeleteAd();
+  const { handleShare } = useAdActions(ad, ad.user?.sellerProfile);
+  const updateAdMutation = useUpdateAd();
 
   const handleEdit = () => {
     if (onEdit) {
       onEdit(ad);
     } else {
       // Default navigation to edit screen
-      router.push(`/ads/${ad.id}/edit` as any);
+      router.push({ pathname: `/ads/[adId]/edit`, params: { adId: ad.id } });
     }
   };
 
   const handlePromote = () => {
     // Navigate to promote/boost ad screen
-    router.push(`/ads/${ad.id}/promote` as any);
-  };
-
-  const handleShare = () => {
-    // TODO: Implement share functionality
-    Alert.alert("Share", "Share functionality coming soon");
+    router.push({ pathname: `/ads/[adId]/promote`, params: { adId: ad.id } });
   };
 
   const handleViewStats = () => {
     // Navigate to ad statistics screen
-    router.push(`/ads/${ad.id}/stats` as any);
+    router.push({ pathname: `/ads/[adId]/stats`, params: { adId: ad.id } });
   };
 
   const handleDelete = () => {
@@ -145,16 +145,56 @@ function MyProductCardContent({
   };
 
   const handleMarkAsSold = () => {
-    Alert.alert("Mark as Sold", "Mark this item as sold?", [
+    Alert.alert("Mark as Sold", `Mark this "${ad.title}" as sold?`, [
       {
         text: "Cancel",
         style: "cancel",
       },
       {
         text: "Mark as Sold",
-        onPress: () => {
-          // TODO: Implement mark as sold functionality
-          console.log("Mark as sold:", ad.id);
+        onPress: async () => {
+          try {
+            await updateAdMutation.mutateAsync({
+              id: ad.id,
+              data: { status: AdStatus.SOLD },
+            });
+            toast.success("Ad marked as sold.");
+          } catch (error: any) {
+            console.error("Error marking ad as sold:", error);
+            toast.error(
+              error?.response?.data?.message ||
+                error.message ||
+                "Failed to mark ad as sold. Please try again."
+            );
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleMarkAsUnsold = () => {
+    Alert.alert("Mark as Unsold", `Mark this "${ad.title}" as unsold?`, [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Mark as Unsold",
+        onPress: async () => {
+          try {
+            await updateAdMutation.mutateAsync({
+              id: ad.id,
+              data: { status: AdStatus.ACTIVE },
+            });
+            toast.success("Ad marked as unsold.");
+          } catch (error: any) {
+            console.error("Error marking ad as unsold:", error);
+            toast.error(
+              error?.response?.data?.message ||
+                error.message ||
+                "Failed to mark ad as unsold. Please try again."
+            );
+          }
         },
       },
     ]);
@@ -167,33 +207,49 @@ function MyProductCardContent({
       icon: <Ionicons name="pencil" size={18} color={colors.text} />,
       onPress: handleEdit,
     },
-    {
-      id: "promote",
-      label: "Promote",
-      icon: <Ionicons name="megaphone" size={18} color={colors.primary} />,
-      onPress: handlePromote,
-    },
-    {
-      id: "stats",
-      label: "View Stats",
-      icon: <Ionicons name="stats-chart" size={18} color={colors.text} />,
-      onPress: handleViewStats,
-    },
+    // {
+    //   id: "promote",
+    //   label: "Promote",
+    //   icon: <Ionicons name="megaphone" size={18} color={colors.primary} />,
+    //   onPress: handlePromote,
+    // },
+    // {
+    //   id: "stats",
+    //   label: "View Stats",
+    //   icon: <Ionicons name="stats-chart" size={18} color={colors.text} />,
+    //   onPress: handleViewStats,
+    // },
     {
       id: "share",
       label: "Share",
       icon: <Ionicons name="share-social" size={18} color={colors.text} />,
       onPress: handleShare,
     },
-    {
-      id: "sold",
-      label: "Mark as Sold",
-      icon: (
-        <Ionicons name="checkmark-circle" size={18} color={colors.success} />
-      ),
-      onPress: handleMarkAsSold,
-      disabled: ad.status === "SOLD",
-    },
+    ad.status === AdStatus.ACTIVE
+      ? {
+          id: "sold",
+          label: "Mark as Sold",
+          icon: (
+            <Ionicons
+              name="checkmark-circle"
+              size={18}
+              color={colors.success}
+            />
+          ),
+          onPress: handleMarkAsSold,
+        }
+      : {
+          id: "un-sold",
+          label: "Mark as Unsold",
+          icon: (
+            <Ionicons
+              name="remove-circle"
+              size={18}
+              color={colors.warning}
+            />
+          ),
+          onPress: handleMarkAsUnsold,
+        },
     {
       id: "delete",
       label: "Delete",
@@ -221,7 +277,6 @@ function MyProductCardContent({
         return colors.iconLightGray;
     }
   };
-
 
   return (
     <TouchableOpacity
@@ -258,8 +313,8 @@ function MyProductCardContent({
           style={[
             styles.statusBadge,
             {
-              top:0,
-              right: spacing.lg/2,
+              top: 0,
+              right: spacing.lg / 2,
               backgroundColor: colors.background,
               height: spacing.lg,
               width: spacing.lg,
@@ -267,13 +322,15 @@ function MyProductCardContent({
             },
           ]}
         >
-          <View style={{
-            backgroundColor: getStatusColor(),
-            width: spacing.md,
-            height: spacing.md,
-            borderRadius: spacing.md,
-            margin: (spacing.lg - spacing.md)/2,
-          }} />
+          <View
+            style={{
+              backgroundColor: getStatusColor(),
+              width: spacing.md,
+              height: spacing.md,
+              borderRadius: spacing.md,
+              margin: (spacing.lg - spacing.md) / 2,
+            }}
+          />
         </View>
       </View>
       {/* Info */}
@@ -296,8 +353,9 @@ function MyProductCardContent({
               },
             ]}
           >
-            {ad.currency}
-            {ad.price}
+            {ad.price
+              ? formatCurrency(ad.price, "en-GH", ad.currency)
+              : "Contact for Price"}
           </AppText>
 
           {/* Stats */}
@@ -389,7 +447,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   statusBadge: {
-    position:"absolute"
+    position: "absolute",
   },
   priceRow: {
     flexDirection: "row",

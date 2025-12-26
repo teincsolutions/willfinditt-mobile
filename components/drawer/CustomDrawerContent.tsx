@@ -8,6 +8,7 @@ import React from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useChatStats } from "@/hooks/useChats";
+import { useMySeller } from "@/hooks/useSeller";
 import { router } from "expo-router";
 import { Alert } from "react-native";
 import DrawerMenuItem from "./DrawerMenuItem";
@@ -19,6 +20,7 @@ export default function CustomDrawerContent(
 ) {
   const { colors, icons, spacing } = useTheme();
   const { logoutAsync, isAuthenticated, user } = useAuth();
+  const { sellerProfile } = useMySeller();
   const { data: chatStats } = useChatStats(isAuthenticated);
 
   const handleLogout = async () => {
@@ -142,7 +144,7 @@ export default function CustomDrawerContent(
           />
         )}
       />
-      {user?.sellerProfile && (
+      {sellerProfile && (
         <DrawerMenuItem
           label="Business"
           onPress={() => {
@@ -194,7 +196,7 @@ export default function CustomDrawerContent(
         )}
       />
       {/* PROMO CARD */}
-      {isAuthenticated && !user?.sellerProfile ? (
+      {!sellerProfile ? (
         <DrawerPromoCard
           onPress={() => router.push({ pathname: "/account/business" })}
         />

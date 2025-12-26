@@ -24,30 +24,30 @@ export default function RootLayout() {
   return (
     <QueryProvider>
       <AppThemeProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <OTAUpdateBanner checkOnMount autoDownload={false} />
-          <View style={{ flex: 1 }}>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-              }}
-            >
-              <Stack.Screen name="(drawers)" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="onboarding" />
-              <Stack.Screen name="account" />
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <OTAUpdateBanner checkOnMount autoDownload={false} />
+              <View style={{ flex: 1 }}>
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                  }}
+                >
+                  <Stack.Screen name="(drawers)" />
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="onboarding" />
+                  <Stack.Screen name="account" />
 
-              <Stack.Screen
-                name="search"
-                options={{
-                  headerShown: true,
-                }}
-              />
-              <Stack.Screen
-                name="filters"
-                options={{
-                  headerShown: true,
-                  title: "Filters",
+                  <Stack.Screen
+                    name="search"
+                    options={{
+                      headerShown: true,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="filters"
+                    options={{
+                      headerShown: true,
+                      title: "Filters",
                   headerBackTitle: "Search",
                 }}
               />
@@ -61,7 +61,7 @@ export default function RootLayout() {
               />
               <Stack.Screen
                 name="locations/cities/[regionId]"
-                options={{  headerShown: true }}
+                options={{ headerShown: true }}
               />
               <Stack.Screen
                 name="categories/index"
@@ -74,16 +74,18 @@ export default function RootLayout() {
                 name="categories/[parentId]"
                 options={{
                   title: "Categories",
-                  headerShown: true
+                  headerShown: true,
                 }}
               />
               <Stack.Screen name="chats" />
+              <Stack.Screen name="threads" />
+              <Stack.Screen name="pages" />
             </Stack>
           </View>
           <Toaster />
           <StatusBar style="auto" />
         </GestureHandlerRootView>
-      </AppThemeProvider>
-    </QueryProvider>
+    </AppThemeProvider>
+  </QueryProvider>
   );
 }
