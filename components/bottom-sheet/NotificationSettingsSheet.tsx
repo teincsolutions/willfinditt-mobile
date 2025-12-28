@@ -5,6 +5,7 @@ import BottomSheet, {
 import React, { forwardRef, useMemo, useState } from "react";
 
 import { useTheme } from "@/contexts/ThemeContext";
+import { NOTIFICATION_TOPICS, useNotificationTopics } from "@/hooks/useNotificationTopics";
 import { View } from "react-native";
 import AppText from "../ui/AppText";
 import PrimaryButton from "../ui/PrimaryButton";
@@ -19,21 +20,17 @@ export const NotificationSettingsSheet = forwardRef<
   NotificationSettingsSheetProps
 >((props, ref) => {
   const { spacing, colors } = useTheme();
+  const { topicSubscriptions, toggleTopicSubscription, updateAllTopicSubscriptions, isLoading } = useNotificationTopics();
 
   const snapPoints = useMemo(() => ["85%"], []);
 
-  // Notification preferences state
+  // Notification preferences state (non-topic based settings)
   const [settings, setSettings] = useState({
     pushNotifications: true,
     emailNotifications: true,
-    promotions: false,
+    newMessages: true,
     newReviews: true,
     reviewReplies: true,
-    newMessages: true,
-    adStatusUpdates: true,
-    priceDropAlerts: false,
-    favoriteAdUpdates: true,
-    systemAnnouncements: true,
   });
 
   const handleToggle = (key: keyof typeof settings) => {
@@ -43,10 +40,21 @@ export const NotificationSettingsSheet = forwardRef<
     }));
   };
 
+  const handleTopicToggle = (topic: keyof typeof topicSubscriptions) => {
+    toggleTopicSubscription(topic);
+  };
+
   const handleSave = () => {
-    // Handle saving notification settings
-    console.log("Notification settings saved:", settings);
-    props.close?.();
+    try {
+      // Update topic subscriptions
+      updateAllTopicSubscriptions(topicSubscriptions);
+
+      // Handle saving other notification settings (non-topic based)
+      console.log("Notification settings saved:", settings);
+      props.close?.();
+    } catch (error) {
+      console.error("Error saving notification settings:", error);
+    }
   };
 
   return (
@@ -139,9 +147,10 @@ export const NotificationSettingsSheet = forwardRef<
 
           <ToggleSwitch
             label="Promotions & Offers"
-            description="Receive promotional offers and discounts"
-            value={settings.promotions}
-            onValueChange={() => handleToggle("promotions")}
+            description="Receive promotional offers and deals"
+            value={topicSubscriptions[NOTIFICATION_TOPICS.PROMOTIONS]}
+            onValueChange={() => handleTopicToggle(NOTIFICATION_TOPICS.PROMOTIONS)}
+            disabled={isLoading}
           />
         </View>
 
@@ -178,11 +187,13 @@ export const NotificationSettingsSheet = forwardRef<
             value={settings.reviewReplies}
             onValueChange={() => handleToggle("reviewReplies")}
           />
+
           <ToggleSwitch
             label="Ad Status Updates"
             description="Get notified about changes to your ad status"
-            value={settings.adStatusUpdates}
-            onValueChange={() => handleToggle("adStatusUpdates")}
+            value={topicSubscriptions[NOTIFICATION_TOPICS.ADS]}
+            onValueChange={() => handleTopicToggle(NOTIFICATION_TOPICS.ADS)}
+            disabled={isLoading}
           />
         </View>
 
@@ -202,16 +213,18 @@ export const NotificationSettingsSheet = forwardRef<
           <ToggleSwitch
             label="System Announcements"
             description="Important updates and announcements"
-            value={settings.systemAnnouncements}
-            onValueChange={() => handleToggle("systemAnnouncements")}
+            value={topicSubscriptions[NOTIFICATION_TOPICS.SYSTEM]}
+            onValueChange={() => handleTopicToggle(NOTIFICATION_TOPICS.SYSTEM)}
+            disabled={isLoading}
           />
         </View>
 
         {/* Save Button */}
         <PrimaryButton
           style={{ marginTop: spacing.md }}
-          title="Save Settings"
+          title={isLoading ? "Updating..." : "Save Settings"}
           onPress={handleSave}
+          disabled={isLoading}
         />
       </BottomSheetScrollView>
     </BottomSheet>

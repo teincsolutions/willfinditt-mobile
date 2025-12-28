@@ -14,6 +14,7 @@ import {
   Radius,
   Shadows,
   Spacing,
+  Typography,
 } from "@/constants";
 import React, { createContext, useContext, useMemo } from "react";
 import { useColorScheme } from "react-native";
@@ -34,8 +35,7 @@ type ThemeContextType = {
   icons: typeof IconSizes;
   shadows: typeof Shadows.light;
   card: typeof CardSizes;
-  pill: typeof PillSizes;
-};
+  pill: typeof PillSizes;  typography: typeof Typography;};
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
@@ -61,6 +61,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
       shadows: Shadows[mode],
       card: CardSizes,
       pill: PillSizes,
+      typography: Typography,
     };
   }, [mode]);
 

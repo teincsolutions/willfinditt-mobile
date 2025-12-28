@@ -73,6 +73,10 @@
           "enableCodeScanner": false
         }
       ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      "expo-notifications",
+      "./plugins/withModularHeaders",
       [
         "expo-build-properties",
         {

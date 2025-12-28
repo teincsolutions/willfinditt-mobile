@@ -58,3 +58,16 @@ export const LetterSpacings = {
   xxl: 1.5,
 };
 export type LetterSpacingKey = keyof typeof LetterSpacings;
+
+export const Typography = {
+  body: {
+    fontSize: FontSizes.md,
+    lineHeight: LineHeights.md,
+    fontWeight: FontWeights.regular,
+  },
+  caption: {
+    fontSize: FontSizes.sm,
+    lineHeight: LineHeights.sm,
+    fontWeight: FontWeights.regular,
+  },
+};

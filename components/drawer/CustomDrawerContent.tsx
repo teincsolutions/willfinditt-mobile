@@ -144,6 +144,25 @@ export default function CustomDrawerContent(
           />
         )}
       />
+
+      <DrawerMenuItem
+        label="Notifications"
+        active={props.state.index === 3}
+        onPress={() => {
+          if (!isAuthenticated) {
+            handleLogin();
+            return;
+          }
+          props.navigation.navigate("notifications");
+        }}
+        icon={({ active }) => (
+          <Ionicons
+            name={active ? "notifications" : "notifications-outline"}
+            size={icons.md}
+            color={active ? colors.iconWhite : colors.iconGray}
+          />
+        )}
+      />
       {sellerProfile && (
         <DrawerMenuItem
           label="Business"
@@ -165,7 +184,7 @@ export default function CustomDrawerContent(
       )}
       <DrawerMenuItem
         label="Settings & Security"
-        active={props.state.index === 3}
+        active={props.state.index === 4}
         onPress={() => {
           if (!isAuthenticated) {
             handleLogin();
@@ -183,7 +202,7 @@ export default function CustomDrawerContent(
       />
       <DrawerMenuItem
         label="Support & About Us"
-        active={props.state.index === 4}
+        active={props.state.index === 5}
         onPress={() => {
           props.navigation.navigate("support");
         }}

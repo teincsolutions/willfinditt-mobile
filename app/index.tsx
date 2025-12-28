@@ -9,7 +9,7 @@ export default function Index() {
 
   useEffect(() => {
     // Check if this is the user's first time opening the app
-    const checkFirstLaunch = () => {
+    const checkFirstLaunch = async () => {
       const firstLaunch = mmkvStorage.isFirstLaunch();
       setIsFirstLaunch(firstLaunch);
       setIsLoading(false);

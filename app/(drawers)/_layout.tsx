@@ -26,6 +26,7 @@ export default function TabLayout() {
       <Drawer.Screen name="index" options={{ headerShown: false, title:"Home" }} />
       <Drawer.Screen name="favorites" />
       <Drawer.Screen name="messages" />
+      <Drawer.Screen name="notifications" />
       <Drawer.Screen name="settings" options={{ headerShown: false }} />
       <Drawer.Screen name="support" />
     </Drawer>

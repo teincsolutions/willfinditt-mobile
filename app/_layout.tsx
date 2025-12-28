@@ -1,9 +1,18 @@
+// FCM Background Message Handler - MUST be imported first
+import "@/services/fcmBackgroundHandler";
+
+// Firebase App Initialization - MUST be imported early
+import '@react-native-firebase/app';
+
 import { OTAUpdateBanner } from "@/components/ui/OTAUpdateBanner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AppThemeProvider } from "@/contexts/ThemeContext";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import * as Notifications from 'expo-notifications';
 import { Stack } from "expo-router";
 // import * as SplashScreen from "expo-splash-screen";
+import { useAuth } from "@/hooks/useAuth";
+import { useFCMInitialization } from "@/hooks/useOneNightNotifications";
 import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -20,10 +29,29 @@ GoogleSignin.configure({
   iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
 });
 
+// Configure Notifications
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+// FCM Initializer Component
+function FCMInitializer() {
+  const { user } = useAuth();
+
+  // Initialize FCM when app starts, passing user ID if available
+  useFCMInitialization(user?.id);
+  return null;
+}
+
 export default function RootLayout() {
   return (
     <QueryProvider>
       <AppThemeProvider>
+        <FCMInitializer />
         <GestureHandlerRootView style={{ flex: 1 }}>
           <OTAUpdateBanner checkOnMount autoDownload={true} />
           <View style={{ flex: 1 }}>
