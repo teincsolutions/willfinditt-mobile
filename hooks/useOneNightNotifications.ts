@@ -153,6 +153,7 @@ export const usePushNotifications = (
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -180,6 +181,7 @@ export const useDevicePushNotifications = (
     },
     enabled: !!deviceToken,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true,
   });
 };
 
