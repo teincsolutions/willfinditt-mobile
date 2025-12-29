@@ -2,7 +2,7 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
-import React, { forwardRef, useMemo, useState } from "react";
+import React, { forwardRef, useEffect, useMemo, useState } from "react";
 
 import { useTheme } from "@/contexts/ThemeContext";
 import { NOTIFICATION_TOPICS, useNotificationTopics } from "@/hooks/useNotificationTopics";
@@ -20,9 +20,14 @@ export const NotificationSettingsSheet = forwardRef<
   NotificationSettingsSheetProps
 >((props, ref) => {
   const { spacing, colors } = useTheme();
-  const { topicSubscriptions, toggleTopicSubscription, updateAllTopicSubscriptions, isLoading } = useNotificationTopics();
+  const { topicSubscriptions, toggleTopicSubscription, updateAllTopicSubscriptions, enforceAuthenticationRestrictions, isTopicAvailable, isAuthenticated, isLoading } = useNotificationTopics();
 
   const snapPoints = useMemo(() => ["85%"], []);
+
+  // Enforce authentication restrictions when component mounts or auth state changes
+  useEffect(() => {
+    enforceAuthenticationRestrictions();
+  }, [enforceAuthenticationRestrictions]);
 
   // Notification preferences state (non-topic based settings)
   const [settings, setSettings] = useState({
@@ -147,10 +152,10 @@ export const NotificationSettingsSheet = forwardRef<
 
           <ToggleSwitch
             label="Promotions & Offers"
-            description="Receive promotional offers and deals"
+            description={!isAuthenticated ? "Login required to receive promotional offers" : "Receive promotional offers and deals"}
             value={topicSubscriptions[NOTIFICATION_TOPICS.PROMOTIONS]}
             onValueChange={() => handleTopicToggle(NOTIFICATION_TOPICS.PROMOTIONS)}
-            disabled={isLoading}
+            disabled={isLoading || !isTopicAvailable(NOTIFICATION_TOPICS.PROMOTIONS)}
           />
         </View>
 
@@ -190,10 +195,10 @@ export const NotificationSettingsSheet = forwardRef<
 
           <ToggleSwitch
             label="Ad Status Updates"
-            description="Get notified about changes to your ad status"
+            description={!isAuthenticated ? "Login required to receive ad status updates" : "Get notified about changes to your ad status"}
             value={topicSubscriptions[NOTIFICATION_TOPICS.ADS]}
             onValueChange={() => handleTopicToggle(NOTIFICATION_TOPICS.ADS)}
-            disabled={isLoading}
+            disabled={isLoading || !isTopicAvailable(NOTIFICATION_TOPICS.ADS)}
           />
         </View>
 

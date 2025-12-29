@@ -149,10 +149,6 @@ export default function CustomDrawerContent(
         label="Notifications"
         active={props.state.index === 3}
         onPress={() => {
-          if (!isAuthenticated) {
-            handleLogin();
-            return;
-          }
           props.navigation.navigate("notifications");
         }}
         icon={({ active }) => (

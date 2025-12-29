@@ -44,6 +44,7 @@ export const MESSAGE_QUERY_KEYS = {
 
 export const PUSH_NOTIFICATION_QUERY_KEYS = {
   PUSH_NOTIFICATIONS: (userId: string, params?: any) => ["push-notifications", userId, params || {}] as const,
+  DEVICE_PUSH_NOTIFICATIONS: (deviceToken: string, params?: any) => ["device-push-notifications", deviceToken, params || {}] as const,
   PUSH_NOTIFICATION: (notificationId: string) => ["push-notification", notificationId] as const,
   PUSH_NOTIFICATION_USER_STATUS: (userId: string) => ["push-notification", "user-status", userId] as const,
 };

@@ -2,13 +2,12 @@
 import "@/services/fcmBackgroundHandler";
 
 // Firebase App Initialization - MUST be imported early
-import '@react-native-firebase/app';
+import "@react-native-firebase/app";
 
 import { OTAUpdateBanner } from "@/components/ui/OTAUpdateBanner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AppThemeProvider } from "@/contexts/ThemeContext";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import * as Notifications from 'expo-notifications';
 import { Stack } from "expo-router";
 // import * as SplashScreen from "expo-splash-screen";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,15 +26,6 @@ GoogleSignin.configure({
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
   scopes: ["profile", "email"],
   iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-});
-
-// Configure Notifications
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
 });
 
 // FCM Initializer Component

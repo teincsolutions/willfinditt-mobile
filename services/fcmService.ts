@@ -1,4 +1,5 @@
 import { pushNotificationService } from '@/services/pushNotificationService';
+import { mmkvStorage } from '@/utils/mmkvStorage';
 import { handleNotificationRouting } from '@/utils/notificationRouting';
 import notifee, { AndroidImportance, AndroidStyle } from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
@@ -10,6 +11,7 @@ import { Platform } from 'react-native';
 
 class FCMService {
   private deviceToken: string | null = null;
+  private readonly TOKEN_KEY = 'fcm_token';
 
   // ============================================
   // Permission Management
@@ -60,10 +62,20 @@ class FCMService {
    */
   async getToken(): Promise<string | null> {
     try {
+      // Check if we have a cached token first
+      const cachedToken = mmkvStorage.getItem(this.TOKEN_KEY);
+      if (cachedToken) {
+        this.deviceToken = cachedToken;
+        console.log('Using cached FCM token');
+        return cachedToken;
+      }
 
-      const token  = await messaging().getToken();
+      // Get fresh token from Firebase
+      const token = await messaging().getToken();
       this.deviceToken = token;
-      console.log('Push Token:', token);
+      // Cache the token
+      mmkvStorage.setItem(this.TOKEN_KEY, token);
+      console.log('Retrieved and cached new FCM token');
       return token;
     } catch (error) {
       console.error('Error getting push token:', error);
@@ -103,7 +115,7 @@ class FCMService {
       console.log('Device registered successfully with backend');
       return true;
     } catch (error) {
-      console.error('Error registering device:', error);
+      console.log('Error registering device:', error);
       return false;
     }
   }
@@ -115,6 +127,8 @@ class FCMService {
     return messaging().onTokenRefresh((token) => {
       console.log('FCM Token refreshed:', token);
       this.deviceToken = token;
+      // Update cached token
+      mmkvStorage.setItem(this.TOKEN_KEY, token);
       callback(token);
     });
   }
@@ -288,15 +302,31 @@ class FCMService {
   }
 
   /**
-   * Delete FCM token
+   * Logout device from push notifications
    */
-  async deleteToken(): Promise<void> {
+  async logoutDevice(): Promise<boolean> {
     try {
+      const token = this.getCurrentToken();
+      if (!token) {
+        console.error('No FCM token available for logout');
+        return false;
+      }
+
+      await pushNotificationService.logoutDevice({
+        fcmToken: token,
+      });
+
+      // Delete the token locally
       await messaging().deleteToken();
       this.deviceToken = null;
-      console.log('FCM token deleted');
+      // Clear cached token
+      mmkvStorage.removeItem(this.TOKEN_KEY);
+
+      console.log('Device logged out successfully');
+      return true;
     } catch (error) {
-      console.error('Error deleting FCM token:', error);
+      console.error('Error logging out device:', error);
+      return false;
     }
   }
 }

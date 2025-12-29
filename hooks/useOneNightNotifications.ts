@@ -1,17 +1,24 @@
 import { fcmService } from "@/services/fcmService";
 import {
-    getNotifications,
-    getUserStatus,
-    markNotificationAsRead,
-    pauseUserNotifications,
-    refreshDeviceToken,
-    resumeUserNotifications,
-    setUserOffline,
-    setUserOnline,
-    syncNotifications
+  getDeviceNotificationsHistory,
+  getNotificationsHistory,
+  getUserNotificationStatus,
+  logoutDevice,
+  markDeviceNotificationAsRead,
+  markDeviceNotificationsAsReadBulk,
+  markNotificationAsRead,
+  markNotificationsAsReadBulk,
+  pauseUserNotifications,
+  resumeUserNotifications,
+  syncNotifications,
 } from "@/services/pushNotificationService";
 import { handleNotificationRouting } from "@/utils/notificationRouting";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useEffect } from "react";
 import { toast } from "sonner-native";
 import { PUSH_NOTIFICATION_QUERY_KEYS } from "./queryKeys";
@@ -40,23 +47,24 @@ export const useRegisterDevice = (userId?: string) => {
     onError: (error: any) => {
       console.error("Device registration failed:", error);
       toast.error(
-        error.message || error.response?.data?.message || "Failed to register device"
+        error.message ||
+          error.response?.data?.message ||
+          "Failed to register device"
       );
     },
   });
 };
 
-export const useRefreshDeviceToken = () => {
+export const useLogoutDevice = () => {
   return useMutation({
-    mutationFn: refreshDeviceToken,
+    mutationFn: logoutDevice,
     onSuccess: (data) => {
-      console.log("Device token refreshed:", data);
+      console.log("Device logged out:", data);
+      toast.success("Device logged out successfully");
     },
     onError: (error: any) => {
-      console.error("Token refresh failed:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to refresh device token"
-      );
+      console.error("Device logout failed:", error);
+      toast.error(error.response?.data?.message || "Failed to logout device");
     },
   });
 };
@@ -78,7 +86,7 @@ export const useFCMInitialization = (userId?: string) => {
         if (!hasPermissions) {
           const granted = await fcmService.requestPermissions();
           if (!granted) {
-            console.log('Notification permissions not granted');
+            console.log("Notification permissions not granted");
             return;
           }
         }
@@ -88,13 +96,16 @@ export const useFCMInitialization = (userId?: string) => {
 
         // Set up message handlers
         unsubscribeOnMessage = await fcmService.onMessage();
-        unsubscribeOnNotificationOpened = await fcmService.onNotificationOpenedApp();
+        unsubscribeOnNotificationOpened =
+          await fcmService.onNotificationOpenedApp();
 
         // Handle token refresh
-        unsubscribeOnTokenRefresh = await fcmService.onTokenRefresh(async (token) => {
-          console.log('Token refreshed, re-registering device');
-          await fcmService.registerDevice(userId);
-        });
+        unsubscribeOnTokenRefresh = await fcmService.onTokenRefresh(
+          async (token) => {
+            console.log("Token refreshed, re-registering device");
+            await fcmService.registerDevice(userId);
+          }
+        );
 
         // Check for initial notification
         const initialNotification = await fcmService.getInitialNotification();
@@ -104,9 +115,8 @@ export const useFCMInitialization = (userId?: string) => {
             handleNotificationRouting(initialNotification as any);
           }, 1000);
         }
-
       } catch (error) {
-        console.error('Error initializing FCM:', error);
+        console.error("Error initializing FCM:", error);
       }
     };
 
@@ -127,12 +137,48 @@ export const useFCMInitialization = (userId?: string) => {
 
 export const usePushNotifications = (
   userId: string,
-  params: { limit?: number; offset?: number } = {}
+  params: { page?: number; limit?: number } = {}
 ) => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId, params),
-    queryFn: () => getNotifications(userId, params),
+    queryFn: ({ pageParam = 1 }) =>
+      getNotificationsHistory(userId, { ...params, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const { meta } = lastPage;
+      if (meta.hasNext) {
+        return meta.page + 1;
+      }
+      return undefined;
+    },
     enabled: !!userId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useDevicePushNotifications = (
+  deviceToken: string,
+  params: { page?: number; limit?: number } = {}
+) => {
+  return useInfiniteQuery({
+    queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(
+      deviceToken,
+      params
+    ),
+    queryFn: async ({ pageParam = 1 }) =>
+      await getDeviceNotificationsHistory(deviceToken, {
+        ...params,
+        page: pageParam,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const { meta } = lastPage;
+      if (meta.hasNext) {
+        return meta.page + 1;
+      }
+      return undefined;
+    },
+    enabled: !!deviceToken,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
@@ -141,13 +187,16 @@ export const useMarkPushNotificationRead = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ notificationId, userId }: { notificationId: string; userId: string }) =>
-      markNotificationAsRead(notificationId, userId),
+    mutationFn: ({ userId, targetId }: { userId: string; targetId: string }) =>
+      markNotificationAsRead(userId, targetId),
     onSuccess: (data, variables) => {
       // Invalidate push notifications list
       queryClient.invalidateQueries({
-        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(variables.userId),
+        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(
+          variables.userId
+        ),
       });
+      toast.success("Notification marked as read");
     },
     onError: (error: any) => {
       console.error("Mark notification read failed:", error);
@@ -158,63 +207,141 @@ export const useMarkPushNotificationRead = () => {
   });
 };
 
+export const useMarkPushNotificationsReadBulk = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      userId,
+      targetIds,
+    }: {
+      userId: string;
+      targetIds: string[];
+    }) => markNotificationsAsReadBulk(userId, targetIds),
+    onSuccess: (
+      data: { markedAsRead: number; targetIds: string[] },
+      variables
+    ) => {
+      // Invalidate push notifications list
+      queryClient.invalidateQueries({
+        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(
+          variables.userId
+        ),
+      });
+      toast.success(`${data.markedAsRead} notifications marked as read`);
+    },
+    onError: (error: any) => {
+      console.error("Bulk mark notifications read failed:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to mark notifications as read"
+      );
+    },
+  });
+};
+
+export const useMarkDevicePushNotificationRead = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      fcmToken,
+      targetId,
+    }: {
+      fcmToken: string;
+      targetId: string;
+    }) => markDeviceNotificationAsRead(fcmToken, targetId),
+    onSuccess: (data, variables) => {
+      // Invalidate device push notifications list
+      queryClient.invalidateQueries({
+        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(
+          variables.fcmToken
+        ),
+      });
+      toast.success("Notification marked as read");
+    },
+    onError: (error: any) => {
+      console.error("Mark device notification read failed:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to mark notification as read"
+      );
+    },
+  });
+};
+
+export const useMarkDevicePushNotificationsReadBulk = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      fcmToken,
+      targetIds,
+    }: {
+      fcmToken: string;
+      targetIds: string[];
+    }) => markDeviceNotificationsAsReadBulk(fcmToken, targetIds),
+    onSuccess: (
+      data: { markedAsRead: number; targetIds: string[] },
+      variables
+    ) => {
+      // Invalidate device push notifications list
+      queryClient.invalidateQueries({
+        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(
+          variables.fcmToken
+        ),
+      });
+      toast.success(`${data.markedAsRead} notifications marked as read`);
+    },
+    onError: (error: any) => {
+      console.error("Bulk mark device notifications read failed:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to mark notifications as read"
+      );
+    },
+  });
+};
+
+// ============================================
+// Combined Notification Hook
+// ============================================
+
+export const useNotificationsWithAutoMark = (
+  userId?: string,
+  deviceToken?: string,
+  params: { page?: number; limit?: number } = {}
+) => {
+  const notificationsQuery = userId
+    ? usePushNotifications(userId, params)
+    : useDevicePushNotifications(deviceToken || "", params);
+
+  return notificationsQuery;
+};
+
 // ============================================
 // User Status Hooks
 // ============================================
-
-export const useSetUserOnline = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: setUserOnline,
-    onSuccess: (data, variables) => {
-      // Invalidate user status
-      queryClient.invalidateQueries({
-        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATION_USER_STATUS(variables.userId),
-      });
-      console.log(`User ${variables.userId} set to online, ${data.queuedNotificationsDelivered} queued notifications delivered`);
-    },
-    onError: (error: any) => {
-      console.error("Set user online failed:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to set user online"
-      );
-    },
-  });
-};
-
-export const useSetUserOffline = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: setUserOffline,
-    onSuccess: (data, variables) => {
-      // Invalidate user status
-      queryClient.invalidateQueries({
-        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATION_USER_STATUS(variables.userId),
-      });
-      console.log(`User ${variables.userId} set to offline`);
-    },
-    onError: (error: any) => {
-      console.error("Set user offline failed:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to set user offline"
-      );
-    },
-  });
-};
 
 export const usePauseUserNotifications = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: pauseUserNotifications,
-    onSuccess: (data, variables) => {
+    mutationFn: ({
+      userId,
+      durationMinutes,
+    }: {
+      userId: string;
+      durationMinutes?: number;
+    }) => pauseUserNotifications(userId, { durationMinutes }),
+    onSuccess: (data: { pausedUntil: string }, variables) => {
       // Invalidate user status
       queryClient.invalidateQueries({
-        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATION_USER_STATUS(variables.userId),
+        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATION_USER_STATUS(
+          variables.userId
+        ),
       });
-      console.log(`User ${variables.userId} notifications paused`);
+      console.log(
+        `User ${variables.userId} notifications paused until ${data.pausedUntil}`
+      );
+      toast.success("Notifications paused successfully");
     },
     onError: (error: any) => {
       console.error("Pause user notifications failed:", error);
@@ -229,13 +356,17 @@ export const useResumeUserNotifications = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: resumeUserNotifications,
+    mutationFn: ({ userId }: { userId: string }) =>
+      resumeUserNotifications(userId),
     onSuccess: (data, variables) => {
       // Invalidate user status
       queryClient.invalidateQueries({
-        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATION_USER_STATUS(variables.userId),
+        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATION_USER_STATUS(
+          variables.userId
+        ),
       });
-      console.log(`User ${variables.userId} notifications resumed, ${data.queuedNotificationsDelivered} queued notifications delivered`);
+      console.log(`User ${variables.userId} notifications resumed`);
+      toast.success("Notifications resumed successfully");
     },
     onError: (error: any) => {
       console.error("Resume user notifications failed:", error);
@@ -248,8 +379,9 @@ export const useResumeUserNotifications = () => {
 
 export const useUserNotificationStatus = (userId: string) => {
   return useQuery({
-    queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATION_USER_STATUS(userId),
-    queryFn: () => getUserStatus(userId),
+    queryKey:
+      PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATION_USER_STATUS(userId),
+    queryFn: () => getUserNotificationStatus(userId),
     enabled: !!userId,
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
@@ -263,14 +395,23 @@ export const useSyncPushNotifications = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ userId, lastSyncTimestamp }: { userId: string; lastSyncTimestamp?: string }) =>
-      syncNotifications(userId, lastSyncTimestamp),
-    onSuccess: (data, variables) => {
+    mutationFn: ({
+      userId,
+      lastSyncTimestamp,
+    }: {
+      userId: string;
+      lastSyncTimestamp?: string;
+    }) => syncNotifications(userId, lastSyncTimestamp),
+    onSuccess: (data: { data: any[]; meta: any }, variables) => {
       // Invalidate push notifications list
       queryClient.invalidateQueries({
-        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(variables.userId),
+        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(
+          variables.userId
+        ),
       });
-      console.log(`Synced ${data.total} notifications for user ${variables.userId}`);
+      console.log(
+        `Synced ${data.data.length} notifications for user ${variables.userId}`
+      );
     },
     onError: (error: any) => {
       console.error("Sync notifications failed:", error);

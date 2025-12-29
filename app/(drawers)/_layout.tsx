@@ -8,7 +8,6 @@ import React from "react";
 
 export default function TabLayout() {
   const { spacing } = useTheme();
-
   return (
     <Drawer
       screenOptions={{

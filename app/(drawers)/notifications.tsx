@@ -3,143 +3,96 @@ import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
 import { useAuth } from "@/hooks/useAuth";
-import { useMarkPushNotificationRead, usePushNotifications } from "@/hooks/useOneNightNotifications";
+import {
+  useMarkDevicePushNotificationsReadBulk,
+  useNotificationsWithAutoMark,
+} from "@/hooks/useOneNightNotifications";
 import { useTheme } from "@/hooks/useTheme";
 import { NotificationResponse } from "@/services/pushNotificationService";
-import { formatDistanceToNow } from "date-fns";
+import { mmkvStorage } from "@/utils/mmkvStorage";
 import Drawer from "expo-router/drawer";
 import React from "react";
-import { ActivityIndicator, FlatList, RefreshControl, TouchableOpacity, View } from "react-native";
-
-interface NotificationItemProps {
-  notification: NotificationResponse;
-  onPress: () => void;
-  onMarkRead: () => void;
-}
-
-const NotificationItem: React.FC<NotificationItemProps> = ({
-  notification,
-  onPress,
-  onMarkRead,
-}) => {
-  const { colors, spacing, typography } = useTheme();
-
-  return (
-    <TouchableOpacity
-      style={{
-        backgroundColor: notification.read ? colors.background : colors.backgroundSecondary,
-        padding: spacing.md,
-        marginHorizontal: spacing.md,
-        marginVertical: spacing.xs,
-        borderRadius: spacing.sm,
-        borderLeftWidth: 3,
-        borderLeftColor: notification.read ? colors.border : colors.primary,
-      }}
-      onPress={onPress}
-    >
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <View style={{ flex: 1 }}>
-          <AppText
-            style={{
-              ...typography.body,
-              fontWeight: notification.read ? "400" : "600",
-              color: notification.read ? colors.textGray : colors.text,
-            }}
-          >
-            {notification.title}
-          </AppText>
-          <AppText
-            style={{
-              ...typography.caption,
-              color: colors.textGray,
-              marginTop: spacing.xs,
-            }}
-          >
-            {notification.body}
-          </AppText>
-          <AppText
-            style={{
-              ...typography.caption,
-              color: colors.textLightGray,
-              marginTop: spacing.xs,
-            }}
-          >
-            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-          </AppText>
-        </View>
-        {!notification.read && (
-          <TouchableOpacity
-            onPress={onMarkRead}
-            style={{
-              padding: spacing.xs,
-              backgroundColor: colors.primary,
-              borderRadius: spacing.xs,
-            }}
-          >
-            <AppText style={{ ...typography.caption, color: colors.background, fontSize: 10 }}>
-              Mark Read
-            </AppText>
-          </TouchableOpacity>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-};
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  View,
+} from "react-native";
 
 export default function NotificationsScreen() {
+  const insets = useSafeAreaInsets();
   const { colors, spacing, icons, typography } = useTheme();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  // Get device token directly from persistent storage for non-authenticated users
+  const deviceToken = mmkvStorage.getItem("fcm_token");
 
+  // Use the combined hook that handles loading
   const {
     data: notificationsData,
     isLoading,
     isRefetching,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    error,
     refetch,
-  } = usePushNotifications(user?.id || "", { limit: 50 });
+  } = useNotificationsWithAutoMark(user?.id, deviceToken, {
+    limit: 20, // Smaller page size for infinite scroll
+  });
+  const markDeviceReadBulkMutation = useMarkDevicePushNotificationsReadBulk();
 
-  const markReadMutation = useMarkPushNotificationRead();
+  console.log("Notifications error:", error?.message);
+  // Flatten the paginated data
+  const allNotifications =
+    notificationsData?.pages?.flatMap((page) => page.data) || [];
 
   const handleNotificationPress = (notification: NotificationResponse) => {
     // Handle routing based on notification type and data
     handleNotificationRouting(notification);
-
-    // Mark as read if not already
-    if (!notification.read) {
-      markReadMutation.mutate({
-        notificationId: notification.id,
-        userId: user?.id || "",
-      });
-    }
-  };
-
-  const handleMarkRead = (notification: NotificationResponse) => {
-    markReadMutation.mutate({
-      notificationId: notification.id,
-      userId: user?.id || "",
-    });
   };
 
   const renderNotification = ({ item }: { item: NotificationResponse }) => (
-    <NotificationItem
+    <NotificationCard
       notification={item}
       onPress={() => handleNotificationPress(item)}
-      onMarkRead={() => handleMarkRead(item)}
     />
   );
 
   const renderEmpty = () => (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: spacing.xl }}>
-      <AppText style={{ ...typography.body, color: colors.textGray, textAlign: "center" }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        padding: spacing.xl,
+      }}
+    >
+      <AppText
+        style={{
+          ...typography.body,
+          color: colors.textGray,
+          textAlign: "center",
+        }}
+      >
         No notifications yet
       </AppText>
-      <AppText style={{ ...typography.caption, color: colors.textLightGray, textAlign: "center", marginTop: spacing.sm }}>
-        You'll see your push notifications here
+      <AppText
+        style={{
+          ...typography.caption,
+          color: colors.textLightGray,
+          textAlign: "center",
+          marginTop: spacing.sm,
+        }}
+      >
+        {isAuthenticated
+          ? "You'll see your push notifications here"
+          : "You'll see notifications sent to your device here"}
       </AppText>
     </View>
   );
 
   return (
-    <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+    <AppView style={{ flex: 1 }}>
       <Drawer.Screen
         options={{
           header: () => (
@@ -155,15 +108,30 @@ export default function NotificationsScreen() {
         }}
       />
       {isLoading ? (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <FlatList
-          data={notificationsData?.data || []}
+          data={allNotifications}
           renderItem={renderNotification}
           keyExtractor={(item) => item.id}
           ListEmptyComponent={renderEmpty}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={{ padding: spacing.md, alignItems: "center" }}>
+                <ActivityIndicator size="small" color={colors.primary} />
+              </View>
+            ) : null
+          }
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
@@ -171,11 +139,17 @@ export default function NotificationsScreen() {
               colors={[colors.primary]}
             />
           }
-          contentContainerStyle={{ flexGrow: 1, paddingTop: spacing.md }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: insets.bottom + spacing.md,
+          }}
         />
       )}
     </AppView>
   );
 }
 
+import { NotificationCard } from "@/components/notification/NotificationCard";
 import { handleNotificationRouting } from "@/utils/notificationRouting";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
