@@ -12,7 +12,9 @@ import { Stack } from "expo-router";
 // import * as SplashScreen from "expo-splash-screen";
 import { useAuth } from "@/hooks/useAuth";
 import { useFCMInitialization } from "@/hooks/useOneNightNotifications";
+import { processPendingNotification } from "@/utils/notificationRouting";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
@@ -38,6 +40,15 @@ function FCMInitializer() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Process any pending notification routing after app is fully loaded
+    const timer = setTimeout(() => {
+      processPendingNotification();
+    }, 1500); // Slightly longer delay to ensure navigation is ready
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <QueryProvider>
       <AppThemeProvider>

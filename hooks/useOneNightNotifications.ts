@@ -12,7 +12,7 @@ import {
   resumeUserNotifications,
   syncNotifications,
 } from "@/services/pushNotificationService";
-import { handleNotificationRouting } from "@/utils/notificationRouting";
+import { setPendingNotification } from "@/utils/notificationRouting";
 import {
   useInfiniteQuery,
   useMutation,
@@ -110,10 +110,8 @@ export const useFCMInitialization = (userId?: string) => {
         // Check for initial notification
         const initialNotification = await fcmService.getInitialNotification();
         if (initialNotification) {
-          // Handle initial notification routing after a short delay to ensure app is ready
-          setTimeout(() => {
-            handleNotificationRouting(initialNotification as any);
-          }, 1000);
+          // Set pending notification for routing after app is ready
+          setPendingNotification(initialNotification as any);
         }
       } catch (error) {
         console.error("Error initializing FCM:", error);

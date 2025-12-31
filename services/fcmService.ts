@@ -1,6 +1,6 @@
 import { pushNotificationService } from '@/services/pushNotificationService';
 import { mmkvStorage } from '@/utils/mmkvStorage';
-import { handleNotificationRouting } from '@/utils/notificationRouting';
+import { setPendingNotification } from '@/utils/notificationRouting';
 import notifee, { AndroidImportance, AndroidStyle } from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
@@ -161,9 +161,9 @@ class FCMService {
     return messaging().onNotificationOpenedApp((remoteMessage) => {
       console.log('Notification opened from background:', remoteMessage);
 
-      // Handle routing based on notification data
+      // Set pending notification for routing after app is ready
       if (remoteMessage.data) {
-        handleNotificationRouting(remoteMessage as any);
+        setPendingNotification(remoteMessage as any);
       }
 
       // Call custom callback if provided
