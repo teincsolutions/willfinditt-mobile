@@ -6,7 +6,7 @@ import { createMMKV } from "react-native-mmkv";
  * High-performance, encrypted storage for React Native
  */
 export const storage = createMMKV({
-  id: "willfinditt-storage2"
+  id: "willfinditt-storage"
 });
 
 /**

@@ -10,9 +10,7 @@ const isDevClient = __DEV__;
 // Get secure API key from expo-constants (embedded at build time)
 const getSecureApiKey = () => {
   const config = Constants.expoConfig?.extra || {};
-  const apiKey = isDevClient
-    ? 'luRyCBHIMN0fpbFW2tjz47bKxdgbhTPM'
-    : config.ONE_NIGHT_NOTIFY_API_KEY || "";
+  const apiKey = config.ONE_NIGHT_NOTIFY_API_KEY || "";
 
   console.log("Config one-night key: ", apiKey);
   return apiKey;

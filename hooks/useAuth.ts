@@ -9,7 +9,7 @@ import type {
   User,
 } from "@/types";
 import { onLogout } from "@/utils/eventEmitter";
-import { mmkvStorage, storage } from "@/utils/mmkvStorage";
+import { storage } from "@/utils/mmkvStorage";
 import * as tokenManager from "@/utils/tokenManager";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -17,14 +17,6 @@ import { useEffect } from "react";
 import { useMMKVBoolean } from "react-native-mmkv";
 import { toast } from "sonner-native";
 import { AUTH_QUERY_KEYS, SELLER_QUERY_KEYS } from "./queryKeys";
-
-// ============================================
-// MMKV Storage Keys
-// ============================================
-
-export const AUTH_KEYS = {
-  IS_AUTHENTICATED: "auth_is_authenticated",
-} as const;
 
 // ============================================
 // Storage Helpers (Using MMKV native JSON support)
@@ -38,7 +30,6 @@ export async function clearAuthState(): Promise<void> {
     console.error("Error signing out from Google:", error);
   }
   tokenManager.clearTokens();
-  mmkvStorage.removeItem(AUTH_KEYS.IS_AUTHENTICATED);
   queryClient.clear();
 }
 
@@ -47,12 +38,10 @@ export async function clearAuthState(): Promise<void> {
 // ============================================
 
 export function useAuth() {
-  // Global authentication state from MMKV (triggers re-renders automatically)
   const [isAuthenticated, setIsAuthenticated] = useMMKVBoolean(
-    AUTH_KEYS.IS_AUTHENTICATED,
+    tokenManager.TOKEN_KEYS.IS_AUTHENTICATED,
     storage
   );
-
   // Listen for logout events from API interceptor
   useEffect(() => {
     const cleanup = onLogout((payload) => {
@@ -60,9 +49,6 @@ export function useAuth() {
 
       // Use a small timeout to avoid immediate state updates during render
       setTimeout(() => {
-        // Clear auth state
-        setIsAuthenticated(false);
-
         // Show appropriate message based on reason
         const messages = {
           invalid_token: "Your session is invalid. Please login again.",
@@ -79,13 +65,13 @@ export function useAuth() {
     });
 
     return cleanup;
-  }, [setIsAuthenticated]);
+  }, [isAuthenticated]);
 
   // Get user from React Query cache or storage
   const { data: user, isLoading } = useQuery<User | null>({
     queryKey: AUTH_QUERY_KEYS.AUTH_USER,
     queryFn: async () => await authService.getProfile(),
-    enabled: isAuthenticated,
+    enabled: !!tokenManager.getAccessToken(),
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });
@@ -203,7 +189,8 @@ export function useAuth() {
     onError: (error) => {
       clearAuthState();
       console.log("Error during logout:", error);
-      toast.error("Logout completed with errors");
+      toast.success("Logout forced completed");
+      toast.error(error?.message || "Error during logout");
     },
   });
 
@@ -394,7 +381,7 @@ export function useAuth() {
     // User State
     user,
     isLoading,
-    isAuthenticated, // Global auth state from MMKV
+    isAuthenticated: !!isAuthenticated, // Global auth state from MMKV
 
     // Registration
     register: registerMutation.mutate,
