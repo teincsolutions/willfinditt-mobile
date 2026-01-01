@@ -769,6 +769,7 @@ export default function AdForm({
                 onChangeText={formik.handleChange("address")}
                 onBlur={formik.handleBlur("address")}
                 placeholder="Enter your address"
+                maxLength={100}
                 error={formik.touched.address && formik.errors.address}
                 style={{ marginBottom: spacing.md }}
               />

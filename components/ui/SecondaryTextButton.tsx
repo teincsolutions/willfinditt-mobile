@@ -3,6 +3,7 @@ import { FontSizeKey } from "@/constants";
 import { useTheme } from "@/hooks/useTheme";
 import React, { ReactNode } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -20,6 +21,7 @@ type Props = {
   underline?: boolean;
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
+  loading?: boolean;
   onPress: () => void;
 };
 
@@ -32,9 +34,10 @@ export default function SecondaryTextButton({
   titleStyle,
   style,
   disabled,
+  loading,
   onPress,
 }: Props) {
-  const { spacing } = useTheme();
+  const { spacing, colors } = useTheme();
 
   return (
     <Pressable
@@ -53,6 +56,7 @@ export default function SecondaryTextButton({
       >
         {title}
       </AppText>
+      {loading && <ActivityIndicator size="small" color={colors.accent} />}
 
       {!isLeft && icon}
     </Pressable>

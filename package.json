@@ -73,6 +73,7 @@
     "reanimated-masonry-list": "^1.0.1",
     "socket.io-client": "^4.8.1",
     "sonner-native": "^0.21.2",
+    "truncate-html": "^1.2.2",
     "yup": "^1.7.1"
   },
   "devDependencies": {

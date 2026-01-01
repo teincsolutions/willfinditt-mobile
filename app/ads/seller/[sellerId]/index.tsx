@@ -1,5 +1,5 @@
 import BusinessProfileHeader from "@/components/account/BusinessProfileHeader";
-import BusinessProfileSkeleton from "@/components/account/BusinessProfileSkeleton";
+import SellerProfileSkeleton from "@/components/account/SellerProfileSkeleton";
 import ProductCard from "@/components/ads/ProductCard";
 import ProductCardSkeleton from "@/components/ads/ProductCardSkeleton";
 import AppText from "@/components/ui/AppText";
@@ -71,7 +71,7 @@ export default function SellerProfileScreen() {
   };
 
   if (isLoadingProfile) {
-    return <BusinessProfileSkeleton />;
+    return <SellerProfileSkeleton />;
   }
 
   if (!sellerProfile) {

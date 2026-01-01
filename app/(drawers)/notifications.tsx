@@ -1,4 +1,5 @@
 import DrawerHeaderToggle from "@/components/drawer/DrawerHeaderToggle";
+import { NotificationCard } from "@/components/notification/NotificationCard";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
@@ -8,16 +9,19 @@ import {
   useNotificationsWithAutoMark,
 } from "@/hooks/useOneNightNotifications";
 import { useTheme } from "@/hooks/useTheme";
+import { fcmService } from "@/services/fcmService";
 import { NotificationResponse } from "@/services/pushNotificationService";
 import { mmkvStorage } from "@/utils/mmkvStorage";
+import { handleNotificationRouting } from "@/utils/notificationRouting";
 import Drawer from "expo-router/drawer";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
@@ -25,6 +29,11 @@ export default function NotificationsScreen() {
   const { user, isAuthenticated } = useAuth();
   // Get device token directly from persistent storage for non-authenticated users
   const deviceToken = mmkvStorage.getItem("fcm_token");
+
+  // Clear badge when notifications page is opened
+  useEffect(() => {
+    fcmService.clearBadge();
+  }, []);
 
   // Use the combined hook that handles loading
   const {
@@ -148,8 +157,4 @@ export default function NotificationsScreen() {
     </AppView>
   );
 }
-
-import { NotificationCard } from "@/components/notification/NotificationCard";
-import { handleNotificationRouting } from "@/utils/notificationRouting";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 

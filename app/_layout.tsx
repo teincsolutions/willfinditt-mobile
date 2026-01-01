@@ -11,10 +11,10 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Stack } from "expo-router";
 // import * as SplashScreen from "expo-splash-screen";
 import { useAuth } from "@/hooks/useAuth";
-import { useFCMInitialization } from "@/hooks/useOneNightNotifications";
+import { useFCMInitialization, useSyncPushNotifications } from "@/hooks/useOneNightNotifications";
 import { processPendingNotification } from "@/utils/notificationRouting";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
@@ -33,9 +33,21 @@ GoogleSignin.configure({
 // FCM Initializer Component
 function FCMInitializer() {
   const { user } = useAuth();
+  const syncNotifications = useSyncPushNotifications();
+
+  console.log("FCMInitializer: user", user?.id ? "logged in" : "not logged in", user?.id);
+
+  const onRegistered = useCallback(() => {
+    // Callback when device is registered
+    if (user?.id) {
+      console.log("FCMInitializer: Device registered, now syncing notifications for user", user.id);
+      syncNotifications.mutate({ userId: user.id });
+    }
+  }, [user?.id, syncNotifications]);
 
   // Initialize FCM when app starts, passing user ID if available
-  useFCMInitialization(user?.id);
+  useFCMInitialization(user?.id, onRegistered);
+
   return null;
 }
 

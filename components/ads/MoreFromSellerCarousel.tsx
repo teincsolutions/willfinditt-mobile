@@ -9,7 +9,7 @@ import { ProductCardSmall } from "./ProductCardSmall";
 export default function MoreFromSellerCarousel({ ads = [] }: { ads?: Ad[] }) {
   const { spacing } = useTheme();
   return (
-    <View style={{ marginTop: spacing.md }}>
+    <View style={{ marginTop: spacing.md, width: "100%" }}>
       <AppText
         variant="lg"
         style={{
@@ -23,7 +23,7 @@ export default function MoreFromSellerCarousel({ ads = [] }: { ads?: Ad[] }) {
       <FlatList
         data={ads}
         horizontal
-        contentContainerStyle={{ gap: spacing.sm }}
+        contentContainerStyle={{ gap: spacing.sm, paddingEnd: spacing.xl }}
         keyExtractor={(a) => a.id}
         renderItem={({ item }) => (
           <ProductCardSmall

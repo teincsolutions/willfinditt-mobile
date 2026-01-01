@@ -19,7 +19,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner-native";
 import { PUSH_NOTIFICATION_QUERY_KEYS } from "./queryKeys";
 
@@ -73,52 +73,80 @@ export const useLogoutDevice = () => {
 // FCM Initialization Hook
 // ============================================
 
-export const useFCMInitialization = (userId?: string) => {
+export const useFCMInitialization = (userId?: string, onRegistered?: () => void) => {
+  const hasInitialized = useRef(false);
+  const previousUserId = useRef<string | undefined>(null);
+
   useEffect(() => {
+    console.log("useFCMInitialization: Starting FCM initialization for userId:", userId);
+
     let unsubscribeOnMessage: (() => void) | undefined;
     let unsubscribeOnNotificationOpened: (() => void) | undefined;
     let unsubscribeOnTokenRefresh: (() => void) | undefined;
 
     const initializeFCM = async () => {
       try {
+        console.log("useFCMInitialization: Requesting permissions");
         // Request permissions
         const hasPermissions = await fcmService.hasPermissions();
         if (!hasPermissions) {
           const granted = await fcmService.requestPermissions();
           if (!granted) {
-            console.log("Notification permissions not granted");
+            console.log("useFCMInitialization: Notification permissions not granted");
             return;
           }
         }
 
+        console.log("useFCMInitialization: Permissions granted, registering device");
         // Register device with FCM token
         await fcmService.registerDevice(userId);
 
-        // Set up message handlers
-        unsubscribeOnMessage = await fcmService.onMessage();
-        unsubscribeOnNotificationOpened =
-          await fcmService.onNotificationOpenedApp();
-
-        // Handle token refresh
-        unsubscribeOnTokenRefresh = await fcmService.onTokenRefresh(
-          async (token) => {
-            console.log("Token refreshed, re-registering device");
-            await fcmService.registerDevice(userId);
-          }
-        );
-
-        // Check for initial notification
-        const initialNotification = await fcmService.getInitialNotification();
-        if (initialNotification) {
-          // Set pending notification for routing after app is ready
-          setPendingNotification(initialNotification as any);
+        console.log("useFCMInitialization: Device registered, calling onRegistered callback");
+        if (onRegistered) {
+          onRegistered();
         }
+
+        // Only set up message handlers once
+        if (!hasInitialized.current) {
+          console.log("useFCMInitialization: Setting up message handlers for the first time");
+          hasInitialized.current = true;
+
+          // Clear app badge when app becomes active
+          await fcmService.clearBadge();
+
+          // Set up message handlers
+          unsubscribeOnMessage = await fcmService.onMessage();
+          unsubscribeOnNotificationOpened =
+            await fcmService.onNotificationOpenedApp();
+
+          // Handle token refresh
+          unsubscribeOnTokenRefresh = await fcmService.onTokenRefresh(
+            async (token) => {
+              console.log("useFCMInitialization: Token refreshed, re-registering device");
+              await fcmService.registerDevice(userId);
+            }
+          );
+
+          // Check for initial notification
+          const initialNotification = await fcmService.getInitialNotification();
+          if (initialNotification) {
+            console.log("useFCMInitialization: Initial notification found, setting pending");
+            // Set pending notification for routing after app is ready
+            setPendingNotification(initialNotification as any);
+          }
+        }
+
+        console.log("useFCMInitialization: FCM initialization completed");
       } catch (error) {
-        console.error("Error initializing FCM:", error);
+        console.error("useFCMInitialization: Error initializing FCM:", error);
       }
     };
 
-    initializeFCM();
+    // Only run initialization if this is the first time or userId has changed
+    if (!hasInitialized.current || previousUserId.current !== userId) {
+      previousUserId.current = userId;
+      initializeFCM();
+    }
 
     // Cleanup function
     return () => {
@@ -126,7 +154,7 @@ export const useFCMInitialization = (userId?: string) => {
       if (unsubscribeOnNotificationOpened) unsubscribeOnNotificationOpened();
       if (unsubscribeOnTokenRefresh) unsubscribeOnTokenRefresh();
     };
-  }, [userId]);
+  }, [userId, onRegistered]);
 };
 
 // ============================================
@@ -309,11 +337,10 @@ export const useNotificationsWithAutoMark = (
   deviceToken?: string,
   params: { page?: number; limit?: number } = {}
 ) => {
-  const notificationsQuery = userId
-    ? usePushNotifications(userId, params)
-    : useDevicePushNotifications(deviceToken || "", params);
+  const userQuery = usePushNotifications(userId || "", params);
+  const deviceQuery = useDevicePushNotifications(deviceToken || "", params);
 
-  return notificationsQuery;
+  return userId ? userQuery : deviceQuery;
 };
 
 // ============================================
@@ -401,7 +428,10 @@ export const useSyncPushNotifications = () => {
     }: {
       userId: string;
       lastSyncTimestamp?: string;
-    }) => syncNotifications(userId, lastSyncTimestamp),
+    }) => {
+      console.log("useSyncPushNotifications: Starting sync for userId:", userId, "lastSyncTimestamp:", lastSyncTimestamp);
+      return syncNotifications(userId, lastSyncTimestamp);
+    },
     onSuccess: (data: { data: any[]; meta: any }, variables) => {
       // Invalidate push notifications list
       queryClient.invalidateQueries({
@@ -410,11 +440,11 @@ export const useSyncPushNotifications = () => {
         ),
       });
       console.log(
-        `Synced ${data.data.length} notifications for user ${variables.userId}`
+        `useSyncPushNotifications: Synced ${data.data.length} notifications for user ${variables.userId}`
       );
     },
     onError: (error: any) => {
-      console.error("Sync notifications failed:", error);
+      console.error("useSyncPushNotifications: Sync notifications failed:", error);
       toast.error(
         error.response?.data?.message || "Failed to sync notifications"
       );

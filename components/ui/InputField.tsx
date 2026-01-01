@@ -30,6 +30,7 @@ type Props = {
   leftIconStyle?: StyleProp<ViewStyle>;
   rightIconStyle?: StyleProp<ViewStyle>;
   returnKeyLabel?: string;
+  maxLength?: number;
   autoFocus?: boolean;
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   autoComplete?:'off' | 'username' | 'password' | 'email' | 'name' | 'tel' | 'street-address' | 'postal-code' | 'cc-number' | 'cc-csc' | 'cc-exp' | 'cc-exp-month' | 'cc-exp-year';
@@ -62,6 +63,7 @@ const InputField = forwardRef<TextInput, Props>(function InputField(
     returnKeyType,
     blurOnSubmit,
     autoComplete,
+    maxLength,
   }: Props,
   ref
 ) {
@@ -123,6 +125,7 @@ const InputField = forwardRef<TextInput, Props>(function InputField(
           style={[styles.input, { color: colors.text }]}
           onSubmitEditing={onSubmit}
           onBlur={onBlur}
+          maxLength={maxLength}
           autoFocus={autoFocus}
           autoCapitalize={autoCapitalize}
           autoComplete={autoComplete}

@@ -120,11 +120,7 @@ export function useAuth() {
     },
     onSuccess: (response) => {
       console.log("Registration successful:", response);
-      if (!response.requiresVerification) {
-        handleSuccessfulLogin(response);
-      } else {
-        tokenManager.setTokens(response.access_token, response.refresh_token);
-      }
+      tokenManager.setTokens(response.access_token, response.refresh_token);
       toast.success(response.message || "Registration Successful!");
     },
   });

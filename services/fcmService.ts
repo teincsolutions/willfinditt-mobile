@@ -95,12 +95,14 @@ class FCMService {
    */
   async registerDevice(userId?: string): Promise<boolean> {
     try {
+      console.log("fcmService.registerDevice: Getting FCM token for userId:", userId);
       const token = await this.getToken();
       if (!token) {
-        console.error('No FCM token available for registration');
+        console.error('fcmService.registerDevice: No FCM token available for registration');
         return false;
       }
 
+      console.log("fcmService.registerDevice: Registering device with backend, token:", token.substring(0, 10) + "...");
       await pushNotificationService.registerDevice({
         platform: Platform.OS as 'ios' | 'android',
         fcmToken: token,
@@ -112,10 +114,10 @@ class FCMService {
         },
       });
 
-      console.log('Device registered successfully with backend');
+      console.log('fcmService.registerDevice: Device registered successfully with backend');
       return true;
     } catch (error) {
-      console.log('Error registering device:', error);
+      console.log('fcmService.registerDevice: Error registering device:', error);
       return false;
     }
   }
@@ -158,8 +160,11 @@ class FCMService {
    * Handle notification opened from background/quit state
    */
   async onNotificationOpenedApp(callback?: (message: any) => void): Promise<() => void> {
-    return messaging().onNotificationOpenedApp((remoteMessage) => {
+    return messaging().onNotificationOpenedApp(async (remoteMessage) => {
       console.log('Notification opened from background:', remoteMessage);
+
+      // Clear the app badge when notification is opened
+      await this.clearBadge();
 
       // Set pending notification for routing after app is ready
       if (remoteMessage.data) {
@@ -181,6 +186,8 @@ class FCMService {
       const remoteMessage = await messaging().getInitialNotification();
       if (remoteMessage) {
         console.log('App opened from notification:', remoteMessage);
+        // Clear the app badge when app is opened from notification
+        await this.clearBadge();
         return remoteMessage;
       }
       return null;
@@ -234,8 +241,20 @@ class FCMService {
   }
 
   // ============================================
-  // Background Message Handler
+  // Badge Management
   // ============================================
+
+  /**
+   * Clear the app icon badge count
+   */
+  async clearBadge(): Promise<void> {
+    try {
+      await notifee.setBadgeCount(0);
+      console.log('App badge cleared');
+    } catch (error) {
+      console.error('Error clearing app badge:', error);
+    }
+  }
 
   /**
    * Background message handler (must be registered at module level)
