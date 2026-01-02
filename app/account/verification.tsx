@@ -21,7 +21,7 @@ export default function VerificationScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { submitVerificationAsync, isSubmittingVerification } = useMySeller();
+  const { submitVerificationAsync, isSubmittingVerification, sellerProfile } = useMySeller();
 
   const [showDocumentModal, setShowDocumentModal] = useState(false);
   const [showFaceModal, setShowFaceModal] = useState(false);
@@ -35,8 +35,6 @@ export default function VerificationScreen() {
     documents: string[];
     additionalNotes?: string;
   } | null>(null);
-
-  const sellerProfile = user?.sellerProfile;
 
   const handleDocumentUploadComplete = (data: typeof documentData) => {
     console.log("Documents uploaded successfully:", data);

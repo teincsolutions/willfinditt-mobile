@@ -3,6 +3,7 @@ import MySellerProfileHeader from "@/components/account/MySellerProfileHeader";
 import StatsSection, { StatItem } from "@/components/account/StatsSection";
 import { MyProductCardLandscape } from "@/components/ads/MyProductCardLandscape";
 import RejectionDetailsModal from "@/components/ads/RejectionDetailsModal";
+import SuspensionDetailsModal from "@/components/ads/SuspensionDetailsModal";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
@@ -60,6 +61,7 @@ export default function BusinessProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedAdId, setSelectedAdId] = useState<string | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [modalType, setModalType] = useState<'rejection' | 'suspension'>('rejection');
 
   // Fetch all user ads
   const {
@@ -336,6 +338,7 @@ export default function BusinessProfileScreen() {
             onPress={() => router.push(`/ads/${item.id}` as any)}
             onViewRejectionDetails={(ad) => {
               setSelectedAdId(ad.id);
+              setModalType(ad.status === AdStatus.SUSPENDED ? 'suspension' : 'rejection');
               setShowDetailsModal(true);
             }}
             style={{ marginHorizontal: spacing.md, marginVertical: spacing.xs }}
@@ -440,8 +443,18 @@ export default function BusinessProfileScreen() {
         }
       />
       {/* Rejection/Suspension Details Modal */}
-      {selectedAdId ? (
+      {selectedAdId && modalType === 'rejection' ? (
         <RejectionDetailsModal
+          visible={showDetailsModal}
+          onClose={() => {
+            setShowDetailsModal(false);
+            setSelectedAdId(null);
+          }}
+          adId={selectedAdId}
+        />
+      ) : null}
+      {selectedAdId && modalType === 'suspension' ? (
+        <SuspensionDetailsModal
           visible={showDetailsModal}
           onClose={() => {
             setShowDetailsModal(false);

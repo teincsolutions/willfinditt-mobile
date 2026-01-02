@@ -15,8 +15,10 @@ import Drawer from "expo-router/drawer";
 import { MessageText1 } from "iconsax-react-nativejs";
 import { useState } from "react";
 import { ActivityIndicator, FlatList } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function MessagesScreen() {
+  const insets = useSafeAreaInsets();
   const { icons, spacing, colors } = useTheme();
   const { user } = useAuth();
   const [query, setQuery] = useState("");
@@ -170,7 +172,10 @@ export default function MessagesScreen() {
       />
       <FlatList
         style={{ backgroundColor: colors.background }}
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: insets.bottom + spacing.md,
+        }}
         data={chats}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (

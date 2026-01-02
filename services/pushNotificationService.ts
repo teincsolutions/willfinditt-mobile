@@ -5,7 +5,6 @@ import Constants from "expo-constants";
 // One Night Notify API Service
 // See docs/one-night-notify.md for complete API documentation
 // ============================================
-const isDevClient = __DEV__;
 
 // Get secure API key from expo-constants (embedded at build time)
 const getSecureApiKey = () => {
