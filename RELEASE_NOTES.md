@@ -2,6 +2,78 @@
 
 ## Version 1.0.0 (December 2025)
 
+### Test Release #2 (January 2026)
+
+#### What's New in This Build
+
+##### 📢 Push Notifications (Fully Implemented)
+- **Real-Time Alerts**: Get notified instantly about new messages, ad status changes, and important updates
+- **FCM Integration**: Firebase Cloud Messaging powers reliable notification delivery
+- **In-App Notifications**: View and manage all notifications within the app
+- **Notification Categories**: Chat messages, ad approvals/rejections, system updates
+- **Customizable Settings**: Control which notifications you receive
+
+##### ✅ Ad Approval & Seller Management System
+- **Comprehensive Ad Status Tracking**: Monitor your ads across 8 different states:
+  - **Active**: Live ads visible to buyers
+  - **Pending**: Ads under review by moderators
+  - **Rejected**: Ads that didn't meet guidelines with detailed feedback
+  - **Suspended**: Ads temporarily suspended with support options
+  - **Sold**: Marked as sold by seller
+  - **Expired**: Ads past their active period
+  - **Draft**: Incomplete or saved ads
+  - **Closed**: Ads closed by seller or admin
+
+##### 🔄 Ad Resubmission Workflow
+- **Rejection Details**: View comprehensive rejection reasons and recommendations
+- **Quick Resubmit**: Edit and resubmit rejected ads directly from rejection modal
+- **Resubmission Tracking**: See how many times an ad has been resubmitted
+- **Deadline Alerts**: Get notified about resubmission deadlines
+- **Guidelines Access**: Review category-specific submission guidelines before reposting
+
+##### 📊 Enhanced Seller Dashboard
+- **Tabbed Ad Management**: Swipeable tabs to view ads by status
+- **Seller Statistics**: Quick overview of total ads, active listings, sold items, and pending reviews
+- **Rejection/Suspension Details Modal**: Single optimized modal for viewing detailed feedback
+- **Contact Support**: Direct access to help for suspended ads
+- **Performance Metrics**: Track your selling performance at a glance
+
+##### 🗑️ Account Management
+- **Account Deletion**: Permanently delete your account and all associated data from settings
+- **Secure Confirmation**: Password verification and text confirmation required
+- **Data Privacy**: Clear explanation of what data will be removed
+- **Account Recovery**: Warning about irreversibility of deletion
+
+##### 🛡️ Seller Experience Improvements
+- **Submission Guidelines**: Access detailed guidelines for each category before posting
+- **Proactive Compliance**: Understand requirements to avoid rejections
+- **Improved Ad Quality**: Better feedback loop for creating compliant listings
+- **Transparent Process**: Clear communication about approval status and timelines
+
+#### Technical Enhancements
+- **Memory Optimization**: Modal components use ID-based data fetching instead of prop drilling
+- **React Query Integration**: Efficient caching and real-time data updates for seller stats
+- **Type Safety**: Extended AdStatus enum with all 8 status types
+- **Error Handling**: Robust fallbacks for missing rejection/suspension data
+- **Loading States**: Smooth loading indicators during data fetching
+
+#### Testing Focus Areas
+- **Push Notifications**: Test delivery, tap actions, and in-app display
+- **Ad Approval Flow**: Submit ads, receive rejections, and test resubmission
+- **Seller Dashboard**: Navigate all 8 status tabs and verify correct ad filtering
+- **Rejection Details**: Verify rejection reasons, recommendations, and support links display correctly
+- **Account Deletion**: Test the complete deletion flow including confirmations
+- **Resubmission Workflow**: Edit and resubmit rejected ads, verify deadline tracking
+
+#### Bug Fixes
+- Fixed SwipeableTabs error when switching between ad status tabs
+- Resolved text rendering issues in rejection details modal
+- Corrected icon names for Feather icon compatibility
+
+---
+
+### Test Release #1 (December 2025)
+
 ### App Overview
 WillFindIt is a mobile marketplace app for Android that helps users buy and sell products locally. The app provides a seamless experience for posting ads, browsing listings, and communicating with sellers.
 
@@ -54,7 +126,6 @@ WillFindIt is a mobile marketplace app for Android that helps users buy and sell
 - **Intuitive Interface**: Clean, modern design that's easy to use
 
 #### 📢 Updates & Notifications
-- **Push Notifications**: ⚠️ *In Pipeline* - Get notified about new messages, ad status changes, and updates (currently under development)
 - **In-App Updates**: Download and install app updates seamlessly
 - **Real-Time Alerts**: Stay informed about important app events
 
@@ -113,7 +184,6 @@ WillFindIt is a mobile marketplace app for Android that helps users buy and sell
 - **Offline Mode**: Test app behavior without internet connection
 
 ### Features in Pipeline
-- **Push Notifications**: Currently under development - full implementation and testing needed
 - **Face Verification System**: Multi-angle capture is available but requires complete end-to-end testing before production release
 
 ### Known Issues
