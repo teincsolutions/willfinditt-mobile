@@ -8,13 +8,13 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import React from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  StyleProp,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  ViewStyle,
+    ActivityIndicator,
+    Alert,
+    StyleProp,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from "react-native";
 import { toast } from "sonner-native";
 import AppText from "../ui/AppText";
@@ -27,6 +27,7 @@ interface Props {
   onPress?: () => void;
   onEdit?: (ad: Ad) => void;
   onDelete?: (adId: string) => void;
+  onViewRejectionDetails?: (ad: Ad) => void;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -38,6 +39,7 @@ export function MyProductCardLandscape({
   onPress,
   onEdit,
   onDelete,
+  onViewRejectionDetails,
   style,
 }: Props) {
   const { colors, spacing } = useTheme();
@@ -74,6 +76,7 @@ export function MyProductCardLandscape({
       onPress={onPress}
       onEdit={onEdit}
       onDelete={onDelete}
+      onViewRejectionDetails={onViewRejectionDetails}
       style={style}
     />
   );
@@ -84,12 +87,14 @@ function MyProductCardContent({
   onPress,
   onEdit,
   onDelete,
+  onViewRejectionDetails,
   style,
 }: {
   ad: Ad;
   onPress?: () => void;
   onEdit?: (ad: Ad) => void;
   onDelete?: (adId: string) => void;
+  onViewRejectionDetails?: (ad: Ad) => void;
   style?: StyleProp<ViewStyle>;
 }) {
   const { colors, spacing, radius } = useTheme();
@@ -257,6 +262,22 @@ function MyProductCardContent({
       icon: <Ionicons name="share-social" size={18} color={colors.text} />,
       onPress: handleShare,
     },
+    ...((ad.status === AdStatus.REJECTED || ad.status === AdStatus.SUSPENDED) && onViewRejectionDetails
+      ? [
+          {
+            id: "view-details",
+            label: ad.status === AdStatus.REJECTED ? "View Rejection Details" : "View Suspension Details",
+            icon: (
+              <Ionicons
+                name={ad.status === AdStatus.REJECTED ? "alert-circle" : "ban"}
+                size={18}
+                color={colors.error}
+              />
+            ),
+            onPress: () => onViewRejectionDetails(ad),
+          },
+        ]
+      : []),
     ...(ad.status === AdStatus.DRAFT
       ? [
           {
@@ -323,6 +344,8 @@ function MyProductCardContent({
       case "EXPIRED":
         return colors.warning;
       case "SUSPENDED":
+        return colors.error;
+      case "REJECTED":
         return colors.error;
       case "DELETED":
         return colors.textGray;

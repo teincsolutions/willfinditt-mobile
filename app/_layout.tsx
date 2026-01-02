@@ -43,7 +43,7 @@ function FCMInitializer() {
       console.log("FCMInitializer: Device registered, now syncing notifications for user", user.id);
       syncNotifications.mutate({ userId: user.id });
     }
-  }, [user?.id, syncNotifications]);
+  }, [syncNotifications]);
 
   // Initialize FCM when app starts, passing user ID if available
   useFCMInitialization(user?.id, onRegistered);

@@ -2,6 +2,7 @@ import BusinessProfileSkeleton from "@/components/account/BusinessProfileSkeleto
 import MySellerProfileHeader from "@/components/account/MySellerProfileHeader";
 import StatsSection, { StatItem } from "@/components/account/StatsSection";
 import { MyProductCardLandscape } from "@/components/ads/MyProductCardLandscape";
+import RejectionDetailsModal from "@/components/ads/RejectionDetailsModal";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
@@ -14,6 +15,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useInfiniteMyAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useMySeller } from "@/hooks/useSeller";
+import { useSellerStats } from "@/hooks/useSellerAds";
 import { AdStatus } from "@/types";
 import { Ad } from "@/types/ad";
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -47,8 +49,17 @@ export default function BusinessProfileScreen() {
     refetch,
   } = useMySeller();
 
+  // Get enhanced seller stats from new API
+  const {
+    data: sellerStats,
+    isLoading: isLoadingSellerStats,
+    refetch: refetchSellerStats,
+  } = useSellerStats();
+
   const [activeTab, setActiveTab] = useState<AdStatus>(AdStatus.ACTIVE);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedAdId, setSelectedAdId] = useState<string | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   // Fetch all user ads
   const {
@@ -61,23 +72,29 @@ export default function BusinessProfileScreen() {
   } = useInfiniteMyAds({ limit: 20 });
 
   const allAds = adsData?.pages.flatMap((page) => page.data) || [];
-  const activeAds = allAds.filter((ad) => ad.status === activeTab);
+  const activeAds = allAds.filter((ad) => ad.status === AdStatus.ACTIVE);
   const soldAds = allAds.filter((ad) => ad.status === AdStatus.SOLD);
   const draftAds = allAds.filter((ad) => ad.status === AdStatus.DRAFT);
   const pendingAds = allAds.filter((ad) => ad.status === AdStatus.PENDING);
   const suspendedAds = allAds.filter((ad) => ad.status === AdStatus.SUSPENDED);
+  const rejectedAds = allAds.filter((ad) => ad.status === AdStatus.REJECTED);
+  const expiredAds = allAds.filter((ad) => ad.status === AdStatus.EXPIRED);
+  const closedAds = allAds.filter((ad) => ad.status === AdStatus.CLOSED);
 
   const dataset: TabDataset<Ad>[] = [
     { key: AdStatus.ACTIVE, data: activeAds },
     { key: AdStatus.SOLD, data: soldAds },
     { key: AdStatus.PENDING, data: pendingAds },
+    { key: AdStatus.REJECTED, data: rejectedAds },
+    { key: AdStatus.EXPIRED, data: expiredAds },
+    { key: AdStatus.CLOSED, data: closedAds },
     { key: AdStatus.DRAFT, data: draftAds },
     { key: AdStatus.SUSPENDED, data: suspendedAds },
   ];
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([refetch(), refetchAds()]);
+    await Promise.all([refetch(), refetchAds(), refetchSellerStats()]);
     setRefreshing(false);
   };
 
@@ -184,58 +201,97 @@ export default function BusinessProfileScreen() {
     );
   }
 
-  // Prepare tabs
+  // Prepare tabs - use sellerStats if available, fallback to stats
+  const tabStats = sellerStats || stats;
   const tabs: TabItem[] = [
     {
       key: AdStatus.ACTIVE,
       title: "Active",
-      count: stats?.activeAds || 0,
+      count: tabStats?.activeAds || 0,
     },
     {
       key: AdStatus.SOLD,
       title: "Sold",
-      count: stats?.soldAds || 0,
+      count: tabStats?.soldAds || 0,
     },
     {
       key: AdStatus.PENDING,
       title: "Pending",
-      count: stats?.pendingAds || 0,
+      count: tabStats?.pendingAds || 0,
+    },
+    {
+      key: AdStatus.REJECTED,
+      title: "Rejected",
+      count: tabStats?.rejectedAds || 0,
+    },
+    {
+      key: AdStatus.EXPIRED,
+      title: "Expired",
+      count: tabStats?.expiredAds || 0,
+    },
+    {
+      key: AdStatus.CLOSED,
+      title: "Closed",
+      count: closedAds?.length || 0,
     },
     {
       key: AdStatus.DRAFT,
       title: "Draft",
-      count: stats?.draftAds || 0,
+      count: tabStats?.draftAds || 0,
     },
     {
       key: AdStatus.SUSPENDED,
       title: "Suspended",
-      count: stats?.suspendedAds || 0,
+      count: tabStats?.suspendedAds || 0,
     },
-  ];
+  ].filter(Boolean) as TabItem[];
 
-  // Prepare stats
-  const statsData: StatItem[] = [
-    {
-      label: "Total Ads",
-      value: stats?.totalAds || 0,
-      color: colors.primary,
-    },
-    {
-      label: "Active Ads",
-      value: stats?.activeAds || 0,
-      color: colors.success,
-    },
-    {
-      label: "Suspended",
-      value: stats?.suspendedAds || 0,
-      color: colors.error,
-    },
-    {
-      label: "Total Views",
-      value: stats?.totalViews || 0,
-      color: colors.text,
-    },
-  ];
+  // Prepare stats - show approval rate if seller stats available
+  const statsData: StatItem[] = sellerStats
+    ? [
+        {
+          label: "Total Ads",
+          value: sellerStats.totalAds || 0,
+          color: colors.primary,
+        },
+        {
+          label: "Approval Rate",
+          value: `${Math.round(sellerStats.approvalRate || 0)}%`,
+          color: colors.success,
+        },
+        {
+          label: "Pending",
+          value: sellerStats.pendingAds || 0,
+          color: colors.warning,
+        },
+        {
+          label: "Avg. Approval",
+          value: `${sellerStats.averageApprovalTime || 0}h`,
+          color: colors.text,
+        },
+      ]
+    : [
+        {
+          label: "Total Ads",
+          value: stats?.totalAds || 0,
+          color: colors.primary,
+        },
+        {
+          label: "Active Ads",
+          value: stats?.activeAds || 0,
+          color: colors.success,
+        },
+        {
+          label: "Suspended",
+          value: stats?.suspendedAds || 0,
+          color: colors.error,
+        },
+        {
+          label: "Draft",
+          value: stats?.draftAds || 0,
+          color: colors.text,
+        },
+      ];
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
@@ -278,6 +334,10 @@ export default function BusinessProfileScreen() {
           <MyProductCardLandscape
             ad={item}
             onPress={() => router.push(`/ads/${item.id}` as any)}
+            onViewRejectionDetails={(ad) => {
+              setSelectedAdId(ad.id);
+              setShowDetailsModal(true);
+            }}
             style={{ marginHorizontal: spacing.md, marginVertical: spacing.xs }}
           />
         )}
@@ -296,7 +356,7 @@ export default function BusinessProfileScreen() {
             {/* Stats Section */}
             <StatsSection
               stats={statsData}
-              isLoading={isLoadingStats}
+              isLoading={isLoadingStats || isLoadingSellerStats}
               columns={2}
               style={{ marginBottom: -45 }}
             />
@@ -341,7 +401,17 @@ export default function BusinessProfileScreen() {
                     ? "You don't have any active listings yet"
                     : activeTab === AdStatus.SOLD
                     ? "You haven't sold any items yet"
-                    : "You don't have any draft listings"}
+                    : activeTab === AdStatus.DRAFT
+                    ? "You don't have any draft listings"
+                    : activeTab === AdStatus.REJECTED
+                    ? "No rejected ads - great job!"
+                    : activeTab === AdStatus.EXPIRED
+                    ? "No expired ads"
+                    : activeTab === AdStatus.CLOSED
+                    ? "No closed ads"
+                    : activeTab === AdStatus.PENDING
+                    ? "No pending ads"
+                    : "No ads found"}
                 </AppText>
               </>
             )}
@@ -369,6 +439,17 @@ export default function BusinessProfileScreen() {
           />
         }
       />
+      {/* Rejection/Suspension Details Modal */}
+      {selectedAdId ? (
+        <RejectionDetailsModal
+          visible={showDetailsModal}
+          onClose={() => {
+            setShowDetailsModal(false);
+            setSelectedAdId(null);
+          }}
+          adId={selectedAdId}
+        />
+      ) : null}
     </AppView>
   );
 }

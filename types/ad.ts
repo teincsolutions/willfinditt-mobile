@@ -40,6 +40,19 @@ export interface Ad {
     savedBy: number;
     comments: number;
   };
+  // Rejection and resubmission fields
+  closedAt: string | null;
+  closureReason: string | null;
+  rejectionReason: string | null;
+  rejectionRecommendations: string | null;
+  rejectedAt: string | null;
+  rejectedBy: string | null;
+  suspensionReason: string | null;
+  suspensionRecommendations: string | null;
+  suspendedAt: string | null;
+  suspendedBy: string | null;
+  submittedAt: string | null;
+  resubmissionCount: number;
 }
 
 export interface AdFieldValue {
@@ -198,4 +211,57 @@ export interface Promo {
   positionRight?: boolean;
   subtitle: string;
   color?: string;
+}
+
+// Seller Experience Types
+export interface SellerStats {
+  totalAds: number;
+  activeAds: number;
+  pendingAds: number;
+  rejectedAds: number;
+  suspendedAds: number;
+  expiredAds: number;
+  draftAds?: number;
+  soldAds?: number;
+  approvalRate: number;
+  averageApprovalTime: number;
+}
+
+export interface SellerPendingAd {
+  id: string;
+  title: string;
+  submittedAt: string;
+  estimatedApprovalTime: string;
+  status: string;
+  priority: string;
+}
+
+export interface SellerRejectedAd extends Ad {
+  rejectedAt: string;
+  rejectionReason: string;
+  recommendations?: string;
+  canResubmit: boolean;
+  resubmissionDeadline?: string;
+  resubmissionCount: number;
+}
+
+export interface CategoryGuidelines {
+  category: string;
+  categoryId: string;
+  requirements: string[];
+  tips: string[];
+  commonRejectionReasons: string[];
+  estimatedApprovalTime: string;
+}
+
+export interface ResubmitAdRequest {
+  title?: string;
+  description?: string;
+  price?: number;
+  images?: string[];
+  condition?: AdCondition;
+  fieldValues?: {
+    categoryFieldId: string;
+    value: string;
+  }[];
 }

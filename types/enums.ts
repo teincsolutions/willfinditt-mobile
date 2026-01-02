@@ -26,6 +26,8 @@ export enum AdStatus {
   SOLD = "SOLD",
   EXPIRED = "EXPIRED",
   SUSPENDED = "SUSPENDED",
+  REJECTED = "REJECTED",
+  CLOSED = "CLOSED",
   DELETED = "DELETED",
 }
 

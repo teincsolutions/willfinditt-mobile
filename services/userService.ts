@@ -89,4 +89,15 @@ export const userService = {
     const response = await api.post<User>('/api/v1/users/verify-existing-phone-otp', { code: otp });
     return response.data;
   },
+
+  // Deactivate own account
+  deactivateAccount: async (): Promise<User> => {
+    const response = await api.patch<User>('/api/v1/users/me/deactivate');
+    return response.data;
+  },
+
+  // Delete own account (soft delete with 30-day grace period)
+  deleteAccount: async (): Promise<void> => {
+    await api.delete('/api/v1/users/me');
+  },
 };

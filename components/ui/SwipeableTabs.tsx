@@ -1,16 +1,16 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import React, { useCallback, useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  FlatList,
-  ScrollView,
-  StyleProp,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-  ViewToken,
+    Animated,
+    Dimensions,
+    FlatList,
+    ScrollView,
+    StyleProp,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+    ViewStyle,
+    ViewToken,
 } from "react-native";
 import AppText from "./AppText";
 
@@ -66,9 +66,10 @@ export default function SwipeableTabs<T>({
   const { colors, spacing, radius } = useTheme();
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
-  const [currentIndex, setCurrentIndex] = useState(
-    tabs.findIndex((tab) => tab.key === activeTab)
-  );
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const index = tabs.findIndex((tab) => tab?.key === activeTab);
+    return index >= 0 ? index : 0;
+  });
 
   const handleTabPress = (index: number) => {
     flatListRef.current?.scrollToIndex({ index, animated: true });

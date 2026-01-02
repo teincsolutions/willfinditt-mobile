@@ -1,4 +1,5 @@
 import AdImageUploader from "@/components/ads/AdImageUploader";
+import { SubmissionGuidelines } from "@/components/ads/SubmissionGuidelines";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import IconButton from "@/components/ui/IconButton";
@@ -19,7 +20,7 @@ import {
   AdCondition,
   CategoryField,
   CategoryFieldType,
-  UpdateAdRequest
+  UpdateAdRequest,
 } from "@/types";
 import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
@@ -93,7 +94,7 @@ const buildValidationSchema = (
       .required("Contact email is required"),
     isNegotiable: Yup.boolean(),
     status: Yup.string().oneOf(["DRAFT", "PENDING"]),
-    condition: Yup.string().oneOf(Object.values(AdCondition)),
+    condition: Yup.string().oneOf(Object.values(AdCondition)).optional(),
     fieldValues: Yup.array().of(
       Yup.object().shape({
         categoryFieldId: Yup.string().required(),
@@ -214,7 +215,7 @@ export default function AdForm({
       description: initialData?.description || "",
       price: Number(initialData?.price),
       currency: initialData?.currency || "GHS",
-      condition: initialData?.condition,
+      condition: initialData?.condition || undefined,
       categoryId: initialData?.categoryId || "",
       cityId: initialData?.cityId || "",
       images: initialData?.images || [],
@@ -579,6 +580,14 @@ export default function AdForm({
               )}
             </AppView>
 
+            {/* Submission Guidelines */}
+            {formik.values.categoryId && (
+              <SubmissionGuidelines
+                categoryId={formik.values.categoryId}
+                style={{ marginBottom: spacing.lg }}
+              />
+            )}
+
             {/* City Selection */}
             <AppView style={{ marginBottom: spacing.lg }}>
               <PlaceholderField
@@ -815,7 +824,7 @@ export default function AdForm({
                 onPress={() => formik.handleSubmit()}
                 loading={isLoading}
                 disabled={isLoading}
-                style={{flex: 1, height: 50, minWidth: "50%"}}
+                style={{ flex: 1, height: 50, minWidth: "50%" }}
               />
               {!initialData && (
                 <TextButton

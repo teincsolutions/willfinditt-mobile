@@ -1,13 +1,13 @@
 import {
-  Ad,
-  AdCondition,
-  AdSearchRequest,
-  AdSearchSuggestionsParams,
-  AdStatus,
-  AdSuggestion,
-  CreateAdRequest,
-  PaginatedResponse,
-  UpdateAdRequest,
+    Ad,
+    AdCondition,
+    AdSearchRequest,
+    AdSearchSuggestionsParams,
+    AdStatus,
+    AdSuggestion,
+    CreateAdRequest,
+    PaginatedResponse,
+    UpdateAdRequest,
 } from "@/types";
 import api from "./api";
 
@@ -110,6 +110,32 @@ export const adService = {
     const response = await api.get<PaginatedResponse<Ad>>(`${baseUrl}/saved`, {
       params,
     });
+    return response.data;
+  },
+
+  // Seller Experience Endpoints
+  getSellerStats: async () => {
+    const response = await api.get(`${baseUrl}/seller/stats`);
+    return response.data;
+  },
+
+  getSellerPendingAds: async (params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`${baseUrl}/seller/pending`, { params });
+    return response.data;
+  },
+
+  getSellerRejectedAds: async (params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`${baseUrl}/seller/rejected`, { params });
+    return response.data;
+  },
+
+  getSellerGuidelines: async (categoryId: string) => {
+    const response = await api.get(`${baseUrl}/seller/guidelines/${categoryId}`);
+    return response.data;
+  },
+
+  resubmitAd: async (adId: string, data: any): Promise<Ad> => {
+    const response = await api.post<Ad>(`${baseUrl}/seller/resubmit/${adId}`, data);
     return response.data;
   },
 };

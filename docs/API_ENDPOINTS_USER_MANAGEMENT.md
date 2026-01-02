@@ -1,4 +1,4 @@
-# WillFind8 API - Admin & User Management Endpoints
+# Willfinditt API - Admin & User Management Endpoints
 
 **Base URL:** `https://api.willfind8.com/api/v1` (Production)  
 **Base URL:** `http://localhost:3000/api/v1` (Development)
@@ -45,7 +45,6 @@ Authorization: Bearer {access_token}
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIs...",
-  "refresh_token": "cyJYbGceOigIUzI1NiIs..",
   "user": {
     "id": "cm1234567890",
     "email": "user@example.com",
@@ -101,7 +100,6 @@ Authorization: Bearer {access_token}
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIs...",
-  "refresh_token": "cyJYbGceOigIUzI1NiIs..",
   "user": {
     "id": "cm1234567890",
     "email": "admin@example.com",
@@ -133,7 +131,6 @@ Authorization: Bearer {access_token}
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIs...",
-  "refresh_token": "cyJYbGceOigIUzI1NiIs..",
   "user": {
     "id": "cm1234567890",
     "email": "user@example.com",
@@ -238,7 +235,6 @@ Authorization: Bearer {access_token}
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIs...",
-  "refresh_token": "cyJYbGceOigIUzI1NiIs..",
   "user": { ... }
 }
 ```
@@ -303,6 +299,46 @@ Authorization: Bearer {access_token}
 ```
 
 **Note:** Users cannot update their own `role`, `isActive`, `isVerified`, or `forcePasswordChange` fields.
+
+---
+
+### Deactivate Own Account
+
+**Endpoint:** `PATCH /users/me/deactivate`  
+**Authentication:** Required (Bearer token)  
+**Description:** Deactivate your own account. You will be logged out and won't be able to log in until an admin reactivates your account.
+
+**Success Response (200 OK):**
+
+```json
+{
+  "id": "cm1234567890",
+  "isActive": false,
+  "updatedAt": "2024-12-07T10:00:00.000Z"
+}
+```
+
+---
+
+### Delete Own Account (Soft Delete)
+
+**Endpoint:** `DELETE /users/me`  
+**Authentication:** Required (Bearer token)  
+**Description:** Request account deletion. This is a **soft delete** - your account will be deactivated and marked for deletion. Data is retained for a 30-day grace period before permanent anonymization.
+
+**Impact on Your Ads:**
+- **Immediate:** All your ACTIVE and PENDING ads will be closed automatically with the reason "Account deleted by owner"
+- **SOLD/EXPIRED ads:** These remain unchanged to preserve transaction history and SEO value
+- **After 30 days:** All remaining ads (CLOSED, SOLD, EXPIRED) will be archived permanently
+
+**Grace Period:**
+- You have 30 days to reactivate your account by contacting support
+- During this period, your data is retained but your account is inactive
+- After 30 days, your personal data will be permanently anonymized
+
+**Success Response (204 No Content):**
+
+> No body returned
 
 ---
 
@@ -706,7 +742,7 @@ Hello [User Name],
 
 You requested to reset your password. Click the link below:
 
-{FRONTEND_URL}/reset-password?token={resetToken}
+{FRONTEND_URL}/auth/reset-password?token={resetToken}
 
 This link will expire in 1 hour.
 

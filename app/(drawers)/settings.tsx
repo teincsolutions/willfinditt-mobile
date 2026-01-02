@@ -1,3 +1,4 @@
+import AccountDeletionModal from "@/components/account/AccountDeletionModal";
 import { ChangeEmailSheet } from "@/components/bottom-sheet/ChangeEmailSheet";
 import { ChangePasswordSheet } from "@/components/bottom-sheet/ChangePasswordSheet";
 import { ChangePhoneNumberSheet } from "@/components/bottom-sheet/ChangePhoneNumberSheet";
@@ -12,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ActivityIndicator, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -20,6 +21,7 @@ export default function CategoriesScreen() {
   const { icons, spacing, colors, radius } = useTheme();
   const insets = useSafeAreaInsets();
   const { user, isLoading } = useAuth();
+  const [showDeletionModal, setShowDeletionModal] = useState(false);
   const changeEmailSheetRef = useRef<BottomSheet>(null);
   const changePhoneNumberSheetRef = useRef<BottomSheet>(null);
   const changePasswordSheetRef = useRef<BottomSheet>(null);
@@ -171,12 +173,35 @@ export default function CategoriesScreen() {
             />
           }
         />
+
+        <FormDividerText text="Account Management" />
+
+        <PlaceholderField
+          leftIcon={
+            <Feather name="trash-2" color={colors.error} size={icons.md} />
+          }
+          label="Delete Account"
+          inputStyle={{ borderRadius: radius.md }}
+          value="Permanently delete your account"
+          onPress={() => setShowDeletionModal(true)}
+          rightIcon={
+            <Feather
+              name="chevron-right"
+              color={colors.iconGray}
+              size={icons.md}
+            />
+          }
+        />
       </ScrollView>
       <ChangeEmailSheet ref={changeEmailSheetRef} />
       <ChangePhoneNumberSheet ref={changePhoneNumberSheetRef} />
       <ChangeUsernameSheet ref={changeUsernameSheetRef} />
       <ChangePasswordSheet ref={changePasswordSheetRef} />
       <NotificationSettingsSheet ref={notificationSettingsSheetRef} />
+      <AccountDeletionModal
+        visible={showDeletionModal}
+        onClose={() => setShowDeletionModal(false)}
+      />
     </>
   );
 }

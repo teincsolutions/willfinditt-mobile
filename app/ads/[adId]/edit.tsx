@@ -1,19 +1,23 @@
 import AdForm from "@/components/ads/AdForm";
 import AppText from "@/components/ui/AppText";
 import { useAd, useUpdateAd } from "@/hooks/useAds";
+import { useResubmitAd } from "@/hooks/useSellerAds";
 import { useTheme } from "@/hooks/useTheme";
 import { UpdateAdRequest } from "@/types";
+import { Feather } from "@expo/vector-icons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { toast } from "sonner-native";
 
 export default function EditAdScreen() {
-  const { adId } = useLocalSearchParams<{ adId: string }>();
-  const { colors, spacing } = useTheme();
+  const { adId, resubmit } = useLocalSearchParams<{ adId: string; resubmit?: string }>();
+  const { colors, spacing, icons } = useTheme();
+  const isResubmitMode = resubmit === "true";
 
   const { data: ad, isLoading: loadingAd, error } = useAd(adId, !!adId);
   const updateMutation = useUpdateAd();
+  const { resubmitAsync, isResubmitting } = useResubmitAd();
 
   useEffect(() => {
     if (error) {
@@ -24,32 +28,48 @@ export default function EditAdScreen() {
 
   const handleSubmit = async (formData: UpdateAdRequest) => {
     try {
-      const updateData: UpdateAdRequest = {
-        title: formData.title,
-        description: formData.description,
-        price: formData.price,
-        condition: formData.condition,
-        images: formData.images,
-        address: formData.address,
-        contactPhone: formData.contactPhone,
-        contactEmail: formData.contactEmail,
-        isNegotiable: formData.isNegotiable,
-        categoryId: formData.categoryId,
-        currency: formData.currency,
-        cityId: formData.cityId,
-        fieldValues: formData.fieldValues,
-      };
+      if (isResubmitMode) {
+        // Resubmission flow
+        await resubmitAsync({
+          adId,
+          data: {
+            title: formData.title,
+            description: formData.description,
+            price: formData.price,
+            condition: formData.condition,
+            images: formData.images,
+          },
+        });
+        router.back();
+      } else {
+        // Normal update flow
+        const updateData: UpdateAdRequest = {
+          title: formData.title,
+          description: formData.description,
+          price: formData.price,
+          condition: formData.condition,
+          images: formData.images,
+          address: formData.address,
+          contactPhone: formData.contactPhone,
+          contactEmail: formData.contactEmail,
+          isNegotiable: formData.isNegotiable,
+          categoryId: formData.categoryId,
+          currency: formData.currency,
+          cityId: formData.cityId,
+          fieldValues: formData.fieldValues,
+        };
 
-      await updateMutation.mutateAsync({
-        id: adId,
-        data: updateData,
-      });
+        await updateMutation.mutateAsync({
+          id: adId,
+          data: updateData,
+        });
 
-      toast.success("Ad updated successfully!");
-      router.back();
+        toast.success("Ad updated successfully!");
+        router.back();
+      }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to update ad");
-      console.error("Error updating ad:", error);
+      toast.error(error?.response?.data?.message || `Failed to ${isResubmitMode ? "resubmit" : "update"} ad`);
+      console.log(`Error ${isResubmitMode ? "resubmitting" : "updating"} ad:`, error);
     }
   };
 
@@ -65,7 +85,7 @@ export default function EditAdScreen() {
       >
         <Stack.Screen
           options={{
-            title: "Edit Ad",
+            title: isResubmitMode ? "Resubmit Ad" : "Edit Ad",
             headerShown: true,
             headerBackTitle: "Back",
           }}
@@ -89,7 +109,7 @@ export default function EditAdScreen() {
       >
         <Stack.Screen
           options={{
-            title: "Edit Ad",
+            title: isResubmitMode ? "Resubmit Ad" : "Edit Ad",
             headerShown: true,
             headerBackTitle: "Back",
           }}
@@ -124,16 +144,70 @@ export default function EditAdScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen
         options={{
-          title: "Edit Ad",
+          title: isResubmitMode ? "Resubmit Ad" : "Edit Ad",
           headerShown: true,
           headerBackTitle: "Back",
         }}
       />
+      
+      {/* Rejection Banner */}
+      {isResubmitMode && ad.rejectionReason && (
+        <View
+          style={{
+            backgroundColor: colors.errorLight,
+            borderLeftWidth: 4,
+            borderLeftColor: colors.error,
+            padding: spacing.md,
+            marginHorizontal: spacing.md,
+            marginTop: spacing.sm,
+            borderRadius: 8,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: spacing.xs }}>
+            <Feather name="alert-circle" size={icons.sm} color={colors.error} />
+            <AppText
+              variant="sm"
+              style={{
+                fontWeight: "600",
+                color: colors.error,
+                marginLeft: spacing.xs,
+              }}
+            >
+              Rejection Reason
+            </AppText>
+          </View>
+          <AppText variant="sm" style={{ color: colors.text, marginBottom: spacing.sm }}>
+            {ad.rejectionReason}
+          </AppText>
+          
+          {ad.rejectionRecommendations && (
+            <>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: spacing.xs }}>
+                <Feather name="info" size={icons.sm} color={colors.primary} />
+                <AppText
+                  variant="sm"
+                  style={{
+                    fontWeight: "600",
+                    color: colors.primary,
+                    marginLeft: spacing.xs,
+                  }}
+                >
+                  Recommendations
+                </AppText>
+              </View>
+              <AppText variant="sm" style={{ color: colors.text }}>
+                {ad.rejectionRecommendations}
+              </AppText>
+            </>
+          )}
+        </View>
+      )}
+      
       <AdForm
         initialData={initialData}
         onSubmit={handleSubmit}
-        isLoading={updateMutation.isPending}
-        submitButtonText="Update Ad"
+        isLoading={updateMutation.isPending || isResubmitting}
+        submitButtonText={isResubmitMode ? "Resubmit for Review" : "Update Ad"}
       />
     </View>
   );

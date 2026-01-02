@@ -18,6 +18,9 @@ export const SELLER_QUERY_KEYS = {
   SELLER_REVIEWS: (sellerId: string) =>
     ["seller", sellerId, "reviews"] as const,
   SELLER_MY_REVIEWS: ["seller", "my-reviews"] as const,
+  SELLER_PENDING_ADS: (params?: any) => ["seller", "pending-ads", params || {}] as const,
+  SELLER_REJECTED_ADS: (params?: any) => ["seller", "rejected-ads", params || {}] as const,
+  SELLER_GUIDELINES: (categoryId?: string) => ["seller", "guidelines", categoryId || ""] as const,
 };
 
 export const AD_QUERY_KEYS = {
