@@ -138,6 +138,18 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // UNAUTHORIZED - Generic unauthorized (401)
+    if (errorCode === API_ERROR_CODES.UNAUTHORIZED) {
+      console.warn("Unauthorized access:", error.response?.data);
+      const accessToken = tokenManager.getAccessToken();
+      if (!accessToken) {
+        console.error("No access token available, clearing auth state");
+        clearAuthState();
+        emitLogout({ reason: "unauthorized" });
+      }
+      return Promise.reject(error);
+    }
+
     // INVALID_TOKEN - Token is corrupted or malformed (401)
     if (errorCode === API_ERROR_CODES.INVALID_TOKEN) {
       console.error("Invalid token detected, clearing auth state");
