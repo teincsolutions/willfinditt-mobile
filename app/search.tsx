@@ -67,7 +67,7 @@ export default function SearchScreen() {
     addRecent(suggestion);
 
     // Navigate to search results
-    router.push({
+    router.replace({
       pathname: "/results",
       params: { query },
     });
@@ -79,7 +79,7 @@ export default function SearchScreen() {
     addRecent(suggestion);
 
     // Navigate to search results
-    router.push({
+    router.replace({
       pathname: "/results",
       params: { query: suggestion.keyword },
     });
@@ -91,7 +91,7 @@ export default function SearchScreen() {
     addRecent(suggestion);
 
     // Navigate to search results
-    router.push({
+    router.replace({
       pathname: "/results",
       params: { query: suggestion.keyword },
     });

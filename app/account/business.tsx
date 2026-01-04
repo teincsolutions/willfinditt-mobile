@@ -234,7 +234,7 @@ export default function BusinessProfileScreen() {
     {
       key: AdStatus.CLOSED,
       title: "Closed",
-      count: closedAds?.length || 0,
+      count: tabStats?.closedAds || 0,
     },
     {
       key: AdStatus.DRAFT,

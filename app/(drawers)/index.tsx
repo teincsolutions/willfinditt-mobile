@@ -237,7 +237,7 @@ export default function HomeScreen() {
               <SecondaryTextButton
                 variant="lg"
                 onPress={() => {
-                  router.push({ pathname: "/results" });
+                  router.replace({ pathname: "/results" });
                 }}
                 title="See All"
                 titleStyle={{ color: colors.textGray }}

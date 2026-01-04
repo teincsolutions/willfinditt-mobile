@@ -195,6 +195,7 @@ export const useInfiniteMyAds = (params?: {
     initialPageParam: 1,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
+    refetchOnMount: "always",
   });
 };
 

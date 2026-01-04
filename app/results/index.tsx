@@ -34,6 +34,7 @@ export default function ResultsScreen() {
   const { colors, spacing, icons, radius } = useTheme();
   const insets = useSafeAreaInsets();
   const conditionSheetRef = useRef<BottomSheet>(null);
+  const isInitialSync = useRef(true);
 
   const params = useLocalSearchParams<{
     query?: string;
@@ -68,22 +69,19 @@ export default function ResultsScreen() {
     filters?.sortOrder || "desc"
   }`;
 
-  // Update filters from URL params on mount
+  // Update filters from URL params on mount only
   useEffect(() => {
-    if (params.query && params.query !== filters?.query) {
-      setQuery(params.query);
+    if (isInitialSync.current) {
+      if (params.query && params.query !== filters?.query) {
+        setQuery(params.query);
+      }
+      if (params.categoryId && params.categoryId !== categoryId) {
+        setCategoryId(params.categoryId);
+      }
+      isInitialSync.current = false;
     }
-    if (params.categoryId && params.categoryId !== categoryId) {
-      setCategoryId(params.categoryId);
-    }
-  }, [
-    categoryId,
-    filters?.query,
-    params.categoryId,
-    params.query,
-    setCategoryId,
-    setQuery,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Build search request from filters
   const searchRequest: AdSearchRequest = {
@@ -135,7 +133,7 @@ export default function ResultsScreen() {
         style={{ paddingHorizontal: spacing.md }}
         onClear={handleClearSearch}
         onPress={() =>
-          router.push({
+          router.replace({
             pathname: "/search",
             params: {
               q: searchQuery,

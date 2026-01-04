@@ -221,6 +221,7 @@ export interface SellerStats {
   rejectedAds: number;
   suspendedAds: number;
   expiredAds: number;
+  closedAds: number;
   draftAds?: number;
   soldAds?: number;
   approvalRate: number;
