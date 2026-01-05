@@ -1,6 +1,6 @@
 import AppText from "@/components/ui/AppText";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Ad, AdFieldValue } from "@/types";
+import { Ad, AdFieldValue, CategoryFieldType } from "@/types";
 import React, { useMemo } from "react";
 import { View } from "react-native";
 import AppView from "../ui/AppView";
@@ -18,9 +18,10 @@ function mapAttributes(fieldValues: AdFieldValue[]) {
     const val = fv.value;
 
     // Handle CHECKBOX fields - value is a stringified JSON array
-    if (field.type === "CHECKBOX") {
+    if (field.type === CategoryFieldType.CHECKBOX ) {
       try {
-        const parsedValues = typeof val === "string" ? JSON.parse(val) : val;
+        console.log('Parsing CHECKBOX field value:', val);
+        const parsedValues = typeof val === "string" ? val.split(",") : val;
         if (Array.isArray(parsedValues)) {
           lists.push({
             label: field.label,
@@ -36,16 +37,12 @@ function mapAttributes(fieldValues: AdFieldValue[]) {
           error
         );
         // Fallback: treat as single value if parsing fails
-        singles.push({ label: field.label || field.name, value: String(val) });
+        singles.push({ label: field.label || field.name, value: field.options?.find(opt => opt.value === val)?.label || String(val) });
       }
-    }
-    // Handle regular arrays (if any exist in your data)
-    else if (Array.isArray(val)) {
-      lists.push({ label: field.label || field.name, values: val });
     }
     // Handle all other field types (TEXT, NUMBER, SELECT, RADIO, DATE, BOOLEAN, TEXTAREA)
     else {
-      singles.push({ label: field.label || field.name, value: String(val) });
+      singles.push({ label: field.label || field.name, value: field.options?.find(opt => opt.value === val)?.label || String(val) });
     }
   }
   return { singles, lists };

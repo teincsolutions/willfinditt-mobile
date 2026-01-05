@@ -142,8 +142,9 @@ api.interceptors.response.use(
     if (errorCode === API_ERROR_CODES.UNAUTHORIZED) {
       console.warn("Unauthorized access:", error.response?.data);
       const accessToken = tokenManager.getAccessToken();
-      if (!accessToken) {
-        console.error("No access token available, clearing auth state");
+      // Only clear auth state if user was actually authenticated
+      if (accessToken) {
+        console.error("Authenticated user received unauthorized, clearing auth state");
         clearAuthState();
         emitLogout({ reason: "unauthorized" });
       }
@@ -268,9 +269,15 @@ api.interceptors.response.use(
 
     // UNAUTHORIZED - Generic auth failure or no specific code (401)
     if (statusCode === 401 && !errorCode && !isAuthEndpoint) {
-      console.error("Unauthorized access, clearing auth state");
-      clearAuthState();
-      emitLogout({ reason: "unauthorized" });
+      const accessToken = tokenManager.getAccessToken();
+      // Only clear auth state if user was actually authenticated
+      if (accessToken) {
+        console.error("Authenticated user unauthorized, clearing auth state");
+        clearAuthState();
+        emitLogout({ reason: "unauthorized" });
+      } else {
+        console.warn("401 received for unauthenticated user, skipping logout");
+      }
       return Promise.reject(error);
     }
 

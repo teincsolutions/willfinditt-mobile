@@ -40,8 +40,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Yup from "yup";
 import { SelectableListSheet } from "../bottom-sheet/SelectableBottomSheet";
 import SheetRadioOptionItem from "../bottom-sheet/SheetRadioOptionItem";
-import CheckBox from "../ui/CheckBox";
-import RadioInput from "../ui/RadioInput";
 import SearchableSelectModal from "../ui/SearchableSelectModal";
 import { TextButton } from "../ui/TextButton";
 
@@ -425,61 +423,136 @@ export default function AdForm({
         );
       case CategoryFieldType.RADIO:
         return (
-          <View key={field.id} style={{ marginBottom: spacing.md }}>
-            <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
-              {field.label + (field.isRequired ? " *" : "")}
-            </AppText>
-            <View style={{ gap: spacing.sm }}>
-              {field.options?.map((option: any) => {
-                const isSelected = fieldValue === option.value;
-                return (
-                  <RadioInput
-                    key={option.value}
-                    label={option.label}
-                    value={isSelected}
-                    onValueChange={() => {
-                      handleFieldValueChange(field.id, option.value);
-                    }}
-                  />
-                );
-              })}
-            </View>
-            {fieldError && (
-              <AppText style={{ color: colors.error, marginTop: spacing.xs }}>
-                {fieldError}
-              </AppText>
-            )}
-          </View>
+          <AppView key={field.id} style={{ marginBottom: spacing.lg }}>
+            <PlaceholderField
+              label={field.label + (field.isRequired ? " *" : "")}
+              placeholder={`Select ${field.label.toLowerCase()}`}
+              value={
+                field.options?.find((opt: any) => opt.value === fieldValue)
+                  ?.label || ""
+              }
+              onPress={() => {
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: true,
+                }));
+              }}
+              inputStyle={{
+                backgroundColor: colors.selectBg,
+                paddingRight: spacing.sm,
+              }}
+              rightIcon={
+                <IconButton
+                  onPress={() => {
+                    setSelectModalVisible((prev) => ({
+                      ...prev,
+                      [field.id]: true,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: colors.iconLightGray,
+                    borderRadius: radius.sm,
+                  }}
+                  icon={
+                    <Feather
+                      name="chevron-down"
+                      size={icons.sm}
+                      color={colors.iconGray}
+                    />
+                  }
+                />
+              }
+              style={{ marginBottom: spacing.md }}
+            />
+
+            <SearchableSelectModal
+              key={field.id}
+              visible={selectModalVisible[field.id] || false}
+              onClose={() =>
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: false,
+                }))
+              }
+              options={field.options || []}
+              value={fieldValue}
+              onSelect={(value) => {
+                handleFieldValueChange(field.id, value.toString());
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: false,
+                }));
+              }}
+              title={`Select ${field.label.toLowerCase()}`}
+            />
+          </AppView>
         );
 
       case CategoryFieldType.CHECKBOX:
         const checkboxValues = fieldValue ? fieldValue.split(",") : [];
         return (
-          <View key={field.id} style={{ marginBottom: spacing.md }}>
-            <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
-              {field.label + (field.isRequired ? " *" : "")}
-            </AppText>
-            <View style={{ gap: spacing.sm }}>
-              {field.options?.map((option: any) => {
-                const isChecked = checkboxValues.includes(option.value);
-                return (
-                  <CheckBox
-                    key={option.value}
-                    label={option.label}
-                    value={isChecked}
-                    onValueChange={(checked) => {
-                      const newValues = checked
-                        ? [...checkboxValues, option.value]
-                        : checkboxValues.filter(
-                            (v: string) => v !== option.value
-                          );
-                      handleFieldValueChange(field.id, newValues.join(","));
-                    }}
-                  />
-                );
-              })}
-            </View>
-          </View>
+          <AppView key={field.id} style={{ marginBottom: spacing.lg }}>
+            <PlaceholderField
+              label={field.label + (field.isRequired ? " *" : "")}
+              placeholder={`Select ${field.label.toLowerCase()}`}
+              value={
+                checkboxValues.length > 0
+                  ? `${checkboxValues.length} selected`
+                  : ""
+              }
+              onPress={() => {
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: true,
+                }));
+              }}
+              inputStyle={{
+                backgroundColor: colors.selectBg,
+                paddingRight: spacing.sm,
+              }}
+              rightIcon={
+                <IconButton
+                  onPress={() => {
+                    setSelectModalVisible((prev) => ({
+                      ...prev,
+                      [field.id]: true,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: colors.iconLightGray,
+                    borderRadius: radius.sm,
+                  }}
+                  icon={
+                    <Feather
+                      name="chevron-down"
+                      size={icons.sm}
+                      color={colors.iconGray}
+                    />
+                  }
+                />
+              }
+              style={{ marginBottom: spacing.md }}
+            />
+
+            <SearchableSelectModal
+              key={field.id}
+              visible={selectModalVisible[field.id] || false}
+              onClose={() =>
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: false,
+                }))
+              }
+              options={field.options || []}
+              value={checkboxValues}
+              onSelect={(value) => {
+                const selectedValues = Array.isArray(value) ? value : [value];
+                handleFieldValueChange(field.id, selectedValues.join(","));
+              }}
+              multiple={true}
+              title={`Select ${field.label.toLowerCase()}`}
+            />
+          </AppView>
         );
 
       case CategoryFieldType.BOOLEAN:

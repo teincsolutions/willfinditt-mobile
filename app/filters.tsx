@@ -2,7 +2,6 @@ import { SelectableListSheet } from "@/components/bottom-sheet/SelectableBottomS
 import SheetRadioOptionItem from "@/components/bottom-sheet/SheetRadioOptionItem";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
-import CheckBox from "@/components/ui/CheckBox";
 import IconButton from "@/components/ui/IconButton";
 import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
@@ -27,7 +26,7 @@ import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router, Stack } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const conditionOptions = [
@@ -210,15 +209,30 @@ export default function FiltersScreen() {
         );
 
       case CategoryFieldType.NUMBER:
+        // Parse min and max values from stored format "min-max" or just single value
+        const numberValues = fieldValue ? fieldValue.split("-") : ["", ""];
+        const minVal = numberValues[0] || "";
+        const maxVal = numberValues[1] || "";
+        
         return (
-          <InputField
+          <RangeInput
             key={field.id}
             label={field.label}
-            value={fieldValue}
-            onChangeText={(value) => handleFieldValueChange(field.id, value)}
-            placeholder={`Filter by ${field.label.toLowerCase()}`}
-            keyboardType="numeric"
-            style={{ marginBottom: spacing.md }}
+            minValue={minVal}
+            maxValue={maxVal}
+            min={field.validation?.min || 0}
+            max={field.validation?.max || 100000}
+            onMinChange={(value) => {
+              const newValue = `${value}-${maxVal}`;
+              handleFieldValueChange(field.id, newValue);
+            }}
+            onMaxChange={(value) => {
+              const newValue = `${minVal}-${value}`;
+              handleFieldValueChange(field.id, newValue);
+            }}
+            minPlaceholder={`Min ${field.label.toLowerCase()}`}
+            maxPlaceholder={`Max ${field.label.toLowerCase()}`}
+            style={{ marginBottom: spacing.lg }}
           />
         );
 
@@ -370,34 +384,67 @@ export default function FiltersScreen() {
       case CategoryFieldType.CHECKBOX:
         const checkboxValues = fieldValue ? fieldValue.split(",") : [];
         return (
-          <View key={field.id} style={{ marginBottom: spacing.md }}>
-            <AppText
-              variant="sm"
-              style={{ marginBottom: spacing.sm, fontWeight: "600" }}
-            >
-              {field.label}
-            </AppText>
-            <View style={{ gap: spacing.sm }}>
-              {field.options?.map((option: any) => {
-                const isChecked = checkboxValues.includes(option.value);
-                return (
-                  <CheckBox
-                    key={option.value}
-                    label={option.label}
-                    value={isChecked}
-                    onValueChange={(checked) => {
-                      const newValues = checked
-                        ? [...checkboxValues, option.value]
-                        : checkboxValues.filter(
-                            (v: string) => v !== option.value
-                          );
-                      handleFieldValueChange(field.id, newValues.join(","));
-                    }}
-                  />
-                );
-              })}
-            </View>
-          </View>
+          <AppView key={field.id} style={{ marginBottom: spacing.lg }}>
+            <PlaceholderField
+              label={field.label}
+              placeholder={`Select ${field.label.toLowerCase()}`}
+              value={
+                checkboxValues.length > 0
+                  ? `${checkboxValues.length} selected`
+                  : ""
+              }
+              onPress={() => {
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: true,
+                }));
+              }}
+              inputStyle={{
+                backgroundColor: colors.selectBg,
+                paddingRight: spacing.sm,
+              }}
+              rightIcon={
+                <IconButton
+                  onPress={() => {
+                    setSelectModalVisible((prev) => ({
+                      ...prev,
+                      [field.id]: true,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor: colors.iconLightGray,
+                    borderRadius: radius.sm,
+                  }}
+                  icon={
+                    <Feather
+                      name="chevron-down"
+                      size={icons.sm}
+                      color={colors.iconGray}
+                    />
+                  }
+                />
+              }
+            />
+
+            <SearchableSelectModal
+              key={field.id}
+              visible={selectModalVisible[field.id] || false}
+              onClose={() =>
+                setSelectModalVisible((prev) => ({
+                  ...prev,
+                  [field.id]: false,
+                }))
+              }
+              options={field.options || []}
+              value={checkboxValues}
+              onSelect={(value) => {
+                const selectedValues = Array.isArray(value) ? value : [value];
+                handleFieldValueChange(field.id, selectedValues.join(","));
+              }}
+              multiple={true}
+              title={`Select ${field.label.toLowerCase()}`}
+            />
+          </AppView>
         );
 
       case CategoryFieldType.BOOLEAN:

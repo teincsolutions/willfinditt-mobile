@@ -47,6 +47,12 @@ export function useAuth() {
     const cleanup = onLogout((payload) => {
       console.log("Logout event received:", payload);
 
+      // Only show message if user was authenticated
+      if (!isAuthenticated) {
+        console.log("Ignoring logout event for unauthenticated user");
+        return;
+      }
+
       // Use a small timeout to avoid immediate state updates during render
       setTimeout(() => {
         // Show appropriate message based on reason

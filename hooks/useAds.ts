@@ -275,6 +275,10 @@ export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
   const { isAuthenticated, user } = useAuth();
 
   const handleCall = () => {
+    if (!isAuthenticated) {
+      handleLogin();
+      return;
+    }
     if (ad?.user?.phone) Linking.openURL(`tel:${ad.user?.phone}`);
   };
 
@@ -316,11 +320,13 @@ export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
 
   const handleShare = () => {
     if (ad?.userId || seller) {
+      // Share profile link
       Share.share({
-        message: `Check out this ad from ${
-          ad?.user?.sellerProfile?.businessName ||
-          [ad?.user?.firstName, ad?.user?.lastName].filter(Boolean).join(" ")
-        }: ${ad?.title} \n\nView it here: ${fontendUrl}/ads/${ad?.id}`,
+        message: `Check out this seller: ${
+          ad?.user?.sellerProfile
+            ? `${fontendUrl}/ads/seller/${ad.user.sellerProfile.id}`
+            : `${fontendUrl}/ads/seller/${seller?.id}`
+        }`,
       });
     }
   };

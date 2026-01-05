@@ -7,7 +7,8 @@ export const useCategoryFields = (categoryId: string) => {
     queryKey: ["categoryFields", categoryId],
     queryFn: () => categoryFieldService.getByCategoryId(categoryId),
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime:  60 * 1000, // 10 minutes
+    gcTime: 60 * 1000, // 10 minutes
+    refetchOnMount: true,
     enabled: !!categoryId,
   });
 };
