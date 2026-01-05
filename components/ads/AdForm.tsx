@@ -41,6 +41,7 @@ import * as Yup from "yup";
 import { SelectableListSheet } from "../bottom-sheet/SelectableBottomSheet";
 import SheetRadioOptionItem from "../bottom-sheet/SheetRadioOptionItem";
 import CheckBox from "../ui/CheckBox";
+import RadioInput from "../ui/RadioInput";
 import SearchableSelectModal from "../ui/SearchableSelectModal";
 import { TextButton } from "../ui/TextButton";
 
@@ -378,7 +379,12 @@ export default function AdForm({
               }}
               rightIcon={
                 <IconButton
-                  onPress={() => {}}
+                  onPress={() => {
+                    setSelectModalVisible((prev) => ({
+                      ...prev,
+                      [field.id]: true,
+                    }));
+                  }}
                   style={{
                     backgroundColor: colors.iconLightGray,
                     borderRadius: radius.sm,
@@ -420,36 +426,29 @@ export default function AdForm({
       case CategoryFieldType.RADIO:
         return (
           <View key={field.id} style={{ marginBottom: spacing.md }}>
-            <PlaceholderField
-              label={field.label + (field.isRequired ? " *" : "")}
-              placeholder={`Select ${field.label.toLowerCase()}`}
-              value={
-                field.options?.find((opt: any) => opt.value === fieldValue)
-                  ?.label || ""
-              }
-              onPress={() => {
-                // Open selection sheet for this field
-                // You would need to implement a way to open a specific sheet for each field
-              }}
-              rightIcon={
-                <IconButton
-                  onPress={() => {
-                    // Open selection sheet for this field
-                  }}
-                  style={{
-                    backgroundColor: colors.iconLightGray,
-                    borderRadius: radius.sm,
-                  }}
-                  icon={
-                    <Feather
-                      name="chevron-down"
-                      size={icons.sm}
-                      color={colors.iconGray}
-                    />
-                  }
-                />
-              }
-            />
+            <AppText variant="sm" style={{ marginBottom: spacing.sm }}>
+              {field.label + (field.isRequired ? " *" : "")}
+            </AppText>
+            <View style={{ gap: spacing.sm }}>
+              {field.options?.map((option: any) => {
+                const isSelected = fieldValue === option.value;
+                return (
+                  <RadioInput
+                    key={option.value}
+                    label={option.label}
+                    value={isSelected}
+                    onValueChange={() => {
+                      handleFieldValueChange(field.id, option.value);
+                    }}
+                  />
+                );
+              })}
+            </View>
+            {fieldError && (
+              <AppText style={{ color: colors.error, marginTop: spacing.xs }}>
+                {fieldError}
+              </AppText>
+            )}
           </View>
         );
 
