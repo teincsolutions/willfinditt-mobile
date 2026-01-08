@@ -377,6 +377,71 @@ All responses follow a consistent JSON structure. Successful responses return da
 - `status` (enum) - Filter by ad status (admin only)
 - `categoryFields` (string) - URL-encoded JSON string for category field filters
 
+#### Category Fields Filtering
+
+The `categoryFields` parameter allows dynamic filtering based on custom category fields. Pass a URL-encoded JSON array of field filters.
+
+**Format:**
+
+```json
+[
+  {
+    "fieldName": "brand",
+    "value": "toyota",
+    "categoryId": "cat_vehicles_123"
+  },
+  {
+    "fieldName": "transmission",
+    "value": "automatic"
+  }
+]
+```
+
+**URL-Encoded Example:**
+
+```
+GET /ads?categoryFields=%5B%7B%22categoryFieldId%22%3A%22cmgf3wlg50001ms07yi05qb35%22%2C%22value%22%3A%22toyota%22%7D%5D
+```
+
+**Field Filter Object:**
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `categoryFieldId` | string | Yes | ID of the category field (from CategoryField table) |
+| `value` | string \| string[] | Yes | Value(s) to filter by. Use array for multi-select (OR logic) |
+
+**Real-World Examples:**
+
+1. **Filter by Brand:**
+
+```
+GET /ads?categoryFields=[{"categoryFieldId":"cmgf3wlg50001ms07yi05qb35","value":"toyota"}]
+```
+
+2. **Filter by Multiple Fields:**
+
+```
+GET /ads?categoryFields=[{"categoryFieldId":"cmgf3wlg50001ms07yi05qb35","value":"toyota"},{"categoryFieldId":"cmgf3wlg50002ms07abc12xyz","value":"automatic"}]
+```
+
+3. **Filter with Multiple Values (OR Logic):**
+
+```
+GET /ads?categoryFields=[{"categoryFieldId":"cmgf3wlg50001ms07yi05qb35","value":["toyota","honda","nissan"]}]
+```
+
+This returns ads where brand is "toyota" OR "honda" OR "nissan".
+
+4. **Filter Checkbox Fields (comma-separated values):**
+
+For ads with checkbox values stored as `"air_condition,spare_tire"`:
+
+```
+GET /ads?categoryFields=[{"categoryFieldId":"cmgf3wlg50003ms07features","value":"air_condition"}]
+```
+
+**Note:** Matching is **case-insensitive** and uses `contains` to handle comma-separated checkbox values. Multiple fields use AND logic (all conditions must match).
+
 **Example Request:**
 
 ```
@@ -431,7 +496,7 @@ GET /ads?page=1&limit=10&categoryId=cat_123&minPrice=100&maxPrice=1000&search=ip
 
 **Endpoint:** `POST /ads/search`
 
-**Description:** Advanced search with promotion-aware sorting, location-based search, and faceted results.
+**Description:** Advanced search with promotion-aware sorting, location-based search, faceted results, and dynamic category field filtering.
 
 **Authentication:** Optional
 
@@ -450,6 +515,16 @@ GET /ads?page=1&limit=10&categoryId=cat_123&minPrice=100&maxPrice=1000&search=ip
     "longitude": -0.187,
     "radius": 50,
     "promotionFilter": "all",
+    "categoryFields": [
+      {
+        "categoryFieldId": "cmgf3wlg50001ms07yi05qb35",
+        "value": "apple"
+      },
+      {
+        "categoryFieldId": "cmgf3wlg50002ms07storage",
+        "value": "256gb"
+      }
+    ],
     "sortBy": "promotionPriority",
     "sortOrder": "desc",
     "page": 1,
@@ -464,6 +539,127 @@ GET /ads?page=1&limit=10&categoryId=cat_123&minPrice=100&maxPrice=1000&search=ip
   }
 }
 ```
+
+#### Category Fields in Advanced Search
+
+The `categoryFields` array in the search body allows filtering by custom category-specific attributes using their unique `categoryFieldId`.
+
+**Field Filter Structure:**
+
+```json
+{
+  "categoryFieldId": "cmgf3wlg50001ms07yi05qb35",
+  "value": "toyota"
+}
+```
+
+**Multi-Value Filter Structure (OR Logic):**
+
+```json
+{
+  "categoryFieldId": "cmgf3wlg50001ms07yi05qb35",
+  "value": ["toyota", "honda", "nissan"]
+}
+```
+
+**Real-World Search Examples:**
+
+**1. Search for Toyota Cars:**
+
+```json
+{
+  "search": {
+    "query": "sedan",
+    "categoryIds": ["cat_vehicles_123"],
+    "categoryFields": [
+      { "categoryFieldId": "cmgf3brand123", "value": "toyota" },
+      { "categoryFieldId": "cmgf3trans456", "value": "automatic" }
+    ]
+  }
+}
+```
+
+**2. Search for 3-Bedroom Apartments:**
+
+```json
+{
+  "search": {
+    "categoryIds": ["cat_apartments_456"],
+    "priceMax": 3000,
+    "categoryFields": [
+      { "categoryFieldId": "cmgf3beds789", "value": "3" },
+      { "categoryFieldId": "cmgf3amenities", "value": "pool" }
+    ]
+  }
+}
+```
+
+**3. Search for Phones by Multiple Attributes:**
+
+```json
+{
+  "search": {
+    "query": "smartphone",
+    "categoryIds": ["cat_phones_789"],
+    "categoryFields": [
+      { "categoryFieldId": "cmgf3brand123", "value": "samsung" },
+      { "categoryFieldId": "cmgf3storage456", "value": "128gb" }
+    ]
+  }
+}
+```
+
+**4. Search for Phones from Multiple Brands:**
+
+```json
+{
+  "search": {
+    "query": "smartphone",
+    "categoryIds": ["cat_phones_789"],
+    "categoryFields": [
+      { "categoryFieldId": "cmgf3brand123", "value": ["samsung", "apple", "google"] },
+      { "categoryFieldId": "cmgf3storage456", "value": ["128gb", "256gb"] }
+    ]
+  }
+}
+```
+
+This returns phones where brand is Samsung, Apple, or Google AND storage is 128GB or 256GB.
+
+**Field Matching Behavior:**
+
+| Field Type | Matching Logic | Example |
+|------------|----------------|---------|
+| TEXT | Case-insensitive contains match | `"air"` matches `"air_condition,spare_tire"` |
+| NUMBER | Case-insensitive contains match | `"2020"` |
+| SELECT | Case-insensitive contains match | `"toyota"` or `["toyota", "honda"]` |
+| RADIO | Case-insensitive contains match | `"automatic"` matches `"AUTOMATIC"` |
+| CHECKBOX | Case-insensitive contains match on comma-separated values | `"pool"` matches `"pool,gym,parking"` |
+| BOOLEAN | String boolean match (case-insensitive) | `"true"` or `"false"` |
+
+**Multi-Value Filtering:**
+
+When you pass an array of values, the system uses OR logic within the field:
+
+```json
+{
+  "categoryFieldId": "cmgf3brand123",
+  "value": ["apple", "samsung", "google"]
+}
+```
+
+This matches ads where brand is "apple" OR "samsung" OR "google".
+
+Multiple fields use AND logic:
+
+```json
+[
+  { "categoryFieldId": "cmgf3brand123", "value": ["apple", "samsung"] },
+  { "categoryFieldId": "cmgf3storage456", "value": "256gb" }
+]
+```
+
+This matches ads where (brand is "apple" OR "samsung") AND (storage is "256gb").
 
 **Response (200 OK):**
 
@@ -934,3 +1130,286 @@ const categoryFields = encodeURIComponent(
   }
 }
 ```
+---
+
+## Category Fields Integration
+
+### Overview
+
+Category fields allow ads to have dynamic, category-specific attributes. For example, vehicles can have fields like "brand", "transmission", while real estate can have "bedrooms", "amenities".
+
+### Setting Category Field Values in Ads
+
+When creating or updating an ad, use the `namedFieldValues` array:
+
+```json
+{
+  "title": "2020 Toyota Camry",
+  "categoryId": "cat_vehicles_123",
+  "namedFieldValues": [
+    {
+      "fieldName": "brand",
+      "value": "toyota",
+      "categoryId": "cat_vehicles_123"
+    },
+    {
+      "fieldName": "year",
+      "value": "2020"
+    },
+    {
+      "fieldName": "transmission",
+      "value": "automatic"
+    },
+    {
+      "fieldName": "fuel_type",
+      "value": "petrol"
+    },
+    {
+      "fieldName": "features",
+      "value": "ac,nav,sunroof"
+    }
+  ]
+}
+```
+
+### Field Value Formats by Type
+
+| Field Type | Format | Example Value | Notes |
+|------------|--------|---------------|-------|
+| TEXT | String | `"ABC123"` | Plain text |
+| TEXTAREA | String | `"Long description..."` | Multi-line text |
+| NUMBER | String (numeric) or Range object | `"2020"`, `"45000"` or `{"min": 2015, "max": 2020}` | For filtering: string for exact, object for range |
+| SELECT | String (option value) | `"toyota"`, `"automatic"` | Must match option value |
+| RADIO | String (option value) | `"manual"`, `"new"` | Must match option value |
+| CHECKBOX | Comma-separated string | `"pool,gym,parking"` | Multiple values separated by commas |
+| DATE | ISO date string | `"2020-01-15"` | YYYY-MM-DD format |
+| BOOLEAN | String boolean | `"true"`, `"false"` | Lowercase string |
+
+### Filtering Ads by Category Fields
+
+#### In GET Requests (Query Parameters)
+
+Use the `categoryFields` query parameter with URL-encoded JSON:
+
+```
+GET /ads?categoryFields=[{"fieldName":"brand","value":"toyota"},{"fieldName":"transmission","value":"automatic"}]
+```
+
+**URL-Encoded:**
+
+```
+GET /ads?categoryFields=%5B%7B%22fieldName%22%3A%22brand%22%2C%22value%22%3A%22toyota%22%7D%5D
+```
+
+#### In POST Search Requests
+
+Include `categoryFields` array in the search body:
+
+```json
+{
+  "search": {
+    "categoryIds": ["cat_vehicles_123"],
+    "categoryFields": [
+      { "fieldName": "brand", "value": "toyota" },
+      { "fieldName": "transmission", "value": "automatic" }
+    ]
+  }
+}
+```
+
+### Complete Examples by Category
+
+#### Example 1: Vehicles/Cars
+
+**Category Fields Setup:**
+
+- `brand` (SELECT): Toyota, Honda, Ford, BMW, etc.
+- `year` (NUMBER): Manufacturing year
+- `mileage` (NUMBER): Kilometers driven
+- `transmission` (RADIO): Automatic, Manual
+- `fuel_type` (SELECT): Petrol, Diesel, Hybrid, Electric
+- `features` (CHECKBOX): AC, Navigation, Sunroof, Leather Seats
+
+**Creating Car Ad:**
+
+```json
+{
+  "title": "2019 Honda Accord - Excellent Condition",
+  "description": "Well-maintained sedan with full service history",
+  "price": 22000,
+  "categoryId": "cat_vehicles_123",
+  "namedFieldValues": [
+    { "fieldName": "brand", "value": "honda" },
+    { "fieldName": "year", "value": "2019" },
+    { "fieldName": "mileage", "value": "45000" },
+    { "fieldName": "transmission", "value": "automatic" },
+    { "fieldName": "fuel_type", "value": "petrol" },
+    { "fieldName": "features", "value": "ac,nav,leather" }
+  ]
+}
+```
+
+**Searching for Cars:**
+
+```json
+{
+  "search": {
+    "query": "sedan",
+    "categoryIds": ["cat_vehicles_123"],
+    "priceMin": 15000,
+    "priceMax": 30000,
+    "categoryFields": [
+      { "fieldName": "brand", "value": "honda" },
+      { "fieldName": "year", "value": {"min": 2018, "max": 2022} },
+      { "fieldName": "mileage", "value": {"max": 60000} },
+      { "fieldName": "transmission", "value": "automatic" },
+      { "fieldName": "fuel_type", "value": "petrol" }
+    ]
+  }
+}
+```
+
+#### Example 2: Real Estate/Apartments
+
+**Category Fields Setup:**
+
+- `bedrooms` (NUMBER): Number of bedrooms
+- `bathrooms` (NUMBER): Number of bathrooms
+- `square_feet` (NUMBER): Property size
+- `furnishing` (RADIO): Fully, Semi, Unfurnished
+- `amenities` (CHECKBOX): Pool, Gym, Parking, Security, Garden
+- `available_from` (DATE): Availability date
+
+**Creating Apartment Ad:**
+
+```json
+{
+  "title": "Luxury 3BR Apartment in Cantonments",
+  "description": "Modern apartment with stunning city views",
+  "price": 2500,
+  "categoryId": "cat_apartments_456",
+  "namedFieldValues": [
+    { "fieldName": "bedrooms", "value": "3" },
+    { "fieldName": "bathrooms", "value": "2" },
+    { "fieldName": "square_feet", "value": "1500" },
+    { "fieldName": "furnishing", "value": "fully" },
+    { "fieldName": "amenities", "value": "pool,gym,parking,security" },
+    { "fieldName": "available_from", "value": "2026-02-01" }
+  ]
+}
+```
+
+**Searching for Apartments:**
+
+```json
+{
+  "search": {
+    "categoryIds": ["cat_apartments_456"],
+    "priceMax": 3000,
+    "categoryFields": [
+      { "fieldName": "bedrooms", "value": {"min": 2, "max": 4} },
+      { "fieldName": "square_feet", "value": {"min": 1200} },
+      { "fieldName": "amenities", "value": "pool" },
+      { "fieldName": "furnishing", "value": "fully" }
+    ]
+  }
+}
+```
+
+#### Example 3: Electronics/Phones
+
+**Category Fields Setup:**
+
+- `brand` (SELECT): Apple, Samsung, Google, Xiaomi
+- `storage` (SELECT): 64GB, 128GB, 256GB, 512GB
+- `ram` (SELECT): 4GB, 6GB, 8GB, 12GB
+- `screen_size` (NUMBER): Screen size in inches
+- `condition` (RADIO): New, Like New, Good, Fair
+- `has_warranty` (BOOLEAN): Active warranty status
+
+**Creating Phone Ad:**
+
+```json
+{
+  "title": "iPhone 15 Pro Max 256GB",
+  "description": "Brand new, sealed in box",
+  "price": 1200,
+  "categoryId": "cat_phones_789",
+  "namedFieldValues": [
+    { "fieldName": "brand", "value": "apple" },
+    { "fieldName": "storage", "value": "256gb" },
+    { "fieldName": "ram", "value": "8gb" },
+    { "fieldName": "screen_size", "value": "6.7" },
+    { "fieldName": "condition", "value": "new" },
+    { "fieldName": "has_warranty", "value": "true" }
+  ]
+}
+```
+
+**Searching for Phones:**
+
+```json
+{
+  "search": {
+    "query": "smartphone",
+    "categoryIds": ["cat_phones_789"],
+    "priceMax": 1500,
+    "categoryFields": [
+      { "fieldName": "brand", "value": "apple" },
+      { "fieldName": "storage", "value": "256gb" },
+      { "fieldName": "has_warranty", "value": "true" }
+    ]
+  }
+}
+```
+
+### Best Practices
+
+1. **Always provide categoryId in field values** when multiple categories share the same field name
+2. **Use exact option values** for SELECT, RADIO fields (e.g., "toyota" not "Toyota")
+3. **Format CHECKBOX values** as comma-separated strings without spaces
+4. **Use range filtering for NUMBER fields** when searching by min/max (e.g., year range, price range, size range)
+5. **Validate NUMBER fields** to ensure they're within acceptable ranges defined in field validation
+6. **Use ISO date format** for DATE fields (YYYY-MM-DD)
+7. **Store BOOLEAN as strings** ("true"/"false") not actual booleans
+
+### Error Handling
+
+**Invalid Field Name:**
+
+```json
+{
+  "statusCode": 400,
+  "message": "Category field 'invalid_field' not found for category",
+  "error": "Bad Request"
+}
+```
+
+**Invalid Field Value:**
+
+```json
+{
+  "statusCode": 400,
+  "message": "Invalid value 'xyz' for SELECT field 'brand'. Must be one of: toyota, honda, ford",
+  "error": "Bad Request"
+}
+```
+
+**Missing Required Field:**
+
+```json
+{
+  "statusCode": 400,
+  "message": "Required field 'brand' is missing",
+  "error": "Bad Request"
+}
+```
+
+### Query Performance Tips
+
+- Filter by `categoryId` first before applying `categoryFields` filters
+- Limit the number of category field filters in a single query (max 5 recommended)
+- Use specific category IDs in field filters to improve query performance
+- Combine price and location filters with category fields for optimal results
+
+For detailed information about creating and managing category fields, see [Categories and Category Fields API Documentation](./CATEGORIES_AND_FIELDS_API.md).

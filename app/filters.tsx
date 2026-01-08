@@ -3,12 +3,10 @@ import SheetRadioOptionItem from "@/components/bottom-sheet/SheetRadioOptionItem
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import IconButton from "@/components/ui/IconButton";
-import InputField from "@/components/ui/InputField";
 import PlaceholderField from "@/components/ui/PlaceholderField";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import RangeInput from "@/components/ui/RangeInput";
 import SearchableSelectModal from "@/components/ui/SearchableSelectModal";
-import TextAreaField from "@/components/ui/TextAreaField";
 import { TextButton } from "@/components/ui/TextButton";
 import ToggleSwitch from "@/components/ui/ToggleSwitch";
 import { useCategory } from "@/hooks/useCategories";
@@ -104,10 +102,11 @@ export default function FiltersScreen() {
   console.log("Current filters in FiltersScreen:", filters);
   // Initialize dynamic field values from filters on mount
   useEffect(() => {
-    if (filters?.fieldValues) {
+    if (filters?.categoryFields) {
       const fieldValuesMap: Record<string, string> = {};
-      filters.fieldValues.forEach((fv) => {
-        fieldValuesMap[`field_${fv.categoryFieldId}`] = fv.value;
+      filters.categoryFields.forEach((fv) => {
+        const value = Array.isArray(fv.value) ? fv.value.join(",") : fv.value;
+        fieldValuesMap[`field_${fv.categoryFieldId}`] = value;
       });
       setDynamicFieldValues(fieldValuesMap);
     }
@@ -118,19 +117,20 @@ export default function FiltersScreen() {
     if (categoryId && categoryFields) {
       // Initialize field values from filters if they match current category
       const fieldValuesMap: Record<string, string> = {};
-      if (filters?.fieldValues) {
-        filters.fieldValues.forEach((fv) => {
+      if (filters?.categoryFields) {
+        filters.categoryFields.forEach((fv) => {
           const fieldExists = categoryFields.find(
             (f) => f.id === fv.categoryFieldId
           );
           if (fieldExists) {
-            fieldValuesMap[`field_${fv.categoryFieldId}`] = fv.value;
+            const value = Array.isArray(fv.value) ? fv.value.join(",") : fv.value;
+            fieldValuesMap[`field_${fv.categoryFieldId}`] = value;
           }
         });
       }
       setDynamicFieldValues(fieldValuesMap);
     }
-  }, [categoryId, categoryFields, filters?.fieldValues]);
+  }, [categoryId, categoryFields, filters?.categoryFields]);
 
   const handleOpenCategory = () => {
     router.push({
@@ -166,7 +166,7 @@ export default function FiltersScreen() {
       priceMax: priceRange.high,
       sortBy,
       sortOrder: sortOrder as "asc" | "desc",
-      fieldValues:
+      categoryFields:
         categoryFields && categoryFields.length > 0
           ? categoryFields
               .map((field) => ({
@@ -196,24 +196,12 @@ export default function FiltersScreen() {
     const fieldValue = dynamicFieldValues[fieldKey] || "";
 
     switch (field.type) {
-      case CategoryFieldType.TEXT:
-        return (
-          <InputField
-            key={field.id}
-            label={field.label}
-            value={fieldValue}
-            onChangeText={(value) => handleFieldValueChange(field.id, value)}
-            placeholder={`Filter by ${field.label.toLowerCase()}`}
-            style={{ marginBottom: spacing.md }}
-          />
-        );
-
       case CategoryFieldType.NUMBER:
         // Parse min and max values from stored format "min-max" or just single value
         const numberValues = fieldValue ? fieldValue.split("-") : ["", ""];
         const minVal = numberValues[0] || "";
         const maxVal = numberValues[1] || "";
-        
+
         return (
           <RangeInput
             key={field.id}
@@ -235,20 +223,6 @@ export default function FiltersScreen() {
             style={{ marginBottom: spacing.lg }}
           />
         );
-
-      case CategoryFieldType.TEXTAREA:
-        return (
-          <TextAreaField
-            key={field.id}
-            label={field.label}
-            value={fieldValue}
-            onChangeText={(value) => handleFieldValueChange(field.id, value)}
-            placeholder={`Filter by ${field.label.toLowerCase()}`}
-            numberOfLines={3}
-            style={{ marginBottom: spacing.md }}
-          />
-        );
-
       case CategoryFieldType.SELECT:
         return (
           <AppView key={field.id} style={{ marginBottom: spacing.lg }}>

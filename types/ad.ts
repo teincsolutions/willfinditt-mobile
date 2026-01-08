@@ -141,9 +141,9 @@ export interface AdSearchParams {
   radius?: number;
   promotionFilter?: "all" | "promoted_only" | "non_promoted_only";
   statuses?: AdStatus[];
-  fieldValues?: {
+  categoryFields?: {
     categoryFieldId: string;
-    value: string;
+    value: string | string[];
   }[];
   minimal?: boolean; // For lightweight responses
 }

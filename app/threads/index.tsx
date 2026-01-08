@@ -117,6 +117,7 @@ export default function ThreadsScreen() {
           <TextInput
             placeholder="What issue are you facing?"
             value={newThreadTitle}
+            maxLength={100}
             onChangeText={setNewThreadTitle}
             style={{
               borderWidth: 1,

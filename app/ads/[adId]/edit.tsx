@@ -36,7 +36,6 @@ export default function EditAdScreen() {
             title: formData.title,
             description: formData.description,
             price: formData.price,
-            condition: formData.condition,
             images: formData.images,
           },
         });

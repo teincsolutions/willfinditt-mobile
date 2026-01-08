@@ -24,7 +24,9 @@ import { useParentCategories } from "@/hooks/useCategories";
 import { useCityById } from "@/hooks/useLocations";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { Ad, AdSearchRequest, Promo } from "@/types";
+import { deduplicateAds } from "@/utils/deduplicate";
 import { router } from "expo-router";
+import { ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MasonryList from "reanimated-masonry-list";
 
@@ -104,7 +106,9 @@ export default function HomeScreen() {
     refetch: refetchAds,
   } = useInfiniteSearchAds(searchRequest);
 
-  const ads: Ad[] = adsData?.pages.flatMap((page) => page.data) || [];
+  const ads: Ad[] = deduplicateAds(
+    adsData?.pages.flatMap((page) => page.data) || []
+  );
 
   // Only show skeletons on initial load when there's no data yet
   const showSkeletons = isLoadingAds && ads.length === 0;
@@ -309,7 +313,7 @@ export default function HomeScreen() {
         }}
         data={showSkeletons ? Array(6).fill({}) : ads}
         numColumns={2}
-        keyExtractor={(item, index) => item.id || `skeleton-${index}`}
+        keyExtractor={(item, index) => item.id || index.toString()}
         ListHeaderComponent={renderHeader()}
         renderItem={({ item, index }: any) => {
           if (showSkeletons) {
@@ -338,6 +342,13 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        ListFooterComponent={
+          <AppView
+            style={{ paddingVertical: spacing.md, alignItems: "center" }}
+          >
+            {isFetchingNextPage && <ActivityIndicator />}
+          </AppView>
+        }
       />
     </AppView>
   );

@@ -15,10 +15,12 @@ import { useInfiniteSearchAds } from "@/hooks/useAds";
 import { useCategory } from "@/hooks/useCategories";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { Ad, AdCondition, AdSearchRequest } from "@/types";
+import { deduplicateAds } from "@/utils/deduplicate";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { FilterSearch, Grid2, RowVertical } from "iconsax-react-nativejs";
 import React, { useEffect, useRef, useState } from "react";
+import { ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MasonryList from "reanimated-masonry-list";
 
@@ -96,7 +98,7 @@ export default function ResultsScreen() {
       priceMax: filters?.priceMax,
       sortBy: filters?.sortBy || "createdAt",
       sortOrder: filters?.sortOrder || "desc",
-      fieldValues: filters?.fieldValues,
+      categoryFields: filters?.categoryFields,
     },
   };
 
@@ -109,7 +111,9 @@ export default function ResultsScreen() {
     isFetchingNextPage,
   } = useInfiniteSearchAds(searchRequest);
 
-  const ads: Ad[] = adsData?.pages.flatMap((page) => page.data) || [];
+  const ads: Ad[] = deduplicateAds(
+    adsData?.pages.flatMap((page) => page.data) || []
+  );
   const totalResults = adsData?.pages[0]?.meta?.total || 0;
   const showSkeletons = isLoading && ads.length === 0;
 
@@ -304,6 +308,13 @@ export default function ResultsScreen() {
               </AppText>
             </AppView>
           ) : null
+        }
+        ListFooterComponent={
+          <AppView
+            style={{ paddingVertical: spacing.md, alignItems: "center" }}
+          >
+            {isFetchingNextPage && <ActivityIndicator />}
+          </AppView>
         }
       />
 
