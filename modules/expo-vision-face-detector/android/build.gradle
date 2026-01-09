@@ -41,3 +41,8 @@ android {
     abortOnError false
   }
 }
+
+dependencies {
+  // Google ML Kit for face detection
+  implementation 'com.google.mlkit:face-detection:16.1.7'
+}

@@ -1,9 +1,7 @@
 import { useTheme } from "@/contexts/ThemeContext";
+import { isVisionFaceDetectionAvailable } from "@/lib/iosVisionFaceDetector";
 import {
   detectFacesInImage,
-  isVisionFaceDetectionAvailable,
-} from "@/lib/iosVisionFaceDetector";
-import {
   isFaceDetectionAvailable,
   usePlatformFaceDetector,
   type Face,
@@ -219,6 +217,16 @@ export default function FaceAutoCapture({
       captureTimeoutRef.current = null;
     }
 
+    // Check if camera is ready (Android)
+    if (Platform.OS === "android") {
+      try {
+        // Small delay to ensure camera is ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (e) {
+        console.warn("Camera preparation delay failed:", e);
+      }
+    }
+
     setCaptureStep("verifying");
     setCountdown(null);
 
@@ -241,54 +249,52 @@ export default function FaceAutoCapture({
       const photo = await Promise.race([photoPromise, timeoutPromise]);
       const photoUri = `file://${photo.path}`;
 
-      // iOS: Verify face in captured photo using Apple Vision
-      if (Platform.OS === "ios") {
-        // Add timeout for face detection
-        const faceDetectionPromise = detectFacesInImage(photoUri);
-        const faceTimeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Face detection timeout")), 8000)
+      // Verify face in captured photo for both platforms
+      // Add timeout for face detection
+      const faceDetectionPromise = detectFacesInImage(photoUri);
+      const faceTimeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Face detection timeout")), 8000)
+      );
+
+      const faces = await Promise.race([
+        faceDetectionPromise,
+        faceTimeoutPromise,
+      ]);
+
+      if (faces.length === 0) {
+        setCaptureStep("error");
+        setErrorMessage(
+          `No ${
+            currentPose === "CENTER" ? "" : currentPose.toLowerCase()
+          } face detected. Please try again.`
         );
+        const resetTimeout = setTimeout(
+          () => setCaptureStep("position"),
+          2000
+        );
+        timeoutRefs.current.push(resetTimeout);
+        return;
+      }
 
-        const faces = await Promise.race([
-          faceDetectionPromise,
-          faceTimeoutPromise,
-        ]);
+      // Check pose (iOS uses radians, Android uses degrees)
+      const face = faces[0];
+      const isRadians = Platform.OS === "ios";
+      if (!isCorrectPose(face, isRadians)) {
+        const poseInstruction =
+          currentPose === "CENTER"
+            ? "look straight at the camera"
+            : currentPose === "LEFT"
+            ? "turn your head to the left"
+            : "turn your head to the right";
 
-        if (faces.length === 0) {
-          setCaptureStep("error");
-          setErrorMessage(
-            `No ${
-              currentPose === "CENTER" ? "" : currentPose.toLowerCase()
-            } face detected. Please try again.`
-          );
-          const resetTimeout = setTimeout(
-            () => setCaptureStep("position"),
-            2000
-          );
-          timeoutRefs.current.push(resetTimeout);
-          return;
-        }
-
-        // Check pose
-        const face = faces[0];
-        if (!isCorrectPose(face, true)) {
-          // iOS returns radians
-          const poseInstruction =
-            currentPose === "CENTER"
-              ? "look straight at the camera"
-              : currentPose === "LEFT"
-              ? "turn your head to the left"
-              : "turn your head to the right";
-
-          setCaptureStep("error");
-          setErrorMessage(`Please ${poseInstruction}`);
-          const resetTimeout = setTimeout(
-            () => setCaptureStep("position"),
-            2000
-          );
-          timeoutRefs.current.push(resetTimeout);
-          return;
-        }
+        setCaptureStep("error");
+        setErrorMessage(`Please ${poseInstruction}`);
+        const resetTimeout = setTimeout(
+          () => setCaptureStep("position"),
+          2000
+        );
+        timeoutRefs.current.push(resetTimeout);
+        return;
       }
 
       // Clear the capture timeout on success
@@ -438,7 +444,7 @@ export default function FaceAutoCapture({
           We need camera permission for face verification
         </AppText>
         <TouchableOpacity onPress={requestPermission}>
-          <AppText style={{ color: colors.primary, fontWeight: "600" }}>
+          <AppText style={{ color: colors.primary, paddingVertical: spacing.md, fontWeight: "600" }}>
             Grant Permission
           </AppText>
         </TouchableOpacity>
@@ -510,7 +516,7 @@ export default function FaceAutoCapture({
         ref={camera}
         style={StyleSheet.absoluteFill}
         device={device}
-        isActive={captureStep !== "verifying"}
+        isActive={true}
         photo={true}
         frameProcessor={isAutoDetectionEnabled ? frameProcessor : undefined}
       />

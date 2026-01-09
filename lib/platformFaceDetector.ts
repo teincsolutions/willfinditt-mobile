@@ -32,6 +32,33 @@ export interface FaceDetectorOptions {
   trackingEnabled?: boolean;
 }
 
+export interface FaceDetectionResult {
+  yawAngle: number;
+  pitchAngle: number;
+  rollAngle: number;
+  bounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+}
+
+/**
+ * Detect faces in a static image file
+ * Platform-specific implementation (iOS: Apple Vision, Android: ML Kit)
+ * @param imageUri - The URI of the image file to analyze (file:// scheme)
+ * @returns Promise with array of detected faces
+ */
+export async function detectFacesInImage(
+  imageUri: string
+): Promise<FaceDetectionResult[]> {
+  // This is overridden by platform-specific implementations
+  // platformFaceDetector.ios.ts or platformFaceDetector.android.ts
+  console.warn("detectFacesInImage not implemented for this platform");
+  return [];
+}
+
 /**
  * Check if automatic face detection is available on current platform
  */

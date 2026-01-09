@@ -5,6 +5,18 @@ import { ExpoVisionFaceDetectorModuleEvents } from './ExpoVisionFaceDetector.typ
 declare class ExpoVisionFaceDetectorModule extends NativeModule<ExpoVisionFaceDetectorModuleEvents> {
   PI: number;
   hello(): string;
+  isAvailable(): boolean;
+  detectFaces(imageUri: string): Promise<Array<{
+    yawAngle: number;
+    pitchAngle: number;
+    rollAngle: number;
+    bounds: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+  }>>;
   setValueAsync(value: string): Promise<void>;
 }
 

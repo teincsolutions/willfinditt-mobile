@@ -4,13 +4,13 @@ import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
+    ActivityIndicator,
+    Image,
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View,
 } from "react-native";
 import { toast } from "sonner-native";
 import AppText from "../ui/AppText";
@@ -249,42 +249,10 @@ export default function AdImageUploader({
                 resizeMode="cover"
               />
 
-              {/* Upload Progress Overlay */}
-              {image.isUploading && (
-                <View style={styles.progressOverlay}>
-                  <View
-                    style={[
-                      styles.progressBar,
-                      {
-                        backgroundColor: colors.backgroundGray,
-                        borderRadius: radius.sm,
-                      },
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.progressFill,
-                        {
-                          width: `${progress.percentage}%`,
-                          backgroundColor: colors.primary,
-                          borderRadius: radius.sm,
-                        },
-                      ]}
-                    />
-                  </View>
-                  <AppText
-                    variant="xs"
-                    style={{ color: colors.textWhite, marginTop: spacing.xs }}
-                  >
-                    {progress.percentage}%
-                  </AppText>
-                </View>
-              )}
-
               {/* Loading Spinner */}
               {image.isUploading && (
                 <View style={styles.spinnerOverlay}>
-                  <ActivityIndicator size="large" color={colors.primary} />
+                  <ActivityIndicator size="small" color={colors.primary} />
                 </View>
               )}
 
@@ -365,6 +333,42 @@ export default function AdImageUploader({
           </Pressable>
         )}
       </ScrollView>
+
+      {/* Upload Progress Bar */}
+      {images.some((img) => img.isUploading) && (
+        <View style={{ marginTop: spacing.sm }}>
+          <View
+            style={[
+              {
+                height: 4,
+                backgroundColor: colors.backgroundGray,
+                borderRadius: radius.sm,
+                overflow: "hidden",
+              },
+            ]}
+          >
+            <View
+              style={[
+                {
+                  height: "100%",
+                  width: `${progress.percentage}%`,
+                  backgroundColor: colors.primary,
+                },
+              ]}
+            />
+          </View>
+          <AppText
+            variant="xs"
+            style={{
+              color: colors.textGray,
+              marginTop: spacing.xs,
+              textAlign: "center",
+            }}
+          >
+            Uploading... {progress.percentage}%
+          </AppText>
+        </View>
+      )}
 
       {/* Image Counter */}
       <AppText

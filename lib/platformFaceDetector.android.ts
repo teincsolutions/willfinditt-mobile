@@ -1,6 +1,5 @@
 // Android-specific face detector (with Google ML Kit)
 // This file is loaded on Android via Metro's platform extensions (.android.ts)
-// NOTE: react-native-vision-camera-face-detector must be installed separately for Android builds
 
 import type { Frame } from "react-native-vision-camera";
 import type {
@@ -9,64 +8,75 @@ import type {
   FaceDetectorPlugin,
 } from "./platformFaceDetector";
 
+let ExpoVisionFaceDetector: any = null;
+try {
+  ExpoVisionFaceDetector = require('../modules/expo-vision-face-detector').default;
+} catch (error) {
+  console.warn('[Android] ExpoVisionFaceDetector module not found:', error);
+}
+
 export type { Face, FaceDetectorOptions, FaceDetectorPlugin };
 
+export interface FaceDetectionResult {
+  yawAngle: number;
+  pitchAngle: number;
+  rollAngle: number;
+  bounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+}
+
 /**
- * Android: Check if face detection library is available
+ * Android: Automatic face detection not enabled - uses manual capture
  */
 export const isFaceDetectionAvailable = (): boolean => {
-  try {
-    require.resolve("react-native-vision-camera-face-detector");
-    return true;
-  } catch {
-    console.warn(
-      "[Android] react-native-vision-camera-face-detector not installed"
-    );
-    return false;
-  }
+  return false;
 };
 
 /**
- * Android: Automatic or manual based on library availability
+ * Android: Manual capture mode (tap to capture)
  */
 export const getFaceDetectionMode = (): "automatic" | "manual" => {
-  return isFaceDetectionAvailable() ? "automatic" : "manual";
+  return "manual";
 };
 
 /**
- * Android: Uses Google ML Kit for face detection (if library installed)
+ * Android: Returns mock detector - manual capture mode only
  */
 export function usePlatformFaceDetector(
-  options?: FaceDetectorOptions
+  _options?: FaceDetectorOptions
 ): FaceDetectorPlugin {
-  if (!isFaceDetectionAvailable()) {
-    // Library not installed - return mock detector
-    return {
-      detectFaces: (_frame: Frame): Face[] => [],
-      stopListeners: () => {},
-    };
+  // Manual capture mode - no real-time detection
+  return {
+    detectFaces: (_frame: Frame): Face[] => [],
+    stopListeners: () => {},
+  };
+}
+
+/**
+ * Android: Detect faces in a static image file using ML Kit
+ * @param imageUri - The URI of the image file to analyze (file:// scheme)
+ * @returns Promise with array of detected faces
+ */
+export async function detectFacesInImage(
+  imageUri: string
+): Promise<FaceDetectionResult[]> {
+  if (!ExpoVisionFaceDetector) {
+    const error = new Error("ExpoVisionFaceDetector module not available on Android. Make sure the module is properly linked.");
+    console.error("[Android] VisionFaceDetector module not loaded");
+    throw error;
   }
 
   try {
-    const {
-      useFaceDetector,
-    } = require("react-native-vision-camera-face-detector");
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useFaceDetector({
-      performanceMode: options?.performanceMode || "fast",
-      minFaceSize: options?.minFaceSize || 0.15,
-      trackingEnabled: options?.trackingEnabled || false,
-      landmarkMode: "none",
-      contourMode: "none",
-      classificationMode: "none",
-    });
+    console.log("[Android] Detecting faces in image:", imageUri);
+    const faces = await ExpoVisionFaceDetector.detectFaces(imageUri);
+    console.log("[Android] Detected faces:", faces?.length || 0);
+    return faces || [];
   } catch (error) {
-    console.error("[Android] Failed to initialize face detector:", error);
-    // Fallback to manual capture
-    return {
-      detectFaces: (_frame: Frame): Face[] => [],
-      stopListeners: () => {},
-    };
+    console.error("[Android] Face detection in image failed:", error);
+    throw error;
   }
 }

@@ -7,6 +7,8 @@ import SuspensionDetailsModal from "@/components/ads/SuspensionDetailsModal";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
+import IconButton from "@/components/ui/IconButton";
+import SearchableSelectModal from "@/components/ui/SearchableSelectModal";
 import SwipeableTabs, {
   TabDataset,
   TabItem,
@@ -15,6 +17,7 @@ import { TextButton } from "@/components/ui/TextButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useInfiniteMyAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
+import { useParentCategories } from "@/hooks/useCategories";
 import { useMySeller } from "@/hooks/useSeller";
 import { useSellerStats } from "@/hooks/useSellerAds";
 import { AdStatus } from "@/types";
@@ -23,7 +26,7 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, Stack } from "expo-router";
-import { AddCircle } from "iconsax-react-nativejs";
+import { AddCircle, Filter } from "iconsax-react-nativejs";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -61,7 +64,16 @@ export default function BusinessProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedAdId, setSelectedAdId] = useState<string | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [modalType, setModalType] = useState<'rejection' | 'suspension'>('rejection');
+  const [modalType, setModalType] = useState<"rejection" | "suspension">(
+    "rejection"
+  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null
+  );
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+
+  // Fetch categories for filtering
+  const { data: categories = [] } = useParentCategories();
 
   // Fetch all user ads
   const {
@@ -74,14 +86,37 @@ export default function BusinessProfileScreen() {
   } = useInfiniteMyAds({ limit: 20 });
 
   const allAds = adsData?.pages.flatMap((page) => page.data) || [];
-  const activeAds = allAds.filter((ad) => ad.status === AdStatus.ACTIVE);
-  const soldAds = allAds.filter((ad) => ad.status === AdStatus.SOLD);
-  const draftAds = allAds.filter((ad) => ad.status === AdStatus.DRAFT);
-  const pendingAds = allAds.filter((ad) => ad.status === AdStatus.PENDING);
-  const suspendedAds = allAds.filter((ad) => ad.status === AdStatus.SUSPENDED);
-  const rejectedAds = allAds.filter((ad) => ad.status === AdStatus.REJECTED);
-  const expiredAds = allAds.filter((ad) => ad.status === AdStatus.EXPIRED);
-  const closedAds = allAds.filter((ad) => ad.status === AdStatus.CLOSED);
+
+  // Helper function to filter ads by category if selected
+  const filterByCategory = (ads: Ad[]) => {
+    if (!selectedCategoryId) return ads;
+    return ads.filter((ad) => ad.categoryId === selectedCategoryId);
+  };
+
+  const activeAds = filterByCategory(
+    allAds.filter((ad) => ad.status === AdStatus.ACTIVE)
+  );
+  const soldAds = filterByCategory(
+    allAds.filter((ad) => ad.status === AdStatus.SOLD)
+  );
+  const draftAds = filterByCategory(
+    allAds.filter((ad) => ad.status === AdStatus.DRAFT)
+  );
+  const pendingAds = filterByCategory(
+    allAds.filter((ad) => ad.status === AdStatus.PENDING)
+  );
+  const suspendedAds = filterByCategory(
+    allAds.filter((ad) => ad.status === AdStatus.SUSPENDED)
+  );
+  const rejectedAds = filterByCategory(
+    allAds.filter((ad) => ad.status === AdStatus.REJECTED)
+  );
+  const expiredAds = filterByCategory(
+    allAds.filter((ad) => ad.status === AdStatus.EXPIRED)
+  );
+  const closedAds = filterByCategory(
+    allAds.filter((ad) => ad.status === AdStatus.CLOSED)
+  );
 
   const dataset: TabDataset<Ad>[] = [
     { key: AdStatus.ACTIVE, data: activeAds },
@@ -113,6 +148,22 @@ export default function BusinessProfileScreen() {
     });
   };
 
+  const handleOpenCategoryFilter = () => {
+    setCategoryModalVisible(true);
+  };
+
+  const handleCategorySelect = (value: string | number | (string | number)[]) => {
+    // Since multiple is not set, value will always be string | number
+    const selectedValue = value as string | number;
+    setSelectedCategoryId(selectedValue === "all" ? null : selectedValue as string);
+    setCategoryModalVisible(false);
+  };
+
+  // Prepare category options with "All Categories" option
+  const categoryOptions = [
+    { label: "All Categories", value: "all" },
+    ...categories.map((cat) => ({ label: cat.name, value: cat.id })),
+  ];
   const handleReviewPress = () => {
     router.push("/account/my-reviews");
   };
@@ -309,12 +360,33 @@ export default function BusinessProfileScreen() {
                 paddingTop: insets.top + spacing.md,
               }}
               right={
-                <TextButton
-                  icon={<AddCircle size={icons.md} color={colors.iconBlack} />}
-                  style={{ height: icons.lg, paddingHorizontal: spacing.xs }}
-                  title="Create Ad"
-                  onPress={() => router.push({ pathname: "/ads/create" })}
-                />
+                <AppView style={{ flexDirection: "row", gap: spacing.sm, alignItems: "center" }}>
+                  <IconButton
+                    onPress={handleOpenCategoryFilter}
+                    icon={
+                      <Filter
+                        size={icons.sm}
+                        color={colors.iconBlack}
+                        variant="Bold"
+                      />
+                    }
+                    style={{
+                      backgroundColor: selectedCategoryId
+                        ? colors.primary
+                        : colors.backgroundPrimary,
+                        width: icons.lg,
+                        height: icons.lg,
+                    }}
+                  />
+                  <TextButton
+                    icon={
+                      <AddCircle size={icons.md} color={colors.iconBlack} />
+                    }
+                    style={{ height: icons.lg, paddingHorizontal: spacing.xs }}
+                    title="Create Ad"
+                    onPress={() => router.push({ pathname: "/ads/create" })}
+                  />
+                </AppView>
               }
             />
           ),
@@ -338,7 +410,9 @@ export default function BusinessProfileScreen() {
             onPress={() => router.push(`/ads/${item.id}` as any)}
             onViewRejectionDetails={(ad) => {
               setSelectedAdId(ad.id);
-              setModalType(ad.status === AdStatus.SUSPENDED ? 'suspension' : 'rejection');
+              setModalType(
+                ad.status === AdStatus.SUSPENDED ? "suspension" : "rejection"
+              );
               setShowDetailsModal(true);
             }}
             style={{ marginHorizontal: spacing.md, marginVertical: spacing.xs }}
@@ -443,7 +517,7 @@ export default function BusinessProfileScreen() {
         }
       />
       {/* Rejection/Suspension Details Modal */}
-      {selectedAdId && modalType === 'rejection' ? (
+      {selectedAdId && modalType === "rejection" ? (
         <RejectionDetailsModal
           visible={showDetailsModal}
           onClose={() => {
@@ -453,7 +527,7 @@ export default function BusinessProfileScreen() {
           adId={selectedAdId}
         />
       ) : null}
-      {selectedAdId && modalType === 'suspension' ? (
+      {selectedAdId && modalType === "suspension" ? (
         <SuspensionDetailsModal
           visible={showDetailsModal}
           onClose={() => {
@@ -463,6 +537,18 @@ export default function BusinessProfileScreen() {
           adId={selectedAdId}
         />
       ) : null}
+
+      {/* Category Filter Modal */}
+      <SearchableSelectModal
+        visible={categoryModalVisible}
+        onClose={() => setCategoryModalVisible(false)}
+        options={categoryOptions}
+        value={selectedCategoryId || "all"}
+        onSelect={handleCategorySelect}
+        title="Filter by Category"
+        searchPlaceholder="Search categories..."
+        emptyMessage="No categories found"
+      />
     </AppView>
   );
 }

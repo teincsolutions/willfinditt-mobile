@@ -43,10 +43,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/splash-icon.jpg",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#EEEEEE",
+          "backgroundColor": "#FFFFFF",
           "dark": {
             "backgroundColor": "#000000"
           }
@@ -75,7 +75,6 @@
       ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
-      "expo-notifications",
       "./plugins/withModularHeaders",
       [
         "expo-build-properties",
