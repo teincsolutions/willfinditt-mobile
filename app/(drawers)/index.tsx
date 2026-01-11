@@ -112,13 +112,12 @@ export default function HomeScreen() {
 
   // Only show skeletons on initial load when there's no data yet
   const showSkeletons = isLoadingAds && ads.length === 0;
-  const refreshing =
-    isLoadingAds ||
-    isLoadingCategories ||
-    isRefetchingAds ||
-    isRefetchingCategories;
+  const [refreshing, setRefreshing] = useState(false);
+  
   const onRefresh = async () => {
+    setRefreshing(true);
     await Promise.all([refetchAds(), refetchCategories()]);
+    setRefreshing(false);
   };
 
   // Animation values for search bar
@@ -126,21 +125,18 @@ export default function HomeScreen() {
   const stickThreshold = insert.top;
   const [isSearchBarStuck, setIsSearchBarStuck] = useState(false);
   const [isHeaderStuck, setIsHeaderStuck] = useState(false);
-  const pullToRefreshThreshold = 100; // pixels to pull down to trigger refresh
-  const pullRefreshTriggered = useRef(false);
+  const pullToRefreshThreshold = -100; // Pull down 100 pixels to trigger refresh
+  const isRefreshingRef = useRef(false);
 
   // Handle scroll events for search bar animation and pull-to-refresh
   const handleScroll = (event: any) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
 
-    // Check for pull-to-refresh
-    if (
-      currentScrollY < -pullToRefreshThreshold &&
-      !pullRefreshTriggered.current
-    ) {
-      pullRefreshTriggered.current = true;
+    // Check for pull-to-refresh (when scrolled past top)
+    if (currentScrollY < pullToRefreshThreshold && !isRefreshingRef.current && !refreshing) {
+      isRefreshingRef.current = true;
       onRefresh().finally(() => {
-        pullRefreshTriggered.current = false;
+        isRefreshingRef.current = false;
       });
     }
 
@@ -296,11 +292,13 @@ export default function HomeScreen() {
         </AppView>
       )}
 
+      {/* Custom Refresh Indicator */}
       <CustomRefreshControl
         position="top-center"
         refreshing={refreshing}
         onRefresh={onRefresh}
       />
+
       {/* Scrollable Content */}
       <MasonryList
         style={{
@@ -338,7 +336,6 @@ export default function HomeScreen() {
         }}
         onEndReachedThreshold={0.1}
         loading={isFetchingNextPage}
-        refreshControl={false}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
