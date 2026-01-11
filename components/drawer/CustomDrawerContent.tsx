@@ -1,13 +1,14 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
-  DrawerContentComponentProps,
-  DrawerContentScrollView,
+    DrawerContentComponentProps,
+    DrawerContentScrollView,
 } from "@react-navigation/drawer";
 import React from "react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useChatStats } from "@/hooks/useChats";
+import { useNotificationCount } from "@/hooks/useOneNightNotifications";
 import { useMySeller } from "@/hooks/useSeller";
 import { router } from "expo-router";
 import { Alert } from "react-native";
@@ -22,6 +23,7 @@ export default function CustomDrawerContent(
   const { logoutAsync, isAuthenticated, user } = useAuth();
   const { sellerProfile } = useMySeller();
   const { data: chatStats } = useChatStats(isAuthenticated);
+  const { unreadCount: notificationCount } = useNotificationCount(user?.id);
 
   const handleLogout = async () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -148,6 +150,7 @@ export default function CustomDrawerContent(
       <DrawerMenuItem
         label="Notifications"
         active={props.state.index === 3}
+        count={notificationCount}
         onPress={() => {
           props.navigation.navigate("notifications");
         }}

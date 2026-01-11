@@ -1,6 +1,7 @@
 import { useTheme } from "@/hooks/useTheme";
 import React, { useRef, useState } from "react";
 import {
+    Dimensions,
     Modal,
     Pressable,
     StyleProp,
@@ -24,7 +25,7 @@ type Props = {
   items: PopupMenuItem[];
   triggerStyle?: StyleProp<ViewStyle>;
   menuStyle?: StyleProp<ViewStyle>;
-  placement?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  placement?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "auto";
 };
 
 export default function PopupMenu({
@@ -32,7 +33,7 @@ export default function PopupMenu({
   items,
   triggerStyle,
   menuStyle,
-  placement = "bottom-right",
+  placement = "auto",
 }: Props) {
   const { colors, spacing, radius, shadows } = useTheme();
   const [visible, setVisible] = useState(false);
@@ -69,29 +70,62 @@ export default function PopupMenu({
 
   const getMenuPosition = () => {
     const menuWidth = 200;
-    const menuMaxHeight = items.length * 56;
+    const menuItemHeight = 56;
+    const menuHeight = items.length * menuItemHeight;
+    const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
+    
+    // Determine optimal placement
+    let finalPlacement = placement;
+    
+    if (placement === "auto") {
+      // Auto-detect best position based on available space
+      const spaceBelow = screenHeight - (triggerLayout.y + triggerLayout.height);
+      const spaceAbove = triggerLayout.y;
+      const spaceRight = screenWidth - (triggerLayout.x + triggerLayout.width);
+      const spaceLeft = triggerLayout.x;
+      
+      // Prefer showing menu below if there's enough space
+      if (spaceBelow >= menuHeight + spacing.xs) {
+        // Enough space below, check horizontal alignment
+        finalPlacement = spaceRight >= menuWidth + spacing.xs ? "bottom-right" : "bottom-left";
+      } else if (spaceAbove >= menuHeight + spacing.xs) {
+        // Not enough space below, show above if possible
+        finalPlacement = spaceRight >= menuWidth + spacing.xs ? "top-right" : "top-left";
+      } else {
+        // Limited space both ways, choose the side with more space
+        const preferTop = spaceAbove > spaceBelow;
+        const preferRight = spaceRight > spaceLeft;
+        
+        if (preferTop) {
+          finalPlacement = preferRight ? "top-right" : "top-left";
+        } else {
+          finalPlacement = preferRight ? "bottom-right" : "bottom-left";
+        }
+      }
+    }
 
-    switch (placement) {
+    // Calculate position based on final placement
+    switch (finalPlacement) {
       case "top-left":
         return {
-          top: triggerLayout.y - menuMaxHeight - spacing.xs,
-          left: triggerLayout.x - menuWidth,
+          top: triggerLayout.y - menuHeight - spacing.xs,
+          right: screenWidth - triggerLayout.x,
         };
       case "top-right":
         return {
-          top: triggerLayout.y - menuMaxHeight - spacing.xs,
+          top: triggerLayout.y - menuHeight - spacing.xs,
           left: triggerLayout.x + triggerLayout.width + spacing.xs,
         };
       case "bottom-left":
         return {
           top: triggerLayout.y + triggerLayout.height + spacing.xs,
-          right: triggerLayout.width + spacing.xs,
+          right: screenWidth - triggerLayout.x,
         };
       case "bottom-right":
       default:
         return {
           top: triggerLayout.y + triggerLayout.height + spacing.xs,
-          left: triggerLayout.x + triggerLayout.width,
+          left: triggerLayout.x + triggerLayout.width + spacing.xs,
         };
     }
   };

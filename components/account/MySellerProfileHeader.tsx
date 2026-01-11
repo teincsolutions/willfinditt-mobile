@@ -73,8 +73,8 @@ export default function MySellerProfileHeader({
             {sellerProfile.isVerified ? (
               <MySellerRating
                 onPress={onReviewsPress}
-                rating={sellerProfile.rating || 2.5}
-                totalReviews={sellerProfile.totalReviews || 1}
+                rating={sellerProfile.rating}
+                totalReviews={sellerProfile.totalReviews}
               />
             ) : (
               <TextButton

@@ -500,7 +500,7 @@ function MyProductCardContent({
           </View>
         }
         items={menuItems}
-        placement="bottom-left"
+        placement="auto"
       />
     </TouchableOpacity>
   );

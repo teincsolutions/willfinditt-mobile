@@ -77,6 +77,7 @@ export const useLogoutDevice = () => {
 export const useFCMInitialization = (userId?: string, onRegistered?: () => void) => {
   const hasInitialized = useRef(false);
   const previousUserId = useRef<string | undefined>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     console.log("useFCMInitialization: Starting FCM initialization for userId:", userId);
@@ -133,10 +134,39 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
           // Clear app badge when app becomes active
           await fcmService.clearBadge();
 
-          // Set up message handlers
-          unsubscribeOnMessage = await fcmService.onMessage();
+          // Set up message handlers with query invalidation
+          unsubscribeOnMessage = await fcmService.onMessage((message) => {
+            // Invalidate notification queries when new message is received
+            console.log("useFCMInitialization: New message received, invalidating queries");
+            if (userId) {
+              queryClient.invalidateQueries({
+                queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId),
+              });
+            }
+            const fcmToken = fcmService.getCurrentToken();
+            if (fcmToken) {
+              queryClient.invalidateQueries({
+                queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(fcmToken),
+              });
+            }
+          });
+          
           unsubscribeOnNotificationOpened =
-            await fcmService.onNotificationOpenedApp();
+            await fcmService.onNotificationOpenedApp((message) => {
+              // Invalidate notification queries when notification is opened
+              console.log("useFCMInitialization: Notification opened, invalidating queries");
+              if (userId) {
+                queryClient.invalidateQueries({
+                  queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId),
+                });
+              }
+              const fcmToken = fcmService.getCurrentToken();
+              if (fcmToken) {
+                queryClient.invalidateQueries({
+                  queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(fcmToken),
+                });
+              }
+            });
 
           // Handle token refresh
           unsubscribeOnTokenRefresh = await fcmService.onTokenRefresh(
@@ -149,9 +179,21 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
           // Check for initial notification
           const initialNotification = await fcmService.getInitialNotification();
           if (initialNotification) {
-            console.log("useFCMInitialization: Initial notification found, setting pending");
+            console.log("useFCMInitialization: Initial notification found, setting pending and invalidating queries");
             // Set pending notification for routing after app is ready
             setPendingNotification(initialNotification as any);
+            // Invalidate queries
+            if (userId) {
+              queryClient.invalidateQueries({
+                queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId),
+              });
+            }
+            const fcmToken = fcmService.getCurrentToken();
+            if (fcmToken) {
+              queryClient.invalidateQueries({
+                queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(fcmToken),
+              });
+            }
           }
         }
 
@@ -360,6 +402,27 @@ export const useNotificationsWithAutoMark = (
   const deviceQuery = useDevicePushNotifications(deviceToken || "", params);
 
   return userId ? userQuery : deviceQuery;
+};
+
+// ============================================
+// Notification Count Hook
+// ============================================
+
+export const useNotificationCount = (userId?: string, deviceToken?: string) => {
+  const userQuery = usePushNotifications(userId || "", { limit: 100 });
+  const deviceQuery = useDevicePushNotifications(deviceToken || "", { limit: 100 });
+  
+  const query = userId ? userQuery : deviceQuery;
+  
+  const unreadCount = query.data?.pages.reduce((total, page) => {
+    const unread = page.data.filter((notif) => !notif.read).length;
+    return total + unread;
+  }, 0) || 0;
+  
+  return {
+    unreadCount,
+    isLoading: query.isLoading,
+  };
 };
 
 // ============================================
