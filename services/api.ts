@@ -204,13 +204,14 @@ api.interceptors.response.use(
       try {
         console.log("Token expired, attempting refresh...");
 
-        // Call refresh endpoint
+        // Call refresh endpoint with refresh token in Authorization header
         const response = await axios.post(
           `${process.env.EXPO_PUBLIC_BASE_URL}/api/v1/auth/refresh`,
-          { refresh_token: refreshToken },
+          {},
           {
             headers: {
               "X-Api-Key": process.env.APP_API_KEY || "",
+              "Authorization": `Bearer ${refreshToken}`,
             },
           }
         );

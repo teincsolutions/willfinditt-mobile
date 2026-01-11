@@ -90,23 +90,16 @@ export const authService = {
     }
   },
 
-  // Get active sessions
+  // Get active sessions (NOT IMPLEMENTED IN API - stub for compatibility)
   getActiveSessions: async (): Promise<any[]> => {
-    try {
-      const response = await api.get("/api/v1/auth/sessions");
-      return response.data;
-    } catch (error) {
-      return handleAuthError(error);
-    }
+    console.warn("getActiveSessions is not implemented in the backend API");
+    return [];
   },
 
-  // Revoke specific session
+  // Revoke specific session (NOT IMPLEMENTED IN API - stub for compatibility)
   revokeSession: async (sessionId: string): Promise<void> => {
-    try {
-      await api.delete(`/api/v1/auth/sessions/${sessionId}`);
-    } catch (error) {
-      return handleAuthError(error);
-    }
+    console.warn("revokeSession is not implemented in the backend API");
+    throw new Error("Session management is not available");
   },
 
   // Get current user profile

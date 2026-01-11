@@ -22,14 +22,29 @@ class FCMService {
    */
   async requestPermissions(): Promise<boolean> {
     try {
+      // For Android 13+ (API level 33+), use notifee to request permissions
+      if (Platform.OS === 'android') {
+        const settings = await notifee.requestPermission();
+        const enabled = settings.authorizationStatus >= 1; // AUTHORIZED or PROVISIONAL
+        
+        if (enabled) {
+          console.log('Android notification permissions granted');
+        } else {
+          console.log('Android notification permissions denied');
+        }
+        
+        return enabled;
+      }
+      
+      // For iOS, use Firebase messaging
       const status = await messaging().requestPermission();
       const enabled = status === messaging.AuthorizationStatus.AUTHORIZED ||
         status === messaging.AuthorizationStatus.PROVISIONAL;
 
       if (enabled) {
-        console.log('Notification permissions granted');
+        console.log('iOS notification permissions granted');
       } else {
-        console.log('Notification permissions denied');
+        console.log('iOS notification permissions denied');
       }
 
       return enabled;
@@ -44,6 +59,11 @@ class FCMService {
    */
   async hasPermissions(): Promise<boolean> {
     try {
+      if (Platform.OS === 'android') {
+        const settings = await notifee.getNotificationSettings();
+        return settings.authorizationStatus >= 1; // AUTHORIZED or PROVISIONAL
+      }
+      
       const status = await messaging().hasPermission();
       return status === messaging.AuthorizationStatus.AUTHORIZED ||
         status === messaging.AuthorizationStatus.PROVISIONAL;

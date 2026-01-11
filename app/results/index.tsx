@@ -41,6 +41,7 @@ export default function ResultsScreen() {
   const params = useLocalSearchParams<{
     query?: string;
     categoryId?: string;
+    fresh?: string;
   }>();
 
   const {
@@ -53,6 +54,7 @@ export default function ResultsScreen() {
     setSorting,
     setConditions,
     clearFilterOptions,
+    setFilters,
   } = useSearchFilters();
 
   const { data: selectedCategory } = useCategory(categoryId || "");
@@ -71,14 +73,35 @@ export default function ResultsScreen() {
     filters?.sortOrder || "desc"
   }`;
 
-  // Update filters from URL params on mount only
+  // Update filters from URL params on mount - handle fresh searches
   useEffect(() => {
     if (isInitialSync.current) {
-      if (params.query && params.query !== filters?.query) {
-        setQuery(params.query);
-      }
-      if (params.categoryId && params.categoryId !== categoryId) {
-        setCategoryId(params.categoryId);
+      // If fresh search flag is set, clear category and set only query
+      if (params.fresh === "true" && params.query) {
+        setFilters({
+          query: params.query,
+          categoryIds: undefined,
+          categoryFields: undefined,
+          page: 1,
+        });
+        setSearchQuery(params.query);
+      } else {
+        // Normal navigation - sync URL params with filters
+        if (params.query && params.query !== filters?.query) {
+          setQuery(params.query);
+          setSearchQuery(params.query);
+        }
+        if (params.categoryId && params.categoryId !== categoryId) {
+          // Clear query when navigating from category
+          setFilters({
+            query: undefined,
+            categoryIds: [params.categoryId],
+            page: 1,
+          });
+          setSearchQuery("");
+        } else if (params.categoryId) {
+          setCategoryId(params.categoryId);
+        }
       }
       isInitialSync.current = false;
     }

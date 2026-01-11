@@ -20,9 +20,10 @@ export default function SubCategoriesScreen() {
     if (source === "filters") {
       router.dismiss(2);
     } else {
+      // When navigating from category, pass categoryId param
       router.replace({
         pathname: "/results",
-        params: { parentId: categoryId, source },
+        params: { categoryId: categoryId },
       });
     }
   };

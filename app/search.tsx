@@ -66,10 +66,10 @@ export default function SearchScreen() {
     };
     addRecent(suggestion);
 
-    // Navigate to search results
+    // Navigate to search results with fresh flag to clear category
     router.replace({
       pathname: "/results",
-      params: { query },
+      params: { query, fresh: "true" },
     });
   };
 
@@ -78,10 +78,14 @@ export default function SearchScreen() {
     setQuery(suggestion.keyword);
     addRecent(suggestion);
 
-    // Navigate to search results
+    // Navigate to search results - use categoryId if from suggestion, otherwise fresh search
     router.replace({
       pathname: "/results",
-      params: { query: suggestion.keyword },
+      params: { 
+        query: suggestion.keyword,
+        categoryId: suggestion.categoryId || undefined,
+        fresh: suggestion.categoryId ? undefined : "true"
+      },
     });
   };
 
@@ -93,7 +97,11 @@ export default function SearchScreen() {
     // Navigate to search results
     router.replace({
       pathname: "/results",
-      params: { query: suggestion.keyword },
+      params: { 
+        query: suggestion.keyword,
+        categoryId: suggestion.categoryId || undefined,
+        fresh: suggestion.categoryId ? undefined : "true"
+      },
     });
   };
 

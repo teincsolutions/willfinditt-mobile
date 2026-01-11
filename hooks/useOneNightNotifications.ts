@@ -1,25 +1,26 @@
 import { fcmService } from "@/services/fcmService";
 import {
-  getDeviceNotificationsHistory,
-  getNotificationsHistory,
-  getUserNotificationStatus,
-  logoutDevice,
-  markDeviceNotificationAsRead,
-  markDeviceNotificationsAsReadBulk,
-  markNotificationAsRead,
-  markNotificationsAsReadBulk,
-  pauseUserNotifications,
-  resumeUserNotifications,
-  syncNotifications,
+    getDeviceNotificationsHistory,
+    getNotificationsHistory,
+    getUserNotificationStatus,
+    logoutDevice,
+    markDeviceNotificationAsRead,
+    markDeviceNotificationsAsReadBulk,
+    markNotificationAsRead,
+    markNotificationsAsReadBulk,
+    pauseUserNotifications,
+    resumeUserNotifications,
+    syncNotifications,
 } from "@/services/pushNotificationService";
 import { setPendingNotification } from "@/utils/notificationRouting";
 import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
+    useInfiniteQuery,
+    useMutation,
+    useQuery,
+    useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
+import { Platform } from "react-native";
 import { toast } from "sonner-native";
 import { PUSH_NOTIFICATION_QUERY_KEYS } from "./queryKeys";
 
@@ -86,6 +87,21 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
 
     const initializeFCM = async () => {
       try {
+        console.log("useFCMInitialization: Starting FCM initialization");
+        
+        // Create notification channel early for Android
+        if (Platform.OS === 'android') {
+          const notifee = require('@notifee/react-native').default;
+          const { AndroidImportance } = require('@notifee/react-native');
+          await notifee.createChannel({
+            id: 'default',
+            name: 'Default Notifications',
+            importance: AndroidImportance.HIGH,
+            sound: 'default',
+          });
+          console.log("useFCMInitialization: Android notification channel created");
+        }
+        
         console.log("useFCMInitialization: Requesting permissions");
         // Request permissions
         const hasPermissions = await fcmService.hasPermissions();
@@ -93,12 +109,15 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
           const granted = await fcmService.requestPermissions();
           if (!granted) {
             console.log("useFCMInitialization: Notification permissions not granted");
-            return;
+            // Still register device even without permissions (for when user enables later)
+            console.log("useFCMInitialization: Registering device without permissions");
           }
         }
 
-        console.log("useFCMInitialization: Permissions granted, registering device");
-        // Register device with FCM token
+        console.log("useFCMInitialization: Registering device with userId:", userId || "(no user - initial registration)");
+        // Register device with FCM token (with or without userId)
+        // This will register device immediately on app launch
+        // When user logs in, this will be called again with userId to update the device
         await fcmService.registerDevice(userId);
 
         console.log("useFCMInitialization: Device registered, calling onRegistered callback");
