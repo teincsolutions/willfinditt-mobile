@@ -22,7 +22,7 @@ import {
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import { toast } from "sonner-native";
-import { PUSH_NOTIFICATION_QUERY_KEYS } from "./queryKeys";
+import { AD_QUERY_KEYS, PUSH_NOTIFICATION_QUERY_KEYS, SELLER_QUERY_KEYS } from "./queryKeys";
 
 // ============================================
 // Device Registration Hooks
@@ -149,6 +149,14 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
                 queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(fcmToken),
               });
             }
+            // Invalidate user ads to refresh business profile ads list
+            queryClient.invalidateQueries({
+              queryKey: AD_QUERY_KEYS.MY_ADS(),
+            });
+            // Invalidate seller stats to update counts
+            queryClient.invalidateQueries({
+              queryKey: SELLER_QUERY_KEYS.SELLER_MY_STATS,
+            });
           });
           
           unsubscribeOnNotificationOpened =
@@ -166,6 +174,14 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
                   queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(fcmToken),
                 });
               }
+              // Invalidate user ads to refresh business profile ads list
+              queryClient.invalidateQueries({
+                queryKey: AD_QUERY_KEYS.MY_ADS(),
+              });
+              // Invalidate seller stats to update counts
+              queryClient.invalidateQueries({
+                queryKey: SELLER_QUERY_KEYS.SELLER_MY_STATS,
+              });
             });
 
           // Handle token refresh
@@ -194,6 +210,14 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
                 queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(fcmToken),
               });
             }
+            // Invalidate user ads to refresh business profile ads list
+            queryClient.invalidateQueries({
+              queryKey: AD_QUERY_KEYS.MY_ADS(),
+            });
+            // Invalidate seller stats to update counts
+            queryClient.invalidateQueries({
+              queryKey: SELLER_QUERY_KEYS.SELLER_MY_STATS,
+            });
           }
         }
 
