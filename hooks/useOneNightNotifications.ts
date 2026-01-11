@@ -335,19 +335,14 @@ export const useMarkPushNotificationsReadBulk = () => {
       data: { markedAsRead: number; targetIds: string[] },
       variables
     ) => {
-      // Invalidate push notifications list
+      // Invalidate all push notifications queries for this user (includes count queries)
       queryClient.invalidateQueries({
-        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(
-          variables.userId
-        ),
+        queryKey: ["push-notifications", variables.userId],
       });
-      toast.success(`${data.markedAsRead} notifications marked as read`);
+      console.log(`${data.markedAsRead} notifications marked as read`);
     },
     onError: (error: any) => {
       console.error("Bulk mark notifications read failed:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to mark notifications as read"
-      );
     },
   });
 };
@@ -396,19 +391,14 @@ export const useMarkDevicePushNotificationsReadBulk = () => {
       data: { markedAsRead: number; targetIds: string[] },
       variables
     ) => {
-      // Invalidate device push notifications list
+      // Invalidate all device push notifications queries for this device (includes count queries)
       queryClient.invalidateQueries({
-        queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(
-          variables.fcmToken
-        ),
+        queryKey: ["device-push-notifications", variables.fcmToken],
       });
-      toast.success(`${data.markedAsRead} notifications marked as read`);
+      console.log(`${data.markedAsRead} notifications marked as read`);
     },
     onError: (error: any) => {
       console.error("Bulk mark device notifications read failed:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to mark notifications as read"
-      );
     },
   });
 };

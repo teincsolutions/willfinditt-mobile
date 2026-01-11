@@ -5,8 +5,9 @@ import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  useMarkDevicePushNotificationsReadBulk,
-  useNotificationsWithAutoMark,
+    useMarkDevicePushNotificationsReadBulk,
+    useMarkPushNotificationsReadBulk,
+    useNotificationsWithAutoMark,
 } from "@/hooks/useOneNightNotifications";
 import { useTheme } from "@/hooks/useTheme";
 import { fcmService } from "@/services/fcmService";
@@ -14,12 +15,12 @@ import { NotificationResponse } from "@/services/pushNotificationService";
 import { mmkvStorage } from "@/utils/mmkvStorage";
 import { handleNotificationRouting } from "@/utils/notificationRouting";
 import Drawer from "expo-router/drawer";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  View,
+    ActivityIndicator,
+    FlatList,
+    RefreshControl,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -29,6 +30,7 @@ export default function NotificationsScreen() {
   const { user, isAuthenticated } = useAuth();
   // Get device token directly from persistent storage for non-authenticated users
   const deviceToken = mmkvStorage.getItem("fcm_token");
+  const hasMarkedRead = useRef(false);
 
   // Clear badge when notifications page is opened
   useEffect(() => {
@@ -48,12 +50,41 @@ export default function NotificationsScreen() {
   } = useNotificationsWithAutoMark(user?.id, deviceToken, {
     limit: 20, // Smaller page size for infinite scroll
   });
+  
+  const markUserReadBulkMutation = useMarkPushNotificationsReadBulk();
   const markDeviceReadBulkMutation = useMarkDevicePushNotificationsReadBulk();
 
   console.log("Notifications error:", error?.message);
   // Flatten the paginated data
   const allNotifications =
     notificationsData?.pages?.flatMap((page) => page.data) || [];
+
+  // Auto-mark all unread notifications as read when screen loads
+  useEffect(() => {
+    if (!hasMarkedRead.current && allNotifications.length > 0) {
+      const unreadIds = allNotifications
+        .filter((notif) => !notif.read)
+        .map((notif) => notif.id);
+
+      if (unreadIds.length > 0) {
+        hasMarkedRead.current = true;
+        
+        if (user?.id) {
+          // Mark user notifications as read
+          markUserReadBulkMutation.mutate({
+            userId: user.id,
+            targetIds: unreadIds,
+          });
+        } else if (deviceToken) {
+          // Mark device notifications as read
+          markDeviceReadBulkMutation.mutate({
+            fcmToken: deviceToken,
+            targetIds: unreadIds,
+          });
+        }
+      }
+    }
+  }, [allNotifications.length, user?.id, deviceToken]);
 
   const handleNotificationPress = (notification: NotificationResponse) => {
     // Handle routing based on notification type and data
