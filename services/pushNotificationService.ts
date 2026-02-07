@@ -144,31 +144,31 @@ export interface ApiResponse<T> {
 // ============================================
 
 export const registerDevice = async (
-  request: DeviceRegistrationRequest
+  request: DeviceRegistrationRequest,
 ): Promise<DeviceRegistrationResponse> => {
   const { data } = await oneNightNotifyApi.post<DeviceRegistrationResponse>(
     "/v1/devices/register",
-    request
+    request,
   );
   return data;
 };
 
 export const refreshDeviceToken = async (
-  request: TokenRefreshRequest
+  request: TokenRefreshRequest,
 ): Promise<DeviceRegistrationResponse> => {
   const { data } = await oneNightNotifyApi.put<DeviceRegistrationResponse>(
     "/v1/devices/tokens/refresh",
-    request
+    request,
   );
   return data;
 };
 
 export const logoutDevice = async (
-  request: DeviceLogoutRequest
+  request: DeviceLogoutRequest,
 ): Promise<DeviceLogoutResponse> => {
   const { data } = await oneNightNotifyApi.post<DeviceLogoutResponse>(
     "/v1/devices/logout",
-    request
+    request,
   );
   return data;
 };
@@ -178,7 +178,7 @@ export const logoutDevice = async (
 // ============================================
 
 export const sendTopicNotification = async (
-  request: TopicNotificationRequest
+  request: TopicNotificationRequest,
 ): Promise<{ notificationId: string; fcmResponse: any }> => {
   const { data } = await oneNightNotifyApi.post<{
     notificationId: string;
@@ -188,7 +188,7 @@ export const sendTopicNotification = async (
 };
 
 export const sendPersonalNotification = async (
-  request: PersonalNotificationRequest
+  request: PersonalNotificationRequest,
 ): Promise<{
   notificationId: string;
   fcmResponses: any[];
@@ -206,40 +206,41 @@ export const sendPersonalNotification = async (
 
 export const getNotificationsHistory = async (
   userId: string,
-  params: { page?: number; limit?: number } = {}
+  params: { page?: number; limit?: number } = {},
 ): Promise<NotificationsHistoryResponse> => {
   const { data } = await oneNightNotifyApi.get<NotificationsHistoryResponse>(
     `/v1/notifications/user/${userId}/history`,
-    { params }
+    { params },
   );
   return data;
 };
 
 export const getNotificationById = async (
   targetId: string,
-  userId?: string
+  userId?: string,
 ): Promise<NotificationResponse> => {
   const params = userId ? { userId } : {};
   const { data } = await oneNightNotifyApi.get<NotificationResponse>(
     `/v1/notifications/${targetId}`,
-    { params }
+    { params },
   );
   return data;
 };
 
 export const getDeviceNotificationsHistory = async (
   deviceToken: string,
-  params: { page?: number; limit?: number } = {}
+  params: { page?: number; limit?: number } = {},
 ): Promise<NotificationsHistoryResponse> => {
   console.log(
     "Fetching device notifications history for token:",
     deviceToken,
     "with params:",
-    params
+    params,
   );
+  const encodedToken = encodeURIComponent(deviceToken);
   const response = await oneNightNotifyApi.get<NotificationsHistoryResponse>(
-    `/v1/notifications/device/token/${deviceToken}/history`,
-    { params }
+    `/v1/notifications/device/token/${encodedToken}/history`,
+    { params },
   );
   console.log("Received device notifications history response:", response.data);
   return response.data;
@@ -247,7 +248,7 @@ export const getDeviceNotificationsHistory = async (
 
 export const markNotificationAsRead = async (
   userId: string,
-  targetId: string
+  targetId: string,
 ): Promise<{
   id: string;
   notificationId: string;
@@ -271,7 +272,7 @@ export const markNotificationAsRead = async (
 
 export const markNotificationsAsReadBulk = async (
   userId: string,
-  targetIds: string[]
+  targetIds: string[],
 ): Promise<{
   markedAsRead: number;
   targetIds: string[];
@@ -285,7 +286,7 @@ export const markNotificationsAsReadBulk = async (
 
 export const markDeviceNotificationAsRead = async (
   fcmToken: string,
-  targetId: string
+  targetId: string,
 ): Promise<{
   id: string;
   notificationId: string;
@@ -295,6 +296,7 @@ export const markDeviceNotificationAsRead = async (
   createdAt: string;
   updatedAt: string;
 }> => {
+  const encodedToken = encodeURIComponent(fcmToken);
   const { data } = await oneNightNotifyApi.patch<{
     id: string;
     notificationId: string;
@@ -303,22 +305,57 @@ export const markDeviceNotificationAsRead = async (
     deliveredAt: string;
     createdAt: string;
     updatedAt: string;
-  }>(`/v1/notifications/device/token/${fcmToken}/mark-read/${targetId}`);
+  }>(`/v1/notifications/device/token/${encodedToken}/mark-read/${targetId}`);
   return data;
 };
 
 export const markDeviceNotificationsAsReadBulk = async (
   fcmToken: string,
-  targetIds: string[]
+  targetIds: string[],
 ): Promise<{
   markedAsRead: number;
   targetIds: string[];
 }> => {
+  const encodedToken = encodeURIComponent(fcmToken);
   const { data } = await oneNightNotifyApi.patch<{
     markedAsRead: number;
     targetIds: string[];
-  }>(`/v1/notifications/device/token/${fcmToken}/mark-read`, { targetIds });
+  }>(`/v1/notifications/device/token/${encodedToken}/mark-read`, { targetIds });
   return data;
+};
+
+// Unified mark-read function that works for both authenticated and anonymous users
+export const markNotificationsAsReadBulkByDevice = async (
+  fcmToken: string,
+  targetIds: string[],
+): Promise<{
+  markedAsRead: number;
+  targetIds: string[];
+}> => {
+  const encodedToken = encodeURIComponent(fcmToken);
+  const url = `/v1/notifications/device/token/${encodedToken}/mark-read`;
+
+  console.log("Mark notifications read - URL:", url);
+  console.log("Mark notifications read - targetIds:", targetIds);
+  console.log("Mark notifications read - fcmToken (original):", fcmToken);
+  console.log("Mark notifications read - fcmToken (encoded):", encodedToken);
+
+  try {
+    const { data } = await oneNightNotifyApi.patch<{
+      markedAsRead: number;
+      targetIds: string[];
+    }>(url, { targetIds });
+    return data;
+  } catch (error: any) {
+    console.error("Mark notifications read error:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: url,
+      targetIds: targetIds,
+    });
+    throw error;
+  }
 };
 
 // ============================================
@@ -327,29 +364,29 @@ export const markDeviceNotificationsAsReadBulk = async (
 
 export const pauseUserNotifications = async (
   userId: string,
-  request: UserStatusRequest = {}
+  request: UserStatusRequest = {},
 ): Promise<{ pausedUntil: string }> => {
   const { data } = await oneNightNotifyApi.post<{ pausedUntil: string }>(
     `/v1/notifications/user/${userId}/status/pause`,
-    request
+    request,
   );
   return data;
 };
 
 export const resumeUserNotifications = async (
-  userId: string
+  userId: string,
 ): Promise<{ success: boolean }> => {
   const { data } = await oneNightNotifyApi.post<{ success: boolean }>(
-    `/v1/notifications/user/${userId}/status/resume`
+    `/v1/notifications/user/${userId}/status/resume`,
   );
   return data;
 };
 
 export const getUserNotificationStatus = async (
-  userId: string
+  userId: string,
 ): Promise<UserStatusResponse> => {
   const { data } = await oneNightNotifyApi.get<UserStatusResponse>(
-    `/v1/notifications/user/${userId}/status`
+    `/v1/notifications/user/${userId}/status`,
   );
   return data;
 };
@@ -360,14 +397,14 @@ export const getUserNotificationStatus = async (
 
 export const syncNotifications = async (
   userId: string,
-  lastSyncTimestamp?: string
+  lastSyncTimestamp?: string,
 ): Promise<NotificationsHistoryResponse> => {
   const { data } = await oneNightNotifyApi.post<NotificationsHistoryResponse>(
     "/v1/notifications/sync",
     {
       userId,
       lastSyncTimestamp,
-    }
+    },
   );
   return data;
 };
@@ -389,6 +426,7 @@ export const pushNotificationService = {
   markNotificationsAsReadBulk,
   markDeviceNotificationAsRead,
   markDeviceNotificationsAsReadBulk,
+  markNotificationsAsReadBulkByDevice,
   pauseUserNotifications,
   resumeUserNotifications,
   getUserNotificationStatus,

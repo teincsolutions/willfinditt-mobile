@@ -5,9 +5,8 @@ import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
 import { useAuth } from "@/hooks/useAuth";
 import {
-    useMarkDevicePushNotificationsReadBulk,
-    useMarkPushNotificationsReadBulk,
-    useNotificationsWithAutoMark,
+  useMarkNotificationsReadBulk,
+  useNotificationsWithAutoMark,
 } from "@/hooks/useOneNightNotifications";
 import { useTheme } from "@/hooks/useTheme";
 import { fcmService } from "@/services/fcmService";
@@ -17,10 +16,10 @@ import { handleNotificationRouting } from "@/utils/notificationRouting";
 import Drawer from "expo-router/drawer";
 import React, { useEffect, useRef } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    RefreshControl,
-    View,
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -50,9 +49,9 @@ export default function NotificationsScreen() {
   } = useNotificationsWithAutoMark(user?.id, deviceToken, {
     limit: 20, // Smaller page size for infinite scroll
   });
-  
-  const markUserReadBulkMutation = useMarkPushNotificationsReadBulk();
-  const markDeviceReadBulkMutation = useMarkDevicePushNotificationsReadBulk();
+
+  // Use unified mark-read hook that works for both authenticated and anonymous users
+  const markReadBulkMutation = useMarkNotificationsReadBulk();
 
   console.log("Notifications error:", error?.message);
   // Flatten the paginated data
@@ -61,30 +60,24 @@ export default function NotificationsScreen() {
 
   // Auto-mark all unread notifications as read when screen loads
   useEffect(() => {
-    if (!hasMarkedRead.current && allNotifications.length > 0) {
-      const unreadIds = allNotifications
+    if (!hasMarkedRead.current && allNotifications.length > 0 && deviceToken) {
+      const unreadTargetIds = allNotifications
         .filter((notif) => !notif.read)
-        .map((notif) => notif.id);
+        .map((notif) => notif.targetId); // Use targetId, not id
 
-      if (unreadIds.length > 0) {
+      console.log("Auto-marking notifications as read:", unreadTargetIds);
+
+      if (unreadTargetIds.length > 0) {
         hasMarkedRead.current = true;
-        
-        if (user?.id) {
-          // Mark user notifications as read
-          markUserReadBulkMutation.mutate({
-            userId: user.id,
-            targetIds: unreadIds,
-          });
-        } else if (deviceToken) {
-          // Mark device notifications as read
-          markDeviceReadBulkMutation.mutate({
-            fcmToken: deviceToken,
-            targetIds: unreadIds,
-          });
-        }
+
+        // Use unified approach with device token for both authenticated and anonymous users
+        markReadBulkMutation.mutate({
+          fcmToken: deviceToken,
+          targetIds: unreadTargetIds,
+        });
       }
     }
-  }, [allNotifications.length, user?.id, deviceToken]);
+  }, [allNotifications.length, deviceToken]);
 
   const handleNotificationPress = (notification: NotificationResponse) => {
     // Handle routing based on notification type and data
@@ -157,7 +150,7 @@ export default function NotificationsScreen() {
         <FlatList
           data={allNotifications}
           renderItem={renderNotification}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.targetId}
           ListEmptyComponent={renderEmpty}
           onEndReached={() => {
             if (hasNextPage && !isFetchingNextPage) {
@@ -188,4 +181,3 @@ export default function NotificationsScreen() {
     </AppView>
   );
 }
-

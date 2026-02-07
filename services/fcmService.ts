@@ -177,22 +177,26 @@ class FCMService {
   async registerDevice(userId?: string): Promise<boolean> {
     try {
       console.log(
-        "fcmService.registerDevice: Getting FCM token for userId:",
-        userId,
+        "🔔 fcmService.registerDevice: Starting registration for userId:",
+        userId || "(anonymous)",
       );
       const token = await this.getToken();
+      console.log(
+        "🔔 fcmService.registerDevice: getToken returned:",
+        token ? `${token.substring(0, 20)}...` : "null",
+      );
+
       if (!token) {
         console.warn(
-          "fcmService.registerDevice: No FCM token available for registration (this is expected if entitlements are missing)",
+          "⚠️ fcmService.registerDevice: No FCM token available for registration (this is expected if entitlements are missing)",
         );
         return false;
       }
 
       console.log(
-        "fcmService.registerDevice: Registering device with backend, token:",
-        token.substring(0, 10) + "...",
+        "🔔 fcmService.registerDevice: Calling backend API to register device...",
       );
-      await pushNotificationService.registerDevice({
+      const response = await pushNotificationService.registerDevice({
         platform: Platform.OS as "ios" | "android",
         fcmToken: token,
         userId,
@@ -204,7 +208,8 @@ class FCMService {
       });
 
       console.log("✅ Device registered successfully with backend!");
-      console.log("Registration details:", {
+      console.log("🔔 Registration response:", response);
+      console.log("🔔 Registration details:", {
         platform: Platform.OS,
         userId: userId || "(no user - anonymous registration)",
         tokenPreview: token.substring(0, 20) + "...",
@@ -212,8 +217,8 @@ class FCMService {
       });
       return true;
     } catch (error) {
-      console.log(
-        "fcmService.registerDevice: Error registering device:",
+      console.error(
+        "❌ fcmService.registerDevice: Error registering device:",
         error,
       );
       return false;

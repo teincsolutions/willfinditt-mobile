@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useChatStats } from "@/hooks/useChats";
 import { useNotificationCount } from "@/hooks/useOneNightNotifications";
 import { useMySeller } from "@/hooks/useSeller";
+import { mmkvStorage } from "@/utils/mmkvStorage";
 import { router } from "expo-router";
 import { Alert } from "react-native";
 import DrawerMenuItem from "./DrawerMenuItem";
@@ -17,13 +18,18 @@ import DrawerPromoCard from "./DrawerPromoCard";
 import DrawerUserHeader from "./DrawerUserHeader";
 
 export default function CustomDrawerContent(
-  props: DrawerContentComponentProps
+  props: DrawerContentComponentProps,
 ) {
   const { colors, icons, spacing } = useTheme();
   const { logoutAsync, isAuthenticated, user } = useAuth();
   const { sellerProfile } = useMySeller();
   const { data: chatStats } = useChatStats(isAuthenticated);
-  const { unreadCount: notificationCount } = useNotificationCount(user?.id);
+  // Get device token for notification count (works for both authenticated and anonymous users)
+  const deviceToken = mmkvStorage.getItem("fcm_token");
+  const { unreadCount: notificationCount } = useNotificationCount(
+    user?.id,
+    deviceToken,
+  );
 
   const handleLogout = async () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [

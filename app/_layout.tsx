@@ -11,7 +11,10 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Stack } from "expo-router";
 // import * as SplashScreen from "expo-splash-screen";
 import { useAuth } from "@/hooks/useAuth";
-import { useFCMInitialization, useSyncPushNotifications } from "@/hooks/useOneNightNotifications";
+import {
+  useFCMInitialization,
+  useSyncPushNotifications,
+} from "@/hooks/useOneNightNotifications";
 import { processPendingNotification } from "@/utils/notificationRouting";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect } from "react";
@@ -35,17 +38,34 @@ function FCMInitializer() {
   const { user } = useAuth();
   const syncNotifications = useSyncPushNotifications();
 
-  console.log("FCMInitializer: user", user?.id ? "logged in" : "not logged in", user?.id);
+  console.log("🔔 FCMInitializer: Component mounted/updated");
+  console.log(
+    "🔔 FCMInitializer: user",
+    user?.id ? "logged in" : "not logged in",
+    user?.id,
+  );
 
   const onRegistered = useCallback(() => {
     // Callback when device is registered
+    console.log("🔔 FCMInitializer: onRegistered callback triggered");
     if (user?.id) {
-      console.log("FCMInitializer: Device registered, now syncing notifications for user", user.id);
+      console.log(
+        "🔔 FCMInitializer: Device registered, now syncing notifications for user",
+        user.id,
+      );
       syncNotifications.mutate({ userId: user.id });
+    } else {
+      console.log(
+        "🔔 FCMInitializer: Device registered for anonymous user (no userId)",
+      );
     }
-  }, [syncNotifications]);
+  }, [user?.id, syncNotifications]);
 
   // Initialize FCM when app starts, passing user ID if available
+  console.log(
+    "🔔 FCMInitializer: Calling useFCMInitialization with userId:",
+    user?.id || "(anonymous)",
+  );
   useFCMInitialization(user?.id, onRegistered);
 
   return null;

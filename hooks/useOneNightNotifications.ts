@@ -8,6 +8,7 @@ import {
   markDeviceNotificationsAsReadBulk,
   markNotificationAsRead,
   markNotificationsAsReadBulk,
+  markNotificationsAsReadBulkByDevice,
   pauseUserNotifications,
   resumeUserNotifications,
   syncNotifications,
@@ -486,6 +487,42 @@ export const useMarkDevicePushNotificationsReadBulk = () => {
     },
     onError: (error: any) => {
       console.error("Bulk mark device notifications read failed:", error);
+    },
+  });
+};
+
+/**
+ * Unified hook to mark notifications as read using device token.
+ * Works for both authenticated and anonymous users.
+ * This is the recommended hook to use for marking notifications as read.
+ */
+export const useMarkNotificationsReadBulk = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      fcmToken,
+      targetIds,
+    }: {
+      fcmToken: string;
+      targetIds: string[];
+    }) => markNotificationsAsReadBulkByDevice(fcmToken, targetIds),
+    onSuccess: (
+      data: { markedAsRead: number; targetIds: string[] },
+      variables,
+    ) => {
+      // Invalidate all notification queries (works for both user and device)
+      // This ensures the notification count and list are refreshed
+      queryClient.invalidateQueries({
+        queryKey: ["push-notifications"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["device-push-notifications"],
+      });
+      console.log(`${data.markedAsRead} notifications marked as read`);
+    },
+    onError: (error: any) => {
+      console.error("Bulk mark notifications read failed:", error);
     },
   });
 };
