@@ -1,7 +1,14 @@
 // SocialLoginRow.tsx
 import { useTheme } from "@/contexts/ThemeContext";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React from "react";
-import { ActivityIndicator, Image, Pressable, StyleSheet, View } from "react-native";
+import {
+    ActivityIndicator,
+    Image,
+    Pressable,
+    StyleSheet,
+    View,
+} from "react-native";
 import AppText from "../ui/AppText";
 
 type Props = {
@@ -38,6 +45,35 @@ export default function SocialLogins({ onGoogle, onApple, loading }: Props) {
             />
             <AppText style={{ color: colors.textGray, fontWeight: "500" }}>
               Google
+            </AppText>
+          </>
+        )}
+      </Pressable>
+
+      <Pressable
+        style={[
+          styles.box,
+          {
+            borderColor: colors.border,
+            height: button.height,
+            borderRadius: radius.xxl,
+            opacity: loading ? 0.6 : 1,
+          },
+        ]}
+        onPress={onApple}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color={colors.primary} />
+        ) : (
+          <>
+            <Ionicons
+              name="logo-apple"
+              size={icons.sm}
+              color={colors.textGray}
+            />
+            <AppText style={{ color: colors.textGray, fontWeight: "500" }}>
+              Apple
             </AppText>
           </>
         )}

@@ -12,6 +12,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.willfinditt.willfinditt",
       "appleTeamId": "75F9X78QJ6",
+      "entitlements": {
+        "aps-environment": "development",
+        "com.apple.developer.usernotifications.time-sensitive": true
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "GIDClientID": "679415897594-dm2231pgajnh7id1ft1t6qts1tvdkkbs.apps.googleusercontent.com",
@@ -77,8 +81,22 @@
           "enableCodeScanner": false
         }
       ],
-      "@react-native-firebase/app",
-      "@react-native-firebase/messaging",
+      [
+        "@react-native-firebase/app",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      [
+        "@react-native-firebase/messaging",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
       "./plugins/withModularHeaders",
       [
         "expo-build-properties",

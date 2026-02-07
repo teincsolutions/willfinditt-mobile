@@ -2,14 +2,15 @@
 
 import Feather from "@expo/vector-icons/Feather";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { Formik } from "formik";
 import React, { useEffect, useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  View,
+    KeyboardAvoidingView,
+    Pressable,
+    StyleSheet,
+    useWindowDimensions,
+    View,
 } from "react-native";
 import { toast } from "sonner-native";
 import * as Yup from "yup";
@@ -41,11 +42,11 @@ const BasicInfoSchema = Yup.object().shape({
       ? schema
           .matches(/^0[0-9]{9}$/, "Invalid Ghana phone number format")
           .required("Phone number is required")
-      : schema
+      : schema,
   ),
   mode: Yup.string(),
   email: Yup.string().when("mode", (mode: any, schema) =>
-    mode === "email" ? schema.email().required("Email is required") : schema
+    mode === "email" ? schema.email().required("Email is required") : schema,
   ),
 });
 
@@ -231,7 +232,7 @@ export default function AuthScreen({
       toast.error(
         error?.message ||
           loginError?.message ||
-          "Login failed. Please check your credentials and try again."
+          "Login failed. Please check your credentials and try again.",
       );
     }
   };
@@ -278,7 +279,6 @@ export default function AuthScreen({
         } else {
           router.replace({ pathname: "/(drawers)" });
         }
-
       } else if (signInResponse.type === "cancelled") {
         // User cancelled, no error needed
         console.log("Google sign-up cancelled");
@@ -337,6 +337,132 @@ export default function AuthScreen({
     } catch (error: any) {
       console.log("Google sign-in error:", error.message);
       toast.error(error?.message || "Google login failed. Please try again.");
+    }
+  };
+
+  const handleAppleSignup = async () => {
+    try {
+      // Check if Apple Authentication is available on this device
+      if (!AppleAuthentication.isAvailableAsync()) {
+        toast.error("Apple Sign-In is not available on this device");
+        return;
+      }
+
+      // Start the Apple sign-in flow
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (credential.identityToken) {
+        // Prepare social auth data with name info (only sent on first login)
+        const socialAuthData: any = {
+          provider: "APPLE" as const,
+          accessToken: credential.identityToken,
+        };
+
+        // Include full name if available (Apple only provides this on first login)
+        if (credential.fullName?.givenName || credential.fullName?.familyName) {
+          socialAuthData.fullName = {
+            givenName: credential.fullName.givenName || "User",
+            familyName: credential.fullName.familyName || "",
+          };
+        }
+
+        // Send to backend API
+        const result = await socialAuthAsync(socialAuthData);
+
+        toast.success("Apple Sign-Up Successful!");
+
+        // Check if 2FA is required
+        if (result.requires2FA && result.user) {
+          router.push({
+            pathname: "/verify-otp",
+            params: { userId: result.user.id, type: "2fa" },
+          });
+          return;
+        }
+
+        // Navigate to main screen (fully verified)
+        if (redirectTo) {
+          router.replace({ pathname: redirectTo, params: { adId, sellerId } });
+        } else {
+          router.replace({ pathname: "/(drawers)" });
+        }
+      }
+    } catch (error: any) {
+      // Check if user cancelled the operation
+      if (error.code === "ERR_REQUEST_CANCELED") {
+        console.log("Apple sign-up cancelled");
+        return;
+      }
+      console.log("Apple sign-up error:", error.message);
+      toast.error(error?.message || "Apple signup failed. Please try again.");
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    try {
+      // Check if Apple Authentication is available on this device
+      if (!AppleAuthentication.isAvailableAsync()) {
+        toast.error("Apple Sign-In is not available on this device");
+        return;
+      }
+
+      // Start the Apple sign-in flow
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (credential.identityToken) {
+        // Prepare social auth data
+        const socialAuthData: any = {
+          provider: "APPLE" as const,
+          accessToken: credential.identityToken,
+        };
+
+        // Include full name if available (Apple only provides this on first login)
+        if (credential.fullName?.givenName || credential.fullName?.familyName) {
+          socialAuthData.fullName = {
+            givenName: credential.fullName.givenName || "User",
+            familyName: credential.fullName.familyName || "",
+          };
+        }
+
+        // Send to backend API
+        const response = await socialAuthAsync(socialAuthData);
+
+        toast.success("Apple Sign-In Successful!");
+
+        // Check if 2FA is required
+        if (response.requires2FA && response.user?.id) {
+          router.push({
+            pathname: "/verify-otp",
+            params: { userId: response.user.id, type: "2fa" },
+          });
+          return;
+        }
+
+        // Navigate to main screen (fully verified)
+        if (redirectTo) {
+          router.replace({ pathname: redirectTo, params: { adId, sellerId } });
+        } else {
+          router.replace({ pathname: "/(drawers)" });
+        }
+      }
+    } catch (error: any) {
+      // Check if user cancelled the operation
+      if (error.code === "ERR_REQUEST_CANCELED") {
+        console.log("Apple sign-in cancelled");
+        return;
+      }
+      console.log("Apple sign-in error:", error.message);
+      toast.error(error?.message || "Apple login failed. Please try again.");
     }
   };
 
@@ -407,7 +533,7 @@ export default function AuthScreen({
                 underline
                 onPress={() =>
                   handleChange("mode")(
-                    values.mode === "email" ? "phone" : "email"
+                    values.mode === "email" ? "phone" : "email",
                   )
                 }
               />
@@ -454,7 +580,7 @@ export default function AuthScreen({
               {/* SOCIAL ROW */}
               <SocialLogins
                 onGoogle={handleGoogleSignup}
-                onApple={() => {}}
+                onApple={handleAppleSignup}
                 loading={isSocialAuthLoading}
               />
             </View>
@@ -486,10 +612,10 @@ export default function AuthScreen({
           values.password.length >= 8
             ? 3
             : values.password.length >= 6
-            ? 2
-            : values.password.length > 0
-            ? 1
-            : 0;
+              ? 2
+              : values.password.length > 0
+                ? 1
+                : 0;
 
         // Custom handler to mark confirmPassword as touched when password changes
         const handlePasswordChange = (text: string) => {
@@ -671,7 +797,7 @@ export default function AuthScreen({
             {/* SOCIAL ROW */}
             <SocialLogins
               onGoogle={handleGoogleLogin}
-              onApple={() => {}}
+              onApple={handleAppleLogin}
               loading={isSocialAuthLoading}
             />
           </View>

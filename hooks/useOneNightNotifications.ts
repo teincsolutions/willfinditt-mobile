@@ -1,28 +1,32 @@
 import { fcmService } from "@/services/fcmService";
 import {
-    getDeviceNotificationsHistory,
-    getNotificationsHistory,
-    getUserNotificationStatus,
-    logoutDevice,
-    markDeviceNotificationAsRead,
-    markDeviceNotificationsAsReadBulk,
-    markNotificationAsRead,
-    markNotificationsAsReadBulk,
-    pauseUserNotifications,
-    resumeUserNotifications,
-    syncNotifications,
+  getDeviceNotificationsHistory,
+  getNotificationsHistory,
+  getUserNotificationStatus,
+  logoutDevice,
+  markDeviceNotificationAsRead,
+  markDeviceNotificationsAsReadBulk,
+  markNotificationAsRead,
+  markNotificationsAsReadBulk,
+  pauseUserNotifications,
+  resumeUserNotifications,
+  syncNotifications,
 } from "@/services/pushNotificationService";
 import { setPendingNotification } from "@/utils/notificationRouting";
 import {
-    useInfiniteQuery,
-    useMutation,
-    useQuery,
-    useQueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import { toast } from "sonner-native";
-import { AD_QUERY_KEYS, PUSH_NOTIFICATION_QUERY_KEYS, SELLER_QUERY_KEYS } from "./queryKeys";
+import {
+  AD_QUERY_KEYS,
+  PUSH_NOTIFICATION_QUERY_KEYS,
+  SELLER_QUERY_KEYS,
+} from "./queryKeys";
 
 // ============================================
 // Device Registration Hooks
@@ -50,7 +54,7 @@ export const useRegisterDevice = (userId?: string) => {
       toast.error(
         error.message ||
           error.response?.data?.message ||
-          "Failed to register device"
+          "Failed to register device",
       );
     },
   });
@@ -74,61 +78,94 @@ export const useLogoutDevice = () => {
 // FCM Initialization Hook
 // ============================================
 
-export const useFCMInitialization = (userId?: string, onRegistered?: () => void) => {
+export const useFCMInitialization = (
+  userId?: string,
+  onRegistered?: () => void,
+) => {
   const hasInitialized = useRef(false);
-  const previousUserId = useRef<string | undefined>(null);
+  const previousUserId = useRef<string | undefined>(undefined);
+  const isInitializing = useRef(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    console.log("useFCMInitialization: Starting FCM initialization for userId:", userId);
+    console.log(
+      "useFCMInitialization: Starting FCM initialization for userId:",
+      userId,
+    );
 
     let unsubscribeOnMessage: (() => void) | undefined;
     let unsubscribeOnNotificationOpened: (() => void) | undefined;
     let unsubscribeOnTokenRefresh: (() => void) | undefined;
 
     const initializeFCM = async () => {
+      // Prevent concurrent initializations
+      if (isInitializing.current) {
+        console.log("useFCMInitialization: Already initializing, skipping...");
+        return;
+      }
+
+      isInitializing.current = true;
+
       try {
         console.log("useFCMInitialization: Starting FCM initialization");
-        
+
         // Create notification channel early for Android
-        if (Platform.OS === 'android') {
-          const notifee = require('@notifee/react-native').default;
-          const { AndroidImportance } = require('@notifee/react-native');
+        if (Platform.OS === "android") {
+          const notifee = require("@notifee/react-native").default;
+          const { AndroidImportance } = require("@notifee/react-native");
           await notifee.createChannel({
-            id: 'default',
-            name: 'Default Notifications',
+            id: "default",
+            name: "Default Notifications",
             importance: AndroidImportance.HIGH,
-            sound: 'default',
+            sound: "default",
           });
-          console.log("useFCMInitialization: Android notification channel created");
+          console.log(
+            "useFCMInitialization: Android notification channel created",
+          );
         }
-        
+
         console.log("useFCMInitialization: Requesting permissions");
         // Request permissions
         const hasPermissions = await fcmService.hasPermissions();
         if (!hasPermissions) {
           const granted = await fcmService.requestPermissions();
           if (!granted) {
-            console.log("useFCMInitialization: Notification permissions not granted");
+            console.log(
+              "useFCMInitialization: Notification permissions not granted",
+            );
             // Still register device even without permissions (for when user enables later)
-            console.log("useFCMInitialization: Registering device without permissions");
+            console.log(
+              "useFCMInitialization: Registering device without permissions",
+            );
           }
         }
 
-        console.log("useFCMInitialization: Registering device with userId:", userId || "(no user - initial registration)");
+        console.log(
+          "useFCMInitialization: Registering device with userId:",
+          userId || "(no user - initial registration)",
+        );
         // Register device with FCM token (with or without userId)
         // This will register device immediately on app launch
         // When user logs in, this will be called again with userId to update the device
-        await fcmService.registerDevice(userId);
+        const registered = await fcmService.registerDevice(userId);
 
-        console.log("useFCMInitialization: Device registered, calling onRegistered callback");
-        if (onRegistered) {
-          onRegistered();
+        if (registered) {
+          console.log(
+            "✅ useFCMInitialization: Device registration completed successfully!",
+          );
+          if (onRegistered) {
+            console.log("useFCMInitialization: Calling onRegistered callback");
+            onRegistered();
+          }
+        } else {
+          console.warn("⚠️ useFCMInitialization: Device registration failed");
         }
 
         // Only set up message handlers once
         if (!hasInitialized.current) {
-          console.log("useFCMInitialization: Setting up message handlers for the first time");
+          console.log(
+            "useFCMInitialization: Setting up message handlers for the first time",
+          );
           hasInitialized.current = true;
 
           // Clear app badge when app becomes active
@@ -137,16 +174,22 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
           // Set up message handlers with query invalidation
           unsubscribeOnMessage = await fcmService.onMessage((message) => {
             // Invalidate notification queries when new message is received
-            console.log("useFCMInitialization: New message received, invalidating queries");
+            console.log(
+              "useFCMInitialization: New message received, invalidating queries",
+            );
             if (userId) {
               queryClient.invalidateQueries({
-                queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId),
+                queryKey:
+                  PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId),
               });
             }
             const fcmToken = fcmService.getCurrentToken();
             if (fcmToken) {
               queryClient.invalidateQueries({
-                queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(fcmToken),
+                queryKey:
+                  PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(
+                    fcmToken,
+                  ),
               });
             }
             // Invalidate user ads to refresh business profile ads list
@@ -158,20 +201,26 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
               queryKey: SELLER_QUERY_KEYS.SELLER_MY_STATS,
             });
           });
-          
+
           unsubscribeOnNotificationOpened =
             await fcmService.onNotificationOpenedApp((message) => {
               // Invalidate notification queries when notification is opened
-              console.log("useFCMInitialization: Notification opened, invalidating queries");
+              console.log(
+                "useFCMInitialization: Notification opened, invalidating queries",
+              );
               if (userId) {
                 queryClient.invalidateQueries({
-                  queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId),
+                  queryKey:
+                    PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId),
                 });
               }
               const fcmToken = fcmService.getCurrentToken();
               if (fcmToken) {
                 queryClient.invalidateQueries({
-                  queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(fcmToken),
+                  queryKey:
+                    PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(
+                      fcmToken,
+                    ),
                 });
               }
               // Invalidate user ads to refresh business profile ads list
@@ -187,27 +236,35 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
           // Handle token refresh
           unsubscribeOnTokenRefresh = await fcmService.onTokenRefresh(
             async (token) => {
-              console.log("useFCMInitialization: Token refreshed, re-registering device");
+              console.log(
+                "useFCMInitialization: Token refreshed, re-registering device",
+              );
               await fcmService.registerDevice(userId);
-            }
+            },
           );
 
           // Check for initial notification
           const initialNotification = await fcmService.getInitialNotification();
           if (initialNotification) {
-            console.log("useFCMInitialization: Initial notification found, setting pending and invalidating queries");
+            console.log(
+              "useFCMInitialization: Initial notification found, setting pending and invalidating queries",
+            );
             // Set pending notification for routing after app is ready
             setPendingNotification(initialNotification as any);
             // Invalidate queries
             if (userId) {
               queryClient.invalidateQueries({
-                queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId),
+                queryKey:
+                  PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId),
               });
             }
             const fcmToken = fcmService.getCurrentToken();
             if (fcmToken) {
               queryClient.invalidateQueries({
-                queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(fcmToken),
+                queryKey:
+                  PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(
+                    fcmToken,
+                  ),
               });
             }
             // Invalidate user ads to refresh business profile ads list
@@ -221,14 +278,44 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
           }
         }
 
-        console.log("useFCMInitialization: FCM initialization completed");
-      } catch (error) {
-        console.error("useFCMInitialization: Error initializing FCM:", error);
+        const currentToken = fcmService.getCurrentToken();
+        console.log(
+          "🎉 useFCMInitialization: FCM initialization completed successfully!",
+        );
+        console.log("Initialization summary:", {
+          hasToken: !!currentToken,
+          tokenPreview: currentToken
+            ? currentToken.substring(0, 20) + "..."
+            : "none",
+          userId: userId || "anonymous",
+          handlersSetup: hasInitialized.current,
+        });
+      } catch (error: any) {
+        // Don't log full error for known iOS simulator/entitlement issues
+        if (
+          error?.code === "messaging/unknown" &&
+          error?.message?.includes("aps-environment")
+        ) {
+          console.warn(
+            "⚠️ FCM initialization skipped: Push notifications not available on this device.\n" +
+              "This is expected on iOS Simulator. On physical devices, ensure push capabilities are configured.",
+          );
+        } else {
+          console.error("useFCMInitialization: Error initializing FCM:", error);
+        }
+      } finally {
+        isInitializing.current = false;
       }
     };
 
     // Only run initialization if this is the first time or userId has changed
-    if (!hasInitialized.current || previousUserId.current !== userId) {
+    // Strict equality check to prevent re-runs when both are undefined
+    const shouldInitialize =
+      !hasInitialized.current ||
+      (previousUserId.current !== userId &&
+        !(previousUserId.current === undefined && userId === undefined));
+
+    if (shouldInitialize) {
       previousUserId.current = userId;
       initializeFCM();
     }
@@ -248,7 +335,7 @@ export const useFCMInitialization = (userId?: string, onRegistered?: () => void)
 
 export const usePushNotifications = (
   userId: string,
-  params: { page?: number; limit?: number } = {}
+  params: { page?: number; limit?: number } = {},
 ) => {
   return useInfiniteQuery({
     queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(userId, params),
@@ -270,12 +357,12 @@ export const usePushNotifications = (
 
 export const useDevicePushNotifications = (
   deviceToken: string,
-  params: { page?: number; limit?: number } = {}
+  params: { page?: number; limit?: number } = {},
 ) => {
   return useInfiniteQuery({
     queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(
       deviceToken,
-      params
+      params,
     ),
     queryFn: async ({ pageParam = 1 }) =>
       await getDeviceNotificationsHistory(deviceToken, {
@@ -306,7 +393,7 @@ export const useMarkPushNotificationRead = () => {
       // Invalidate push notifications list
       queryClient.invalidateQueries({
         queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(
-          variables.userId
+          variables.userId,
         ),
       });
       toast.success("Notification marked as read");
@@ -314,7 +401,7 @@ export const useMarkPushNotificationRead = () => {
     onError: (error: any) => {
       console.error("Mark notification read failed:", error);
       toast.error(
-        error.response?.data?.message || "Failed to mark notification as read"
+        error.response?.data?.message || "Failed to mark notification as read",
       );
     },
   });
@@ -333,7 +420,7 @@ export const useMarkPushNotificationsReadBulk = () => {
     }) => markNotificationsAsReadBulk(userId, targetIds),
     onSuccess: (
       data: { markedAsRead: number; targetIds: string[] },
-      variables
+      variables,
     ) => {
       // Invalidate all push notifications queries for this user (includes count queries)
       queryClient.invalidateQueries({
@@ -362,7 +449,7 @@ export const useMarkDevicePushNotificationRead = () => {
       // Invalidate device push notifications list
       queryClient.invalidateQueries({
         queryKey: PUSH_NOTIFICATION_QUERY_KEYS.DEVICE_PUSH_NOTIFICATIONS(
-          variables.fcmToken
+          variables.fcmToken,
         ),
       });
       toast.success("Notification marked as read");
@@ -370,7 +457,7 @@ export const useMarkDevicePushNotificationRead = () => {
     onError: (error: any) => {
       console.error("Mark device notification read failed:", error);
       toast.error(
-        error.response?.data?.message || "Failed to mark notification as read"
+        error.response?.data?.message || "Failed to mark notification as read",
       );
     },
   });
@@ -389,7 +476,7 @@ export const useMarkDevicePushNotificationsReadBulk = () => {
     }) => markDeviceNotificationsAsReadBulk(fcmToken, targetIds),
     onSuccess: (
       data: { markedAsRead: number; targetIds: string[] },
-      variables
+      variables,
     ) => {
       // Invalidate all device push notifications queries for this device (includes count queries)
       queryClient.invalidateQueries({
@@ -410,7 +497,7 @@ export const useMarkDevicePushNotificationsReadBulk = () => {
 export const useNotificationsWithAutoMark = (
   userId?: string,
   deviceToken?: string,
-  params: { page?: number; limit?: number } = {}
+  params: { page?: number; limit?: number } = {},
 ) => {
   const userQuery = usePushNotifications(userId || "", params);
   const deviceQuery = useDevicePushNotifications(deviceToken || "", params);
@@ -424,15 +511,18 @@ export const useNotificationsWithAutoMark = (
 
 export const useNotificationCount = (userId?: string, deviceToken?: string) => {
   const userQuery = usePushNotifications(userId || "", { limit: 100 });
-  const deviceQuery = useDevicePushNotifications(deviceToken || "", { limit: 100 });
-  
+  const deviceQuery = useDevicePushNotifications(deviceToken || "", {
+    limit: 100,
+  });
+
   const query = userId ? userQuery : deviceQuery;
-  
-  const unreadCount = query.data?.pages.reduce((total, page) => {
-    const unread = page.data.filter((notif) => !notif.read).length;
-    return total + unread;
-  }, 0) || 0;
-  
+
+  const unreadCount =
+    query.data?.pages.reduce((total, page) => {
+      const unread = page.data.filter((notif) => !notif.read).length;
+      return total + unread;
+    }, 0) || 0;
+
   return {
     unreadCount,
     isLoading: query.isLoading,
@@ -458,18 +548,18 @@ export const usePauseUserNotifications = () => {
       // Invalidate user status
       queryClient.invalidateQueries({
         queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATION_USER_STATUS(
-          variables.userId
+          variables.userId,
         ),
       });
       console.log(
-        `User ${variables.userId} notifications paused until ${data.pausedUntil}`
+        `User ${variables.userId} notifications paused until ${data.pausedUntil}`,
       );
       toast.success("Notifications paused successfully");
     },
     onError: (error: any) => {
       console.error("Pause user notifications failed:", error);
       toast.error(
-        error.response?.data?.message || "Failed to pause notifications"
+        error.response?.data?.message || "Failed to pause notifications",
       );
     },
   });
@@ -485,7 +575,7 @@ export const useResumeUserNotifications = () => {
       // Invalidate user status
       queryClient.invalidateQueries({
         queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATION_USER_STATUS(
-          variables.userId
+          variables.userId,
         ),
       });
       console.log(`User ${variables.userId} notifications resumed`);
@@ -494,7 +584,7 @@ export const useResumeUserNotifications = () => {
     onError: (error: any) => {
       console.error("Resume user notifications failed:", error);
       toast.error(
-        error.response?.data?.message || "Failed to resume notifications"
+        error.response?.data?.message || "Failed to resume notifications",
       );
     },
   });
@@ -525,24 +615,32 @@ export const useSyncPushNotifications = () => {
       userId: string;
       lastSyncTimestamp?: string;
     }) => {
-      console.log("useSyncPushNotifications: Starting sync for userId:", userId, "lastSyncTimestamp:", lastSyncTimestamp);
+      console.log(
+        "useSyncPushNotifications: Starting sync for userId:",
+        userId,
+        "lastSyncTimestamp:",
+        lastSyncTimestamp,
+      );
       return syncNotifications(userId, lastSyncTimestamp);
     },
     onSuccess: (data: { data: any[]; meta: any }, variables) => {
       // Invalidate push notifications list
       queryClient.invalidateQueries({
         queryKey: PUSH_NOTIFICATION_QUERY_KEYS.PUSH_NOTIFICATIONS(
-          variables.userId
+          variables.userId,
         ),
       });
       console.log(
-        `useSyncPushNotifications: Synced ${data.data.length} notifications for user ${variables.userId}`
+        `useSyncPushNotifications: Synced ${data.data.length} notifications for user ${variables.userId}`,
       );
     },
     onError: (error: any) => {
-      console.error("useSyncPushNotifications: Sync notifications failed:", error);
+      console.error(
+        "useSyncPushNotifications: Sync notifications failed:",
+        error,
+      );
       toast.error(
-        error.response?.data?.message || "Failed to sync notifications"
+        error.response?.data?.message || "Failed to sync notifications",
       );
     },
   });

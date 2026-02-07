@@ -1,8 +1,8 @@
 import type {
-  AuthProvider,
-  DocumentType,
-  UserRole,
-  VerificationStatus,
+    AuthProvider,
+    DocumentType,
+    UserRole,
+    VerificationStatus,
 } from "./enums";
 
 // Core User Types
@@ -136,8 +136,7 @@ export interface CreateSellerProfileRequest {
   };
 }
 
-export interface UpdateSellerProfileRequest
-  extends Partial<CreateSellerProfileRequest> {}
+export interface UpdateSellerProfileRequest extends Partial<CreateSellerProfileRequest> {}
 
 export interface CreateVerificationRequest {
   sellerProfileId: string;
@@ -163,8 +162,12 @@ export interface AuthResponse {
 }
 
 export interface SocialData {
-  provider: "GOOGLE" | "FACEBOOK";
+  provider: "GOOGLE" | "FACEBOOK" | "APPLE";
   accessToken: string | null;
+  fullName?: {
+    givenName: string;
+    familyName: string;
+  };
 }
 
 // Legacy Types (for backward compatibility)
