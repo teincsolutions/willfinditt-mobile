@@ -536,10 +536,11 @@ export const useNotificationsWithAutoMark = (
   deviceToken?: string,
   params: { page?: number; limit?: number } = {},
 ) => {
-  const userQuery = usePushNotifications(userId || "", params);
+  // Always use device token endpoint for both authenticated and anonymous users
+  // This ensures consistency with the mark-as-read functionality
   const deviceQuery = useDevicePushNotifications(deviceToken || "", params);
 
-  return userId ? userQuery : deviceQuery;
+  return deviceQuery;
 };
 
 // ============================================
@@ -547,22 +548,20 @@ export const useNotificationsWithAutoMark = (
 // ============================================
 
 export const useNotificationCount = (userId?: string, deviceToken?: string) => {
-  const userQuery = usePushNotifications(userId || "", { limit: 100 });
+  // Always use device token endpoint for consistency
   const deviceQuery = useDevicePushNotifications(deviceToken || "", {
     limit: 100,
   });
 
-  const query = userId ? userQuery : deviceQuery;
-
   const unreadCount =
-    query.data?.pages.reduce((total, page) => {
+    deviceQuery.data?.pages.reduce((total, page) => {
       const unread = page.data.filter((notif) => !notif.read).length;
       return total + unread;
     }, 0) || 0;
 
   return {
     unreadCount,
-    isLoading: query.isLoading,
+    isLoading: deviceQuery.isLoading,
   };
 };
 
