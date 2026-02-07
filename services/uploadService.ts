@@ -36,11 +36,10 @@ export type UploadProgressCallback = (progress: number) => void;
  */
 export const getSignedUrl = async (
   url: string,
-  expiresIn: number = 259200
+  expiresIn: number = 259200,
 ): Promise<string> => {
-  const requestUrl = convertS3UrlToSignedRequest(url);
-  const path = `/api/v1/signed-url?url=${encodeURIComponent(requestUrl)}`;
-  const signedUrl = await api.get<SignedUrlResponse>(path, {
+  const requestPath = convertS3UrlToSignedRequest(url);
+  const signedUrl = await api.get<SignedUrlResponse>(requestPath, {
     params: {
       expiresIn,
     },
@@ -53,7 +52,7 @@ export const getSignedUrl = async (
  */
 export const uploadAdImages = async (
   images: FormData,
-  onProgress?: UploadProgressCallback
+  onProgress?: UploadProgressCallback,
 ): Promise<UploadResponse> => {
   const response = await api.post<UploadResponse>(
     "/api/v1/upload/ad-images",
@@ -65,12 +64,12 @@ export const uploadAdImages = async (
       onUploadProgress: (progressEvent: AxiosProgressEvent) => {
         if (onProgress && progressEvent.total) {
           const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onProgress(percentage);
         }
       },
-    }
+    },
   );
   return response.data;
 };
@@ -80,7 +79,7 @@ export const uploadAdImages = async (
  */
 export const uploadAvatar = async (
   avatar: FormData,
-  onProgress?: UploadProgressCallback
+  onProgress?: UploadProgressCallback,
 ): Promise<UploadResponse> => {
   const response = await api.post<UploadResponse>(
     "/api/v1/upload/avatar",
@@ -92,12 +91,12 @@ export const uploadAvatar = async (
       onUploadProgress: (progressEvent: AxiosProgressEvent) => {
         if (onProgress && progressEvent.total) {
           const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onProgress(percentage);
         }
       },
-    }
+    },
   );
   return response.data;
 };
@@ -108,7 +107,7 @@ export const uploadAvatar = async (
  */
 export const uploadDocuments = async (
   documents: FormData,
-  onProgress?: UploadProgressCallback
+  onProgress?: UploadProgressCallback,
 ): Promise<UploadResponse> => {
   const response = await api.post<UploadResponse>(
     "/api/v1/upload/kyc-documents",
@@ -120,12 +119,12 @@ export const uploadDocuments = async (
       onUploadProgress: (progressEvent: AxiosProgressEvent) => {
         if (onProgress && progressEvent.total) {
           const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onProgress(percentage);
         }
       },
-    }
+    },
   );
   return response.data;
 };
@@ -135,7 +134,7 @@ export const uploadDocuments = async (
  */
 export const uploadFacePhotos = async (
   formData: FormData,
-  onProgress?: UploadProgressCallback
+  onProgress?: UploadProgressCallback,
 ): Promise<UploadResponse> => {
   const response = await api.post<UploadResponse>(
     "/api/v1/upload/face-photos",
@@ -147,12 +146,12 @@ export const uploadFacePhotos = async (
       onUploadProgress: (progressEvent: AxiosProgressEvent) => {
         if (onProgress && progressEvent.total) {
           const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onProgress(percentage);
         }
       },
-    }
+    },
   );
   return response.data;
 };
@@ -163,7 +162,7 @@ export const uploadFacePhotos = async (
  */
 export const uploadSingleFile = async (
   file: FormData,
-  onProgress?: UploadProgressCallback
+  onProgress?: UploadProgressCallback,
 ): Promise<UploadResponse> => {
   const response = await api.post<UploadResponse>(
     "/api/v1/upload/single",
@@ -175,12 +174,12 @@ export const uploadSingleFile = async (
       onUploadProgress: (progressEvent: AxiosProgressEvent) => {
         if (onProgress && progressEvent.total) {
           const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onProgress(percentage);
         }
       },
-    }
+    },
   );
   return response.data;
 };
@@ -191,7 +190,7 @@ export const uploadSingleFile = async (
  */
 export const uploadMultipleFiles = async (
   files: FormData,
-  onProgress?: UploadProgressCallback
+  onProgress?: UploadProgressCallback,
 ): Promise<UploadResponse> => {
   const response = await api.post<UploadResponse>(
     "/api/v1/upload/multiple",
@@ -203,12 +202,12 @@ export const uploadMultipleFiles = async (
       onUploadProgress: (progressEvent: AxiosProgressEvent) => {
         if (onProgress && progressEvent.total) {
           const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onProgress(percentage);
         }
       },
-    }
+    },
   );
   return response.data;
 };
@@ -219,7 +218,7 @@ export const uploadMultipleFiles = async (
  */
 export const uploadUserContent = async (
   content: FormData,
-  onProgress?: UploadProgressCallback
+  onProgress?: UploadProgressCallback,
 ): Promise<UploadResponse> => {
   const response = await api.post<UploadResponse>(
     "/api/v1/upload/user-content",
@@ -231,12 +230,12 @@ export const uploadUserContent = async (
       onUploadProgress: (progressEvent: AxiosProgressEvent) => {
         if (onProgress && progressEvent.total) {
           const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onProgress(percentage);
         }
       },
-    }
+    },
   );
   return response.data;
 };
