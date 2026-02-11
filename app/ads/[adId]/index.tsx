@@ -6,6 +6,7 @@ import DescriptionHTML from "@/components/ads/DescriptionHTML";
 import { ImageCarousel } from "@/components/ads/ImageCarousel";
 import MoreFromSellerCarousel from "@/components/ads/MoreFromSellerCarousel";
 import ProductAttributesSection from "@/components/ads/ProductAttributesSection";
+import { ReportSheet } from "@/components/bottom-sheet/ReportSheet";
 import { WriteReviewSheet } from "@/components/bottom-sheet/WriteReviewSheet";
 import AppView from "@/components/ui/AppView";
 import BottomActionBar from "@/components/ui/ButtomActionBar";
@@ -14,9 +15,10 @@ import IconButton from "@/components/ui/IconButton";
 import { TextButton } from "@/components/ui/TextButton";
 import { useAd, useAdActions, useInfiniteAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
+import { useReportAd } from "@/hooks/useModeration";
 import { useTheme } from "@/hooks/useTheme";
 import { useUser } from "@/hooks/useUser";
-import { Entypo, Feather } from "@expo/vector-icons";
+import { Entypo, Feather, MaterialIcons } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { formatDistanceToNow } from "date-fns";
 import { router, useLocalSearchParams } from "expo-router";
@@ -38,7 +40,10 @@ export default function AdDetailsScreen() {
   });
   const relatedAds = ads?.pages.flatMap((page) => page.data) || [];
   const reviewSheetRef = useRef<BottomSheet>(null);
+  const reportSheetRef = useRef<BottomSheet>(null);
   const { data: user } = useUser(ad?.userId);
+  const { mutateAsync: reportAd, isPending: isReporting } = useReportAd();
+
   const {
     handleProfilePress,
     handleMessage,
@@ -50,7 +55,7 @@ export default function AdDetailsScreen() {
   // Check if current user is the owner of this ad
   const isOwner = currentUser?.id === ad?.userId;
 
-  // Animation values for header
+  // ... existing animation code ...
   const lastScrollY = useRef(0);
   const headerOpacity = useRef(new Animated.Value(1)).current;
 
@@ -105,6 +110,29 @@ export default function AdDetailsScreen() {
     }
   };
 
+  const handleReportPress = () => {
+    if (!isAuthenticated) {
+      Alert.alert("Login", "You need to be logged in to report an ad.", [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Login",
+          onPress: () => {
+            router.push({
+              pathname: "/(auth)/login",
+              params: { redirectTo: `/ads/[adId]`, adId: adId },
+            });
+          },
+        },
+      ]);
+      return;
+    }
+
+    reportSheetRef.current?.expand();
+  };
+
   const renderMainSection = () => {
     return (
       <>
@@ -128,7 +156,7 @@ export default function AdDetailsScreen() {
               >
                 <TextButton
                   title={formatDistanceToNow(
-                    new Date(ad?.createdAt || Date.now())
+                    new Date(ad?.createdAt || Date.now()),
                   )}
                 />
               </AppView>
@@ -229,6 +257,19 @@ export default function AdDetailsScreen() {
                   />
                 }
               />
+              {!isOwner && (
+                <IconButton
+                  onPress={handleReportPress}
+                  icon={
+                    <MaterialIcons
+                      name="report"
+                      size={icons.md}
+                      color={colors.error}
+                    />
+                  }
+                  style={{ backgroundColor: colors.backgroundGray }}
+                />
+              )}
               <TextButton
                 backgroundColor={colors.backgroundGray}
                 isLeft
@@ -265,6 +306,20 @@ export default function AdDetailsScreen() {
           seller={ad.user}
           close={() => {
             reviewSheetRef.current?.close();
+          }}
+        />
+      )}
+
+      {adId && (
+        <ReportSheet
+          ref={reportSheetRef}
+          title="Report Ad"
+          onReport={async (values) => {
+            await reportAd({ adId, data: values });
+          }}
+          isReporting={isReporting}
+          close={() => {
+            reportSheetRef.current?.close();
           }}
         />
       )}

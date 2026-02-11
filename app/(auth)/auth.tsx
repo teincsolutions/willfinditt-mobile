@@ -6,11 +6,11 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { Formik } from "formik";
 import React, { useEffect, useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Pressable,
-    StyleSheet,
-    useWindowDimensions,
-    View,
+  KeyboardAvoidingView,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import { toast } from "sonner-native";
 import * as Yup from "yup";
@@ -21,6 +21,8 @@ import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 import ScreenWrapper from "@/components/auth/ScreenWrapper";
 import SocialLogins from "@/components/auth/SocialLogins";
 import ScreenSpacer from "@/components/ScreenSpacer";
+import AppText from "@/components/ui/AppText";
+import CheckBox from "@/components/ui/CheckBox";
 import CountryCodePicker from "@/components/ui/CountryCodePicker";
 import FormDividerText from "@/components/ui/FormDividerText";
 import InputField from "@/components/ui/InputField";
@@ -58,6 +60,12 @@ const PasswordSchema = Yup.object().shape({
     .min(8, "Password must be at least 8 characters")
     .required("Password is required")
     .oneOf([Yup.ref("password")], "Passwords must match"),
+  termsAccepted: Yup.boolean()
+    .oneOf([true], "You must accept the Terms and Conditions")
+    .required("Terms acceptance is required"),
+  privacyPolicyAccepted: Yup.boolean()
+    .oneOf([true], "You must accept the Privacy Policy")
+    .required("Privacy Policy acceptance is required"),
 });
 
 const LoginSchema = Yup.object().shape({
@@ -132,6 +140,8 @@ export default function AuthScreen({
         password: passwordData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
+        termsAccepted: (passwordData as any).termsAccepted,
+        privacyPolicyAccepted: (passwordData as any).privacyPolicyAccepted,
       };
 
       const result = await registerAsync(registrationData);
@@ -595,7 +605,12 @@ export default function AuthScreen({
   // ----------------------
   const renderStep2 = () => (
     <Formik
-      initialValues={{ password: "", confirmPassword: "" }}
+      initialValues={{
+        password: "",
+        confirmPassword: "",
+        termsAccepted: false,
+        privacyPolicyAccepted: false,
+      }}
       validationSchema={PasswordSchema}
       onSubmit={handleSignupComplete}
     >
@@ -693,6 +708,39 @@ export default function AuthScreen({
                 }
                 autoComplete="password"
               />
+
+              <View style={{ marginTop: spacing.md, gap: spacing.xs }}>
+                <CheckBox
+                  value={values.termsAccepted}
+                  onValueChange={(val) =>
+                    handleChange("termsAccepted")(val.toString())
+                  }
+                  label="I accept the Terms and Conditions"
+                  textStyle={{ minWidth: "85%" }}
+                  checkboxColor={colors.primary}
+                />
+                {touched.termsAccepted && errors.termsAccepted && (
+                  <AppText variant="xs" style={{ color: colors.error }}>
+                    {errors.termsAccepted}
+                  </AppText>
+                )}
+
+                <CheckBox
+                  value={values.privacyPolicyAccepted}
+                  onValueChange={(val) =>
+                    handleChange("privacyPolicyAccepted")(val.toString())
+                  }
+                  label="I accept the Privacy Policy"
+                  textStyle={{ minWidth: "85%" }}
+                  checkboxColor={colors.primary}
+                />
+                {touched.privacyPolicyAccepted &&
+                  errors.privacyPolicyAccepted && (
+                    <AppText variant="xs" style={{ color: colors.error }}>
+                      {errors.privacyPolicyAccepted}
+                    </AppText>
+                  )}
+              </View>
             </View>
 
             <View style={{ marginTop: spacing.lg }}>

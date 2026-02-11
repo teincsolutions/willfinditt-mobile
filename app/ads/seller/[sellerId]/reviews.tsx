@@ -1,8 +1,10 @@
+import { ReportSheet } from "@/components/bottom-sheet/ReportSheet";
 import { WriteReviewSheet } from "@/components/bottom-sheet/WriteReviewSheet";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { TextButton } from "@/components/ui/TextButton";
+import { useReportReview } from "@/hooks/useModeration";
 import { useSeller, useSellerReviews } from "@/hooks/useSeller";
 import { useTheme } from "@/hooks/useTheme";
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -52,7 +54,12 @@ export default function SellerReviewScreen() {
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
         stars.push(
-          <Ionicons key={i} name="star" size={icons.xs} color={colors.yellow} />
+          <Ionicons
+            key={i}
+            name="star"
+            size={icons.xs}
+            color={colors.yellow}
+          />,
         );
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
@@ -61,7 +68,7 @@ export default function SellerReviewScreen() {
             name="star-half"
             size={icons.xs}
             color={colors.yellow}
-          />
+          />,
         );
       } else {
         stars.push(
@@ -70,7 +77,7 @@ export default function SellerReviewScreen() {
             name="star-outline"
             size={icons.xs}
             color={colors.yellow}
-          />
+          />,
         );
       }
     }
@@ -171,12 +178,24 @@ export default function SellerReviewScreen() {
     );
   }
 
+  const { mutateAsync: reportReview, isPending: isReporting } =
+    useReportReview();
+  const reportSheetRef = useRef<BottomSheet>(null);
+  const [selectedReview, setSelectedReview] = React.useState<any>(null);
+
+  const handleReportPress = (review: any) => {
+    setSelectedReview(review);
+    reportSheetRef.current?.expand();
+  };
+
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
       <FlatList
         data={reviews}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ReviewCard review={item} />}
+        renderItem={({ item }) => (
+          <ReviewCard review={item} onReport={handleReportPress} />
+        )}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
@@ -203,6 +222,17 @@ export default function SellerReviewScreen() {
           close={() => reviewSheetRef.current?.close()}
         />
       )}
+      <ReportSheet
+        ref={reportSheetRef}
+        title="Report Review"
+        onReport={async (values) => {
+          if (selectedReview) {
+            await reportReview({ reviewId: selectedReview.id, data: values });
+          }
+        }}
+        isReporting={isReporting}
+        close={() => reportSheetRef.current?.close()}
+      />
     </AppView>
   );
 }

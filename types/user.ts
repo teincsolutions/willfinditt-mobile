@@ -1,8 +1,8 @@
 import type {
-    AuthProvider,
-    DocumentType,
-    UserRole,
-    VerificationStatus,
+  AuthProvider,
+  DocumentType,
+  UserRole,
+  VerificationStatus,
 } from "./enums";
 
 // Core User Types
@@ -26,6 +26,8 @@ export interface User {
   updatedAt: string;
   sellerProfile?: SellerProfile;
   dateOfBirth?: string | null;
+  termsAcceptedAt?: string;
+  privacyPolicyAcceptedAt?: string;
 }
 
 export interface SellerProfile {
@@ -112,6 +114,8 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
+  termsAccepted: boolean;
+  privacyPolicyAccepted: boolean;
 }
 
 export interface UpdateProfileRequest {
@@ -168,6 +172,8 @@ export interface SocialData {
     givenName: string;
     familyName: string;
   };
+  termsAccepted?: boolean;
+  privacyPolicyAccepted?: boolean;
 }
 
 // Legacy Types (for backward compatibility)

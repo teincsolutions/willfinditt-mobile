@@ -94,16 +94,15 @@ export enum DocumentType {
 }
 
 export const BusinessTypes = {
-  SOLE_PROPRIETORSHIP: 'Sole Proprietorship',
-  PARTNERSHIP: 'Partnership',
-  COMPANY_LIMITED_BY_SHARES: 'Company Limited by Shares',
-  COMPANY_LIMITED_BY_GUARANTEE: 'Company Limited by Guarantee',
-  EXTERNAL_COMPANY: 'External Company',
-  UNREGISTERED: 'Unregistered'
+  SOLE_PROPRIETORSHIP: "Sole Proprietorship",
+  PARTNERSHIP: "Partnership",
+  COMPANY_LIMITED_BY_SHARES: "Company Limited by Shares",
+  COMPANY_LIMITED_BY_GUARANTEE: "Company Limited by Guarantee",
+  EXTERNAL_COMPANY: "External Company",
+  UNREGISTERED: "Unregistered",
 };
 
-
-export type BusinessType = typeof BusinessTypes[keyof typeof BusinessTypes];
+export type BusinessType = (typeof BusinessTypes)[keyof typeof BusinessTypes];
 
 export enum VerificationStatus {
   PENDING = "PENDING",
@@ -118,4 +117,11 @@ export enum MessageStatus {
   DELIVERED = "delivered",
   READ = "read",
   FAILED = "failed",
+}
+
+export enum ReportCategory {
+  INAPPROPRIATE = "INAPPROPRIATE",
+  SPAM = "SPAM",
+  HARASSMENT = "HARASSMENT",
+  OTHER = "OTHER",
 }

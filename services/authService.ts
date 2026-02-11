@@ -54,7 +54,7 @@ export const authService = {
     try {
       const response = await api.post<AuthResponse>(
         "/api/v1/auth/register",
-        data
+        data,
       );
       return response.data;
     } catch (error) {
@@ -121,7 +121,7 @@ export const authService = {
   // Change password (requires current password)
   changePassword: async (
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<ApiResponse<any>> => {
     try {
       const response = await api.post<ApiResponse<any>>(
@@ -129,7 +129,7 @@ export const authService = {
         {
           currentPassword,
           newPassword,
-        }
+        },
       );
       return response.data;
     } catch (error) {
@@ -148,7 +148,7 @@ export const authService = {
     try {
       const response = await api.post<ApiResponse<any>>(
         "/api/v1/auth/forgot-password",
-        { email, phone }
+        { email, phone },
       );
       return response.data;
     } catch (error) {
@@ -159,7 +159,7 @@ export const authService = {
   // Reset password with token
   resetPassword: async (
     token: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<ApiResponse<any>> => {
     try {
       const response = await api.post<ApiResponse<any>>(
@@ -167,7 +167,7 @@ export const authService = {
         {
           token,
           newPassword,
-        }
+        },
       );
       return response.data;
     } catch (error) {
@@ -178,7 +178,7 @@ export const authService = {
   // Verify 2FA OTP
   verify2FAOTP: async (
     userId: string,
-    otpCode: string
+    otpCode: string,
   ): Promise<AuthResponse> => {
     try {
       const response = await api.post<AuthResponse>(
@@ -186,7 +186,7 @@ export const authService = {
         {
           userId,
           otpCode,
-        }
+        },
       );
       return response.data;
     } catch (error) {
@@ -199,7 +199,7 @@ export const authService = {
     try {
       const response = await api.post<ApiResponse<any>>(
         "/api/v1/auth/verify-email",
-        { token }
+        { token },
       );
       return response.data;
     } catch (error) {
@@ -209,12 +209,12 @@ export const authService = {
 
   // Resend verification (email or phone)
   resendVerification: async (
-    data: { email: string } | { phone: string }
+    data: { email: string } | { phone: string },
   ): Promise<ApiResponse<any>> => {
     try {
       const response = await api.post<ApiResponse<any>>(
         "/api/v1/auth/resend-verification",
-        data
+        data,
       );
       return response.data;
     } catch (error) {
@@ -223,12 +223,15 @@ export const authService = {
   },
 
   // Verify phone with OTP
-  verifyPhone: async (token: string, phone: string): Promise<ApiResponse<any>> => {
+  verifyPhone: async (
+    token: string,
+    phone: string,
+  ): Promise<ApiResponse<any>> => {
     try {
-      console.log("Verifying phone with OTP:", token)
+      console.log("Verifying phone with OTP:", token);
       const response = await api.post<ApiResponse<any>>(
         "/api/v1/auth/verify-phone",
-        { token, phone }
+        { token, phone },
       );
       return response.data;
     } catch (error) {
@@ -242,7 +245,7 @@ export const authService = {
       // log req data
       const response = await api.post<AuthResponse>(
         "/api/v1/auth/social-auth",
-        socialData
+        socialData,
       );
       return response.data;
     } catch (error: any) {
@@ -256,7 +259,7 @@ export const authService = {
     try {
       const response = await api.post<ApiResponse<any>>(
         "/api/v1/auth/send-phone-otp",
-        { phone }
+        { phone },
       );
       return response.data;
     } catch (error) {
@@ -267,7 +270,7 @@ export const authService = {
   // Verify phone OTP for password reset (optional - just verification)
   verifyResetPhoneOtp: async (
     phone: string,
-    otp: string
+    otp: string,
   ): Promise<ApiResponse<any>> => {
     try {
       const response = await api.post<ApiResponse<any>>(
@@ -275,7 +278,7 @@ export const authService = {
         {
           phone,
           otp,
-        }
+        },
       );
       return response.data;
     } catch (error) {
@@ -287,7 +290,7 @@ export const authService = {
   resetPasswordWithPhone: async (
     phone: string,
     otp: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<ApiResponse<any>> => {
     try {
       const response = await api.post<ApiResponse<any>>(
@@ -296,7 +299,23 @@ export const authService = {
           phone,
           otp,
           newPassword,
-        }
+        },
+      );
+      return response.data;
+    } catch (error) {
+      return handleAuthError(error);
+    }
+  },
+
+  // Accept terms and privacy policy (for existing users)
+  acceptTerms: async (data: {
+    termsAccepted: boolean;
+    privacyPolicyAccepted: boolean;
+  }): Promise<ApiResponse<any>> => {
+    try {
+      const response = await api.post<ApiResponse<any>>(
+        "/api/v1/auth/accept-terms",
+        data,
       );
       return response.data;
     } catch (error) {

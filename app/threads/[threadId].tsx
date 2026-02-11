@@ -4,15 +4,20 @@ import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { BackButton } from "@/components/ui/BackButton";
 import { Header } from "@/components/ui/Header";
+import IconButton from "@/components/ui/IconButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useBlockUser, useReportChatMessage } from "@/hooks/useModeration";
 import { useSendMessage, useThreadMessages } from "@/hooks/useThreadMessages";
 import { useThread } from "@/hooks/useThreads";
 import { ThreadStatus } from "@/types/enums";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Keyboard,
   KeyboardAvoidingView,
@@ -24,18 +29,32 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function ThreadScreen() {
   const insets = useSafeAreaInsets();
   const { threadId } = useLocalSearchParams<{ threadId: string }>();
-  const { data: thread, isLoading: threadLoading, isFetching: threadFetching } = useThread(threadId!);
-  const { data: messages = [],  isFetching: messagesFetching } = useThreadMessages(
-    threadId!
-  );
+  const {
+    data: thread,
+    isLoading: threadLoading,
+    isFetching: threadFetching,
+  } = useThread(threadId!);
+  const { data: messages = [], isFetching: messagesFetching } =
+    useThreadMessages(threadId!);
   const { user } = useAuth();
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, icons } = useTheme();
   const flatListRef = useRef<FlatList>(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   const sendMessageMutation = useSendMessage();
 
   const isFetching = threadFetching || messagesFetching;
+
+  const reportSheetRef = useRef<BottomSheet>(null);
+  const { mutateAsync: blockUser, isPending: isBlocking } = useBlockUser();
+  const { mutateAsync: reportMessage, isPending: isReporting } =
+    useReportChatMessage();
+
+  // In a real app, you would fetch thread details to get the participant's user ID
+  // For now, we'll assume the other participant is the first message's sender if not current user
+  const otherParticipantId = messages.find(
+    (msg) => msg.userId !== user?.id,
+  )?.userId;
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive
@@ -51,13 +70,13 @@ export default function ThreadScreen() {
       "keyboardDidShow",
       () => {
         setIsKeyboardVisible(true);
-      }
+      },
     );
     const keyboardDidHideListener = Keyboard.addListener(
       "keyboardDidHide",
       () => {
         setIsKeyboardVisible(false);
-      }
+      },
     );
 
     return () => {
@@ -71,6 +90,36 @@ export default function ThreadScreen() {
       threadId: threadId!,
       data: { content: message },
     });
+  };
+
+  const handleBlockPress = () => {
+    if (!otherParticipantId) {
+      Alert.alert("Error", "Could not identify user to block.");
+      return;
+    }
+    Alert.alert(
+      "Block User",
+      "Are you sure you want to block this user? You will no longer receive messages from them.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Block",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await blockUser({ userId: otherParticipantId });
+              router.back(); // Or navigate away from the chat
+            } catch (error) {
+              // Error handled in hook, e.g., via toast
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleReportPress = () => {
+    reportSheetRef.current?.expand();
   };
 
   const renderMessage = ({ item }: { item: any }) => {
@@ -105,7 +154,24 @@ export default function ThreadScreen() {
     if (isFetching) {
       return <ActivityIndicator size="small" color={colors.primary} />;
     }
-    return null;
+    return (
+      <View style={{ flexDirection: "row", gap: spacing.sm }}>
+        <IconButton
+          onPress={handleReportPress}
+          icon={
+            <MaterialIcons name="report" size={icons.sm} color={colors.error} />
+          }
+        />
+        {otherParticipantId && ( // Only show block if we can identify another participant
+          <IconButton
+            onPress={handleBlockPress}
+            icon={
+              <Feather name="user-x" size={icons.sm} color={colors.error} />
+            }
+          />
+        )}
+      </View>
+    );
   };
 
   if (!thread && !threadLoading) {
@@ -158,7 +224,10 @@ export default function ThreadScreen() {
           <ChatInputBar
             onSendMessage={handleSendMessage}
             isSending={sendMessageMutation.isPending}
-            style={{ paddingBottom: (isKeyboardVisible ? 0 : insets.bottom) + spacing.sm }}
+            style={{
+              paddingBottom:
+                (isKeyboardVisible ? 0 : insets.bottom) + spacing.sm,
+            }}
           />
         )}
         {isClosed && (

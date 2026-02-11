@@ -11,9 +11,10 @@ import { Avatar } from "../ui/Avatar";
 
 interface Props {
   review: SellerReview;
+  onReport?: (review: SellerReview) => void;
 }
 
-export function ReviewCard({ review }: Props) {
+export function ReviewCard({ review, onReport }: Props) {
   const { colors, spacing, radius, icons } = useTheme();
 
   // Render stars (5 total)
@@ -25,7 +26,12 @@ export function ReviewCard({ review }: Props) {
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
         stars.push(
-          <Ionicons key={i} name="star" size={icons.xs} color={colors.yellow} />
+          <Ionicons
+            key={i}
+            name="star"
+            size={icons.xs}
+            color={colors.yellow}
+          />,
         );
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
@@ -34,7 +40,7 @@ export function ReviewCard({ review }: Props) {
             name="star-half"
             size={icons.xs}
             color={colors.yellow}
-          />
+          />,
         );
       } else {
         stars.push(
@@ -43,7 +49,7 @@ export function ReviewCard({ review }: Props) {
             name="star-outline"
             size={icons.xs}
             color={colors.yellow}
-          />
+          />,
         );
       }
     }
@@ -96,6 +102,23 @@ export function ReviewCard({ review }: Props) {
           </AppView>
         </AppView>
       </View>
+
+      {onReport && (
+        <View
+          style={{
+            position: "absolute",
+            top: spacing.md,
+            right: spacing.md,
+          }}
+        >
+          <Ionicons
+            name="ellipsis-horizontal"
+            size={icons.sm}
+            color={colors.textGray}
+            onPress={() => onReport(review)}
+          />
+        </View>
+      )}
 
       {/* Comment */}
       {review.comment && (

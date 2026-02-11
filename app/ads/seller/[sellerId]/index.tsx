@@ -2,6 +2,7 @@ import BusinessProfileHeader from "@/components/account/BusinessProfileHeader";
 import SellerProfileSkeleton from "@/components/account/SellerProfileSkeleton";
 import ProductCard from "@/components/ads/ProductCard";
 import ProductCardSkeleton from "@/components/ads/ProductCardSkeleton";
+import { ReportSheet } from "@/components/bottom-sheet/ReportSheet";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Header } from "@/components/ui/Header";
@@ -9,12 +10,13 @@ import IconButton from "@/components/ui/IconButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAdActions, useInfiniteAds } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
+import { useBlockUser, useReportComment } from "@/hooks/useModeration";
 import { useSeller } from "@/hooks/useSeller";
-import { Feather, Ionicons } from "@expo/vector-icons";
-import { router, Stack } from "expo-router";
-import { useLocalSearchParams } from "expo-router/build/hooks";
-import React from "react";
-import { Alert } from "react-native";
+import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import React, { useRef } from "react";
+import { Alert, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MasonryList from "reanimated-masonry-list";
 
@@ -23,8 +25,12 @@ export default function SellerProfileScreen() {
   const insets = useSafeAreaInsets();
   const { sellerId } = useLocalSearchParams<{ sellerId: string }>();
   const { user, isAuthenticated } = useAuth();
+  const reportSheetRef = useRef<BottomSheet>(null);
 
   const { sellerProfile, isLoading: isLoadingProfile } = useSeller(sellerId);
+  const { mutateAsync: blockUser, isPending: isBlocking } = useBlockUser();
+  const { mutateAsync: reportUser, isPending: isReporting } =
+    useReportComment();
 
   // Fetch all user ads
   const {
@@ -38,7 +44,7 @@ export default function SellerProfileScreen() {
   const allAds = adsData?.pages.flatMap((page) => page.data) || [];
   const { handleCall, handleMessage, handleShare } = useAdActions(
     undefined,
-    sellerProfile
+    sellerProfile,
   );
 
   const handleReviewPress = () => {
@@ -59,7 +65,7 @@ export default function SellerProfileScreen() {
                 },
               }),
           },
-        ]
+        ],
       );
       return;
     }
@@ -68,6 +74,43 @@ export default function SellerProfileScreen() {
       pathname: "/ads/seller/[sellerId]/reviews",
       params: { sellerId },
     });
+  };
+
+  const handleBlockPress = () => {
+    if (!isAuthenticated) {
+      Alert.alert("Login Required", "You must be logged in to block a user.");
+      return;
+    }
+
+    Alert.alert(
+      "Block User",
+      "Are you sure you want to block this user? You will no longer see their content.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Block",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              if (sellerProfile?.userId) {
+                await blockUser({ userId: sellerProfile.userId });
+                router.back();
+              }
+            } catch (error) {
+              // Error handled in hook
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleReportPress = () => {
+    if (!isAuthenticated) {
+      Alert.alert("Login Required", "You must be logged in to report a user.");
+      return;
+    }
+    reportSheetRef.current?.expand();
   };
 
   if (isLoadingProfile) {
@@ -112,6 +155,8 @@ export default function SellerProfileScreen() {
     );
   }
 
+  const isOwner = user?.id === sellerProfile?.userId;
+
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.yellow }}>
       <Stack.Screen
@@ -126,16 +171,42 @@ export default function SellerProfileScreen() {
                 paddingTop: insets.top + spacing.md,
               }}
               right={
-                <IconButton
-                  icon={
-                    <Ionicons
-                      name="share-social"
-                      size={icons.md}
-                      color={colors.iconBlack}
-                    />
-                  }
-                  onPress={handleShare}
-                />
+                <View style={{ flexDirection: "row", gap: spacing.sm }}>
+                  <IconButton
+                    icon={
+                      <Ionicons
+                        name="share-social"
+                        size={icons.md}
+                        color={colors.iconBlack}
+                      />
+                    }
+                    onPress={handleShare}
+                  />
+                  {!isOwner && (
+                    <>
+                      <IconButton
+                        onPress={handleReportPress}
+                        icon={
+                          <MaterialIcons
+                            name="report"
+                            size={icons.md}
+                            color={colors.error}
+                          />
+                        }
+                      />
+                      <IconButton
+                        onPress={handleBlockPress}
+                        icon={
+                          <Feather
+                            name="user-x"
+                            size={icons.md}
+                            color={colors.error}
+                          />
+                        }
+                      />
+                    </>
+                  )}
+                </View>
               }
             />
           ),
@@ -193,6 +264,20 @@ export default function SellerProfileScreen() {
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
       />
+
+      {sellerProfile?.userId && (
+        <ReportSheet
+          ref={reportSheetRef}
+          title="Report User"
+          onReport={async (values) => {
+            await reportUser({ commentId: sellerProfile.userId, data: values });
+          }}
+          isReporting={isReporting}
+          close={() => {
+            reportSheetRef.current?.close();
+          }}
+        />
+      )}
     </AppView>
   );
 }
