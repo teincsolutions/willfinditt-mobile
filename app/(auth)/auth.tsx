@@ -715,7 +715,25 @@ export default function AuthScreen({
                   onValueChange={(val) =>
                     handleChange("termsAccepted")(val.toString())
                   }
-                  label="I accept the Terms and Conditions"
+                  labelNode={
+                    <View style={{ flex: 1 }}>
+                      <AppText variant="md" style={{ lineHeight: 20 }}>
+                        I accept the{" "}
+                        <Pressable onPress={() => router.push("/pages/terms")}>
+                          <AppText
+                            variant="md"
+                            style={{
+                              color: colors.primary,
+                              fontWeight: "600",
+                              textDecorationLine: "underline",
+                            }}
+                          >
+                            Terms and Conditions
+                          </AppText>
+                        </Pressable>
+                      </AppText>
+                    </View>
+                  }
                   textStyle={{ minWidth: "85%" }}
                   checkboxColor={colors.primary}
                 />
@@ -730,7 +748,27 @@ export default function AuthScreen({
                   onValueChange={(val) =>
                     handleChange("privacyPolicyAccepted")(val.toString())
                   }
-                  label="I accept the Privacy Policy"
+                  labelNode={
+                    <View style={{ flex: 1 }}>
+                      <AppText variant="md" style={{ lineHeight: 20 }}>
+                        I accept the{" "}
+                        <Pressable
+                          onPress={() => router.push("/pages/privacy-policy")}
+                        >
+                          <AppText
+                            variant="md"
+                            style={{
+                              color: colors.primary,
+                              fontWeight: "600",
+                              textDecorationLine: "underline",
+                            }}
+                          >
+                            Privacy Policy
+                          </AppText>
+                        </Pressable>
+                      </AppText>
+                    </View>
+                  }
                   textStyle={{ minWidth: "85%" }}
                   checkboxColor={colors.primary}
                 />

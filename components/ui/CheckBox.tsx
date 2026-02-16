@@ -12,6 +12,7 @@ import AppText from "./AppText";
 
 type Props = {
   label?: string;
+  labelNode?: React.ReactNode;
   description?: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
@@ -24,6 +25,7 @@ type Props = {
 
 export default function CheckBox({
   label,
+  labelNode,
   description,
   value,
   onValueChange,
@@ -56,22 +58,28 @@ export default function CheckBox({
         style,
       ]}
     >
-      <View style={{ minWidth:"30%", marginRight: spacing.md }}>
-        {label && (
-          <AppText
-            variant="md"
-            style={[{ marginBottom: spacing.xs }, textStyle]}
-          >
-            {label}
-          </AppText>
-        )}
-        {description && (
-          <AppText
-            variant="sm"
-            style={[{ opacity: 0.6, color: colors.textGray }, textStyle]}
-          >
-            {description}
-          </AppText>
+      <View style={{ minWidth: "30%", marginRight: spacing.md }}>
+        {labelNode ? (
+          labelNode
+        ) : (
+          <>
+            {label && (
+              <AppText
+                variant="md"
+                style={[{ marginBottom: spacing.xs }, textStyle]}
+              >
+                {label}
+              </AppText>
+            )}
+            {description && (
+              <AppText
+                variant="sm"
+                style={[{ opacity: 0.6, color: colors.textGray }, textStyle]}
+              >
+                {description}
+              </AppText>
+            )}
+          </>
         )}
       </View>
       <View
