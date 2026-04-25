@@ -2,6 +2,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useOTAUpdates } from "@/hooks/useOTAUpdates";
 import React from "react";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface OTAUpdateBannerProps {
   /**
@@ -40,6 +41,7 @@ export function OTAUpdateBanner({
   containerStyle,
 }: OTAUpdateBannerProps) {
   const { colors, spacing } = useTheme();
+  const insets = useSafeAreaInsets();
   const {
     status,
     isUpdateAvailable,
@@ -76,7 +78,7 @@ export function OTAUpdateBanner({
           backgroundColor: isUpdatePending
             ? colors.success
             : colors.primary,
-          paddingVertical: spacing.sm,
+          paddingTop: insets.top + spacing.sm,
           paddingHorizontal: spacing.md,
         },
         containerStyle,
@@ -132,6 +134,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingVertical: 8,
   },
   text: {
     fontSize: 14,
