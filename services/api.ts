@@ -269,16 +269,15 @@ api.interceptors.response.use(
     }
 
     // UNAUTHORIZED - Generic auth failure or no specific code (401)
+    // Only clear auth if we have explicit error code from server.
+    // Generic 401 without error code could be transient network issues,
+    // server errors, or other non-auth failures - don't lock user out.
     if (statusCode === 401 && !errorCode && !isAuthEndpoint) {
-      const accessToken = tokenManager.getAccessToken();
-      // Only clear auth state if user was actually authenticated
-      if (accessToken) {
-        console.error("Authenticated user unauthorized, clearing auth state");
-        clearAuthState();
-        emitLogout({ reason: "unauthorized" });
-      } else {
-        console.warn("401 received for unauthenticated user, skipping logout");
-      }
+      // Log for debugging but don't clear auth state - let the app retry or show server error
+      console.warn("Received 401 without error code - possible transient error:", {
+        url: originalRequest?.url,
+        status: statusCode,
+      });
       return Promise.reject(error);
     }
 
