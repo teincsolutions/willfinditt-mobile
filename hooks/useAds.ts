@@ -114,7 +114,8 @@ export const useCreateAd = () => {
       return newAd;
     },
     onError: (error: any) => {
-      throw new Error(error?.message || "Error creating ad");
+      // Error is available via createAdMutation.error - don't re-throw
+      console.error("Error creating ad:", error);
     },
   });
 
@@ -142,7 +143,8 @@ export const useUpdateAd = () => {
       queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_INFINITE() });
     },
     onError: (error: any) => {
-      throw new Error(error?.message || "Error updating ad");
+      // Error is available via updateAdMutation.error - don't re-throw
+      console.error("Error updating ad:", error);
     },
   });
 

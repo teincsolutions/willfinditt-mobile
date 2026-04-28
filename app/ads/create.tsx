@@ -38,7 +38,27 @@ export default function CreateAdScreen() {
       // Navigate to the ad details page
       router.replace(`/ads/${newAd.id}`);
     } catch (error: any) {
-      toast.error(error?.message || "Failed to create ad");
+      // Parse error response for better error messaging, especially for 400 errors
+      let errorMessage = "Failed to create ad";
+
+      if (error?.response?.data) {
+        const errorData = error.response.data;
+        // Handle backend validation errors (400)
+        if (errorData.message) {
+          if (Array.isArray(errorData.message)) {
+            // Handle array of validation errors
+            errorMessage = errorData.message.join("\n");
+          } else {
+            errorMessage = errorData.message;
+          }
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
       console.error("Error creating ad:", error);
     }
   };

@@ -200,9 +200,18 @@ export default function AdForm({
   }>({});
 
   // Fetch category fields for dynamic form rendering
-  const { data: categoryFields, isLoading: loadingFields } = useCategoryFields(
+  // refetch is used to force fresh data on mount to prevent 400 errors from stale cache
+  const { data: categoryFields, isLoading: loadingFields, refetch: refetchCategoryFields } = useCategoryFields(
     selectedCategoryId || initialData?.categoryId || ""
   );
+
+  // Force refresh category fields when component mounts or category changes
+  // This ensures we always have the latest field definitions from the server
+  useEffect(() => {
+    if (selectedCategoryId || initialData?.categoryId) {
+      refetchCategoryFields();
+    }
+  }, [selectedCategoryId, initialData?.categoryId]);
 
   const { data: selectedCategory } = useCategory(selectedCategoryId || "");
   const { data: selectedCity } = useCityById(selectedCityId || "");
