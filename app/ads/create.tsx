@@ -1,6 +1,9 @@
 import AdForm from "@/components/ads/AdForm";
+import BecomeSellerBanner from "@/components/auth/BecomeSellerBanner";
 import { Header } from "@/components/ui/Header";
 import { useCreateAd } from "@/hooks/useAds";
+import { useAuth } from "@/hooks/useAuth";
+import { useMySeller } from "@/hooks/useSeller";
 import { useTheme } from "@/hooks/useTheme";
 import { CreateAdRequest } from "@/types";
 import { router, Stack } from "expo-router";
@@ -10,7 +13,12 @@ import { toast } from "sonner-native";
 
 export default function CreateAdScreen() {
   const { colors, spacing } = useTheme();
+  const { user } = useAuth();
+  const { sellerProfile, isLoading: isLoadingSeller } = useMySeller();
   const createMutation = useCreateAd();
+
+  const showBanner =
+    !!user && !isLoadingSeller && !sellerProfile;
 
   const handleSubmit = async (formData: CreateAdRequest) => {
     try {
@@ -77,6 +85,7 @@ export default function CreateAdScreen() {
           ),
         }}
       />
+      <BecomeSellerBanner visible={showBanner} />
       <AdForm
         onSubmit={(data) => handleSubmit(data as CreateAdRequest)}
         isLoading={createMutation.isPending}
