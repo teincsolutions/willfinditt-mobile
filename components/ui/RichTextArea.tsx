@@ -20,6 +20,10 @@ type Props = {
   initialHeight?: number;
 };
 
+const TOOLBAR_HEIGHT = 44;
+const EDITOR_MIN_HEIGHT = 100;
+const EDITOR_TOTAL_HEIGHT = EDITOR_MIN_HEIGHT + TOOLBAR_HEIGHT;
+
 const RichTextArea = forwardRef<RichEditor, Props>(
   (
     {
@@ -31,7 +35,7 @@ const RichTextArea = forwardRef<RichEditor, Props>(
       editorStyle,
       onChange,
       onBlur,
-      initialHeight = 200,
+      initialHeight = EDITOR_MIN_HEIGHT,
     },
     ref
   ) => {
@@ -52,15 +56,15 @@ const RichTextArea = forwardRef<RichEditor, Props>(
           style={[
             {
               borderWidth: 1,
-              borderColor: colors.border,
+              borderColor: error ? colors.error : colors.border,
               borderRadius: radius.md,
               backgroundColor: colors.inputBg,
               overflow: "hidden",
+              height: EDITOR_TOTAL_HEIGHT,
             },
             editorStyle,
           ]}
         >
-          {/* Toolbar */}
           <RichToolbar
             editor={editorRef}
             actions={[
@@ -82,11 +86,10 @@ const RichTextArea = forwardRef<RichEditor, Props>(
               backgroundColor: colors.backgroundPrimary,
               borderBottomWidth: 1,
               borderBottomColor: colors.border,
-              minHeight: 50,
+              height: TOOLBAR_HEIGHT,
             }}
           />
 
-          {/* Editor */}
           <RichEditor
             ref={editorRef}
             initialContentHTML={value}
@@ -94,7 +97,7 @@ const RichTextArea = forwardRef<RichEditor, Props>(
             placeholder={placeholder}
             onBlur={onBlur}
             style={{
-              minHeight: initialHeight,
+              flex: 1,
               backgroundColor: colors.inputBg,
             }}
             editorStyle={{
@@ -102,10 +105,11 @@ const RichTextArea = forwardRef<RichEditor, Props>(
               color: colors.text,
               placeholderColor: colors.placeholder,
               contentCSSText: `
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 font-size: ${fontSizes.md}px;
                 color: ${colors.text};
-                padding: ${spacing.md}px;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                padding: 12px;
+                margin: 0;
               `,
             }}
             useContainer={true}
