@@ -170,7 +170,7 @@ export const useDeleteAd = () => {
       queryClient.invalidateQueries({ queryKey: AD_QUERY_KEYS.ADS_INFINITE() });
     },
     onError: (error: any) => {
-      throw new Error(error?.message || "Error deleting ad");
+      console.error("Error deleting ad:", error);
     },
   });
 
@@ -221,7 +221,7 @@ export const useSaveAd = () => {
       });
     },
     onError: (error: any) => {
-      throw new Error(error?.message || "Error saving ad");
+      console.error("Error saving ad:", error);
     },
   });
 
@@ -245,7 +245,7 @@ export const useUnsaveAd = () => {
       queryClient.invalidateQueries({ queryKey: ["ads-search-infinite"] });
     },
     onError: (error: any) => {
-      throw new Error(error?.message || "Error unsaving ad");
+      console.error("Error unsaving ad:", error);
     },
   });
 
