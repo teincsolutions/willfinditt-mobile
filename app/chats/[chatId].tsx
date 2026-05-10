@@ -191,13 +191,13 @@ export default function ChatScreen() {
   }, [messages.length]);
 
   const uploadAndSendFiles = async (
-    files: Array<{ uri: string; name: string; type?: string }>,
+    files: { uri: string; name: string; type?: string }[],
     messageType: MessageType.IMAGE | MessageType.FILE,
   ) => {
     try {
       setIsUploading(true);
       setUploadStatus({ current: 0, total: files.length });
-      const uploadedAttachments: Array<{ url: string; mime: string }> = [];
+      const uploadedAttachments: { url: string; mime: string }[] = [];
 
       // Upload each file
       for (let i = 0; i < files.length; i++) {

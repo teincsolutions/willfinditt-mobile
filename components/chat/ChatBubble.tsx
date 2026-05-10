@@ -19,15 +19,13 @@ type Props = {
   side?: "left" | "right"; // deprecated: kept for backward compatibility
   isDelivered?: boolean;
   isRead?: boolean;
-  attachments?: Array<
-    | string
+  attachments?: (| string
     | {
         url: string;
         mime?: string;
         width?: number;
         height?: number;
-      }
-  >;
+      })[];
   messageType?: "TEXT" | "IMAGE" | "FILE" | "LOCATION" | "SYSTEM";
 };
 

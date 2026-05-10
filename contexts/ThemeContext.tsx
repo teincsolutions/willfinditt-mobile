@@ -24,6 +24,7 @@ type ThemeContextType = {
   colors: typeof Colors.light;
   spacing: typeof Spacing;
   radius: typeof Radius;
+  Radius: typeof Radius;
   fonts: typeof Fonts;
   fontSizes: typeof FontSizes;
   input: typeof InputSizes;
@@ -35,7 +36,9 @@ type ThemeContextType = {
   icons: typeof IconSizes;
   shadows: typeof Shadows.light;
   card: typeof CardSizes;
-  pill: typeof PillSizes;  typography: typeof Typography;};
+  pill: typeof PillSizes;
+  typography: typeof Typography;
+};
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
@@ -49,6 +52,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
       colors: Colors[mode],
       spacing: Spacing,
       radius: Radius,
+      Radius: Radius,
       fonts: Fonts,
       fontSizes: FontSizes,
       input: InputSizes,

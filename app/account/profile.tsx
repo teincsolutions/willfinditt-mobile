@@ -1,6 +1,8 @@
+import BottomSheet from "@gorhom/bottom-sheet";
 import AppText from "@/components/ui/AppText";
 import AppView from "@/components/ui/AppView";
 import { Avatar } from "@/components/ui/Avatar";
+import { AvatarPickerSheet } from "@/components/ui/AvatarPickerSheet";
 import DatePicker from "@/components/ui/DatePicker";
 import { Header } from "@/components/ui/Header";
 import InputField from "@/components/ui/InputField";
@@ -18,6 +20,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   TextInput,
 } from "react-native";
@@ -36,12 +39,13 @@ const BasicInfoSchema = Yup.object().shape({
 });
 
 export default function ProfileScreen() {
-  const { icons, spacing, colors, radius, fontSizes } = useTheme();
+  const { icons, spacing, colors, radius, fontSizes, Radius } = useTheme();
   const insets = useSafeAreaInsets();
   const { user, isLoading, updateProfileAsync, isUpdatingProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const avatarSheetRef = useRef<BottomSheet>(null);
 
   const { data: countries = [] } = useCountries();
   const countryOptions = countries.map((c) => ({ label: c.name, value: c.id }));
@@ -84,6 +88,23 @@ export default function ProfileScreen() {
   });
 
   const lastNameRef = useRef<TextInput>(null);
+
+  const handleAvatarUploadSuccess = async (avatarUrl: string) => {
+    console.log("Avatar URL received:", avatarUrl);
+    try {
+      const result = await updateProfileAsync({ avatar: avatarUrl });
+      console.log("Profile update result:", JSON.stringify(result, null, 2));
+      toast.success("Avatar updated!");
+    } catch (error: any) {
+      console.error("Profile update error:", error);
+      console.error("Error response:", error?.response?.data);
+      toast.error(
+        error.response?.data?.message ||
+          error?.message ||
+          "Failed to update profile picture"
+      );
+    }
+  };
 
   if (isLoading || !user) {
     return (
@@ -179,14 +200,40 @@ export default function ProfileScreen() {
                 zIndex: 100,
               }}
             >
-              <Avatar
-                borderSize={2}
-                size="xl"
-                styleContainer={{ marginBottom: spacing.md }}
-                verified={user.isVerified}
-                uri={user.avatar}
-                name={fullName}
-              />
+              <Pressable
+                onPress={() => avatarSheetRef.current?.snapToIndex(0)}
+                style={{ position: "relative" }}
+              >
+                <Avatar
+                  borderSize={2}
+                  size="xl"
+                  styleContainer={{ marginBottom: spacing.md }}
+                  verified={user.isVerified}
+                  uri={user.avatar}
+                  name={fullName}
+                />
+                <AppView
+                  style={{
+                    position: "absolute",
+                    bottom: spacing.sm,
+                    right: -spacing.xs,
+                    backgroundColor: colors.primary,
+                    borderRadius: Radius.lg,
+                    width: 32,
+                    height: 32,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 2,
+                    borderColor: colors.background,
+                  }}
+                >
+                  <Feather
+                    name="camera"
+                    size={icons.sm}
+                    color={colors.textWhite}
+                  />
+                </AppView>
+              </Pressable>
               <AppText variant="lg" style={{ marginTop: spacing.md }}>
                 {fullName}
               </AppText>
@@ -371,6 +418,14 @@ export default function ProfileScreen() {
         }}
         placeholder="Select Country"
         searchPlaceholder="Search countries..."
+      />
+
+      <AvatarPickerSheet
+        ref={avatarSheetRef}
+        currentAvatar={user.avatar}
+        userName={fullName}
+        isVerified={user.isVerified}
+        onUploadSuccess={handleAvatarUploadSuccess}
       />
     </AppView>
   );

@@ -1,5 +1,6 @@
 import { AvatarSizeKey } from "@/constants";
 import { useTheme } from "@/hooks/useTheme";
+import { useGetSignedUrl } from "@/hooks/useUpload";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image, ImageStyle } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -10,6 +11,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { useEffect, useState } from "react";
 import AppText from "./AppText";
 import AppView from "./AppView";
 
@@ -45,6 +47,27 @@ export function Avatar({
   name,
 }: AvatarProps) {
   const { colors, avatarSize } = useTheme();
+  const [displayUri, setDisplayUri] = useState<string>(uri || "");
+  const { mutateAsync: getSignedUrl, isPending: isGettingSignedUrl } = useGetSignedUrl();
+
+  useEffect(() => {
+    const convertToSignedUrl = async () => {
+      if (uri && uri.startsWith("s3://")) {
+        try {
+          const signedUrl = await getSignedUrl({ url: uri });
+          setDisplayUri(signedUrl);
+        } catch (error) {
+          console.error("Failed to get signed URL for avatar:", error);
+          setDisplayUri(uri);
+        }
+      } else {
+        setDisplayUri(uri || "");
+      }
+    };
+
+    convertToSignedUrl();
+  }, [uri]);
+
   return (
     <Pressable onPress={onPress} style={[styles.avatarWrapper, styleContainer]}>
       <LinearGradient
@@ -78,9 +101,10 @@ export function Avatar({
           }}
         >
           <Image
-            source={{ uri: uri || "" }}
+            source={{ uri: displayUri || "" }}
             placeholder={require("@/assets/images/avatar-placeholder.gif")}
             placeholderContentFit="contain"
+            contentFit="cover"
             style={[
               {
                 width: size ? avatarSize[size] : avatarSize.lg,
@@ -90,7 +114,7 @@ export function Avatar({
               style,
             ]}
           />
-          {!uri && (
+          {!displayUri && (
             <View
               style={{
                 position: "absolute",
@@ -100,7 +124,7 @@ export function Avatar({
                 bottom: 0,
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: uri ? "transparent" : colors.brown,
+                backgroundColor: displayUri ? "transparent" : colors.brown,
                 width: size ? avatarSize[size] : avatarSize.lg,
                 height: size ? avatarSize[size] : avatarSize.lg,
               }}

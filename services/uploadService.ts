@@ -36,7 +36,7 @@ export type UploadProgressCallback = (progress: number) => void;
  */
 export const getSignedUrl = async (
   url: string,
-  expiresIn: number = 259200,
+  expiresIn: number = 259200, // 3 days in seconds
 ): Promise<string> => {
   const requestPath = convertS3UrlToSignedRequest(url);
   const signedUrl = await api.get<SignedUrlResponse>(requestPath, {
