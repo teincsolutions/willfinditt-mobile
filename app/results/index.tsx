@@ -61,7 +61,7 @@ export default function ResultsScreen() {
 
   // Local search state for input
   const [searchQuery, setSearchQuery] = useState(
-    params.query || filters?.query || ""
+    params.query || filters?.query || "",
   );
 
   // Modal states
@@ -135,7 +135,7 @@ export default function ResultsScreen() {
   } = useInfiniteSearchAds(searchRequest);
 
   const ads: Ad[] = deduplicateAds(
-    adsData?.pages.flatMap((page) => page.data) || []
+    adsData?.pages.flatMap((page) => page.data) || [],
   );
   const totalResults = adsData?.pages[0]?.meta?.total || 0;
   const showSkeletons = isLoading && ads.length === 0;
@@ -160,7 +160,7 @@ export default function ResultsScreen() {
         style={{ paddingHorizontal: spacing.md }}
         onClear={handleClearSearch}
         onPress={() =>
-          router.replace({
+          router.push({
             pathname: "/search",
             params: {
               q: searchQuery,

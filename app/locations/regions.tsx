@@ -27,11 +27,10 @@ export default function RegionsScreen() {
             pathname: "/locations/cities/[regionId]",
             params: { regionId: state.id, source },
           });
-
         }}
         onSelectCity={(city: City) => {
           setCityId(city.id);
-          router.dismiss(2);
+          router.dismiss();
         }}
         loading={isLoading}
       />

@@ -31,7 +31,7 @@ export default function SearchScreen() {
         query: debouncedQuery,
         limit: 10,
       },
-      debouncedQuery.length > 0
+      debouncedQuery.length > 0,
     );
 
   // Recent saved ads
@@ -67,7 +67,7 @@ export default function SearchScreen() {
     addRecent(suggestion);
 
     // Navigate to search results with fresh flag to clear category
-    router.replace({
+    router.push({
       pathname: "/results",
       params: { query, fresh: "true" },
     });
@@ -79,12 +79,12 @@ export default function SearchScreen() {
     addRecent(suggestion);
 
     // Navigate to search results - use categoryId if from suggestion, otherwise fresh search
-    router.replace({
+    router.push({
       pathname: "/results",
-      params: { 
+      params: {
         query: suggestion.keyword,
         categoryId: suggestion.categoryId || undefined,
-        fresh: suggestion.categoryId ? undefined : "true"
+        fresh: suggestion.categoryId ? undefined : "true",
       },
     });
   };
@@ -95,12 +95,12 @@ export default function SearchScreen() {
     addRecent(suggestion);
 
     // Navigate to search results
-    router.replace({
+    router.push({
       pathname: "/results",
-      params: { 
+      params: {
         query: suggestion.keyword,
         categoryId: suggestion.categoryId || undefined,
-        fresh: suggestion.categoryId ? undefined : "true"
+        fresh: suggestion.categoryId ? undefined : "true",
       },
     });
   };

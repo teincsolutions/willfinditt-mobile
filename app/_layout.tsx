@@ -12,8 +12,8 @@ import { Stack } from "expo-router";
 // import * as SplashScreen from "expo-splash-screen";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  useFCMInitialization,
-  useSyncPushNotifications,
+    useFCMInitialization,
+    useSyncPushNotifications,
 } from "@/hooks/useOneNightNotifications";
 import { processPendingNotification } from "@/utils/notificationRouting";
 import { StatusBar } from "expo-status-bar";
@@ -108,6 +108,7 @@ export default function RootLayout() {
                 name="filters"
                 options={{
                   headerShown: true,
+                  presentation: "modal",
                   title: "Filters",
                   headerBackTitle: "Search",
                 }}
@@ -117,18 +118,20 @@ export default function RootLayout() {
                 name="locations/regions"
                 options={{
                   headerShown: true,
+                  presentation: "modal",
                   title: "Regions",
                 }}
               />
               <Stack.Screen
                 name="locations/cities/[regionId]"
-                options={{ headerShown: true }}
+                options={{ headerShown: true, presentation: "modal" }}
               />
               <Stack.Screen
                 name="categories/index"
                 options={{
                   title: "Categories",
                   headerShown: true,
+                  presentation: "modal",
                 }}
               />
               <Stack.Screen
@@ -136,6 +139,7 @@ export default function RootLayout() {
                 options={{
                   title: "Categories",
                   headerShown: true,
+                  presentation: "modal",
                 }}
               />
               <Stack.Screen name="chats" />
