@@ -1,19 +1,19 @@
 import { adService } from "@/services/adService";
 import {
-  Ad,
-  AdSearchParams,
-  AdSearchRequest,
-  AdSearchSuggestionsParams,
-  AdStatus,
-  CreateAdRequest,
-  SellerProfile,
-  UpdateAdRequest,
+    Ad,
+    AdSearchParams,
+    AdSearchRequest,
+    AdSearchSuggestionsParams,
+    AdStatus,
+    CreateAdRequest,
+    SellerProfile,
+    UpdateAdRequest,
 } from "@/types";
 import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
+    useInfiniteQuery,
+    useMutation,
+    useQuery,
+    useQueryClient,
 } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Alert, Linking, Share } from "react-native";
@@ -57,7 +57,7 @@ export const useAd = (id: string, enabled: boolean = true) => {
 // Hook for infinite scrolling advanced search results (/ads/search with graph-like request)
 export const useInfiniteSearchAds = (
   params: AdSearchRequest,
-  enabled: boolean = true
+  enabled: boolean = true,
 ) => {
   return useInfiniteQuery({
     queryKey: AD_QUERY_KEYS.ADS_SEARCH_INFINITE(params),
@@ -83,7 +83,7 @@ export const useInfiniteSearchAds = (
 // Hook for search suggestions (single page - ideal for autocomplete dropdowns)
 export const useSearchSuggestions = (
   params: AdSearchSuggestionsParams,
-  enabled: boolean = true
+  enabled: boolean = true,
 ) => {
   return useQuery({
     queryKey: AD_QUERY_KEYS.ADS_SEARCH_SUGGESTIONS(params),
@@ -281,7 +281,8 @@ export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
       handleLogin();
       return;
     }
-    if (ad?.user?.phone) Linking.openURL(`tel:${ad.user?.phone}`);
+    const phoneNumber = ad?.contactPhone || ad?.user?.phone;
+    if (phoneNumber) Linking.openURL(`tel:${phoneNumber}`);
   };
 
   const handleLogin = () => {

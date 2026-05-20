@@ -17,10 +17,10 @@ import { useCityById } from "@/hooks/useLocations";
 import { useLocationSelection } from "@/hooks/useLocationSelection";
 import { useTheme } from "@/hooks/useTheme";
 import {
-  AdCondition,
-  CategoryField,
-  CategoryFieldType,
-  UpdateAdRequest,
+    AdCondition,
+    CategoryField,
+    CategoryFieldType,
+    UpdateAdRequest,
 } from "@/types";
 import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
@@ -28,12 +28,12 @@ import { router } from "expo-router";
 import { useFormik } from "formik";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  View,
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    View,
 } from "react-native";
 import { RichEditor } from "react-native-pell-rich-editor";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -63,7 +63,7 @@ const currencyOptions = [{ value: "GHS", name: "GHS" }];
 
 // Helper function to build dynamic validation schema based on category fields
 const buildValidationSchema = (
-  categoryFields?: CategoryField[]
+  categoryFields?: CategoryField[],
 ): Yup.AnyObjectSchema => {
   const schemaFields: any = {
     title: Yup.string()
@@ -86,7 +86,7 @@ const buildValidationSchema = (
     address: Yup.string(),
     contactPhone: Yup.string().matches(
       /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/,
-      "Invalid phone number format"
+      "Invalid phone number format",
     ),
     contactEmail: Yup.string()
       .email("Invalid email address")
@@ -98,7 +98,7 @@ const buildValidationSchema = (
       Yup.object().shape({
         categoryFieldId: Yup.string().required(),
         value: Yup.string(),
-      })
+      }),
     ),
   };
 
@@ -110,7 +110,7 @@ const buildValidationSchema = (
       if (field.isRequired) {
         // Basic required validation
         let fieldSchema: any = Yup.string().required(
-          `${field.label} is required`
+          `${field.label} is required`,
         );
 
         // Apply type-specific validation
@@ -128,12 +128,12 @@ const buildValidationSchema = (
             if (field.type === CategoryFieldType.NUMBER) {
               fieldSchema = fieldSchema.min(
                 field.validation.min,
-                `${field.label} must be at least ${field.validation.min}`
+                `${field.label} must be at least ${field.validation.min}`,
               );
             } else {
               fieldSchema = fieldSchema.min(
                 field.validation.min,
-                `${field.label} must be at least ${field.validation.min} characters`
+                `${field.label} must be at least ${field.validation.min} characters`,
               );
             }
           }
@@ -142,12 +142,12 @@ const buildValidationSchema = (
             if (field.type === CategoryFieldType.NUMBER) {
               fieldSchema = fieldSchema.max(
                 field.validation.max,
-                `${field.label} must not exceed ${field.validation.max}`
+                `${field.label} must not exceed ${field.validation.max}`,
               );
             } else {
               fieldSchema = fieldSchema.max(
                 field.validation.max,
-                `${field.label} must not exceed ${field.validation.max} characters`
+                `${field.label} must not exceed ${field.validation.max} characters`,
               );
             }
           }
@@ -155,7 +155,7 @@ const buildValidationSchema = (
           if (field.validation.pattern) {
             fieldSchema = fieldSchema.matches(
               new RegExp(field.validation.pattern),
-              field.validation.message || `${field.label} format is invalid`
+              field.validation.message || `${field.label} format is invalid`,
             );
           }
         }
@@ -185,6 +185,9 @@ export default function AdForm({
   const insets = useSafeAreaInsets();
   const { colors, spacing, radius, icons } = useTheme();
   const { user } = useAuth();
+  const businessProfilePhone = user?.sellerProfile ? user?.phone : undefined;
+  const defaultContactPhone =
+    businessProfilePhone || initialData?.contactPhone || user?.phone || "";
   const { selectedCategoryId, setSelectedCategoryId } = useCategorySelection();
   const { selectedCityId, setSelectedCityId } = useLocationSelection();
 
@@ -201,9 +204,11 @@ export default function AdForm({
 
   // Fetch category fields for dynamic form rendering
   // refetch is used to force fresh data on mount to prevent 400 errors from stale cache
-  const { data: categoryFields, isLoading: loadingFields, refetch: refetchCategoryFields } = useCategoryFields(
-    selectedCategoryId || initialData?.categoryId || ""
-  );
+  const {
+    data: categoryFields,
+    isLoading: loadingFields,
+    refetch: refetchCategoryFields,
+  } = useCategoryFields(selectedCategoryId || initialData?.categoryId || "");
 
   // Force refresh category fields when component mounts or category changes
   // This ensures we always have the latest field definitions from the server
@@ -232,18 +237,21 @@ export default function AdForm({
         initialData?.address ||
         user?.sellerProfile?.verification?.address ||
         "",
-      contactPhone: initialData?.contactPhone || user?.phone || "",
+      contactPhone: defaultContactPhone,
       contactEmail: initialData?.contactEmail || user?.email || "",
       isNegotiable: initialData?.isNegotiable || false,
       fieldValues: initialData?.fieldValues || [],
       // Dynamic field values
-      ...(categoryFields?.reduce((acc, field) => {
-        const existingValue = initialData?.fieldValues?.find(
-          (fv) => fv.categoryFieldId === field.id
-        );
-        acc[`field_${field.id}`] = existingValue?.value || "";
-        return acc;
-      }, {} as Record<string, string>) || {}),
+      ...(categoryFields?.reduce(
+        (acc, field) => {
+          const existingValue = initialData?.fieldValues?.find(
+            (fv) => fv.categoryFieldId === field.id,
+          );
+          acc[`field_${field.id}`] = existingValue?.value || "";
+          return acc;
+        },
+        {} as Record<string, string>,
+      ) || {}),
     },
     validationSchema: buildValidationSchema(categoryFields),
     enableReinitialize: true,
@@ -814,7 +822,7 @@ export default function AdForm({
                 value={
                   formik.values.condition
                     ? conditionOptions.find(
-                        (opt) => opt.value === formik.values.condition
+                        (opt) => opt.value === formik.values.condition,
                       )?.name
                     : ""
                 }
