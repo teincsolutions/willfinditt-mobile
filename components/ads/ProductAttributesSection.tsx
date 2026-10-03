@@ -74,6 +74,7 @@ export default function ProductAttributesSection({ ad }: { ad?: Ad }) {
                   flexDirection: "row",
                   gap: spacing.md,
                   marginBottom: spacing.md,
+                  minWidth: 0,
                 }}
               >
                 {singles
@@ -81,7 +82,7 @@ export default function ProductAttributesSection({ ad }: { ad?: Ad }) {
                   .map((item, colIndex) => (
                     <View
                       key={`single-${rowIndex}-${colIndex}`}
-                      style={{ flex: 1 }}
+                      style={{ flex: 1, flexShrink: 1, minWidth: 0 }}
                     >
                       <SignleAttributeCard item={item} />
                     </View>

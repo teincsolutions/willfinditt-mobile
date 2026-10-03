@@ -36,6 +36,7 @@ export function AdSellerProfile({
         flexDirection: "row",
         gap: spacing.sm,
         alignItems: "center",
+        minWidth: 0,
       }}
     >
       <Avatar
@@ -43,20 +44,29 @@ export function AdSellerProfile({
         size="lg"
         uri={ad?.user?.avatar}
         onPress={handleProfilePress}
+        styleContainer={{ flexShrink: 0 }}
       />
+      {/* Text column yields between avatar and action icons on narrow screens */}
       <Pressable
         onPress={handleProfilePress}
-        style={{ flex: 1, gap: spacing.xs }}
+        style={{ flex: 1, flexShrink: 1, minWidth: 0, gap: spacing.xs }}
       >
         <AppText
           variant="lg"
+          numberOfLines={2}
+          ellipsizeMode="tail"
           style={{ fontWeight: "700", color: colors.primary }}
         >
           {ad.user?.sellerProfile
             ? `${ad.user.sellerProfile.businessName}`
             : `${ad.user?.firstName} ${ad.user?.lastName}`}
         </AppText>
-        <AppText variant="md" style={{ fontWeight: "400" }}>
+        <AppText
+          variant="md"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={{ fontWeight: "400" }}
+        >
           @{ad.user?.username}
         </AppText>
         <AppText variant="xs" style={{ color: colors.textLightGray }}>
@@ -70,7 +80,9 @@ export function AdSellerProfile({
               )}`)}
         </AppText>
       </Pressable>
-      <AppView style={{ flexDirection: "row", gap: spacing.sm }}>
+      <AppView
+        style={{ flexDirection: "row", gap: spacing.sm, flexShrink: 0 }}
+      >
         <Call onPress={handleCall} size={icons.lg} color={colors.iconBlack} />
         <Message
           onPress={handleMessage}

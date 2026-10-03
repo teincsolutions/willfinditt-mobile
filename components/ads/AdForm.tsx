@@ -25,7 +25,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
-import { useFormik } from "formik";
+import { setNestedObjectValues, useFormik } from "formik";
 import React, { useEffect, useRef, useState } from "react";
 import {
     ActivityIndicator,
@@ -42,6 +42,7 @@ import { SelectableListSheet } from "../bottom-sheet/SelectableBottomSheet";
 import SheetRadioOptionItem from "../bottom-sheet/SheetRadioOptionItem";
 import SearchableSelectModal from "../ui/SearchableSelectModal";
 import { TextButton } from "../ui/TextButton";
+import { toast } from "sonner-native";
 
 interface AdFormProps {
   initialData?: UpdateAdRequest;
@@ -207,6 +208,7 @@ export default function AdForm({
   const {
     data: categoryFields,
     isLoading: loadingFields,
+    isFetching: fetchingFields,
     refetch: refetchCategoryFields,
   } = useCategoryFields(selectedCategoryId || initialData?.categoryId || "");
 
@@ -220,6 +222,14 @@ export default function AdForm({
 
   const { data: selectedCategory } = useCategory(selectedCategoryId || "");
   const { data: selectedCity } = useCityById(selectedCityId || "");
+
+  // Stable identity of the ad being edited. edit.tsx rebuilds `initialData`
+  // as a fresh object every render, so effects must key on VALUES here —
+  // otherwise picking a new subcategory gets wiped back to the old category.
+  const hydrationKey = initialData
+    ? `${initialData.title ?? ""}|${initialData.categoryId ?? ""}|${initialData.cityId ?? ""}`
+    : "";
+  const hydratedKeyRef = useRef("");
 
   // Initialize formik with dynamic validation schema
   const formik = useFormik({
@@ -254,7 +264,10 @@ export default function AdForm({
       ) || {}),
     },
     validationSchema: buildValidationSchema(categoryFields),
-    enableReinitialize: true,
+    // Rehydrate exactly once per ad (when its data first arrives). Never on
+    // category switch — otherwise the user's in-progress edits get wiped.
+    enableReinitialize:
+      hydrationKey !== "" && hydrationKey !== hydratedKeyRef.current,
     onSubmit: (values) => {
       // Build fieldValues from dynamic fields
       const fieldValues =
@@ -289,13 +302,74 @@ export default function AdForm({
   });
 
   useEffect(() => {
-    if (initialData?.cityId) {
-      setSelectedCityId(initialData.cityId);
+    if (hydrationKey) {
+      hydratedKeyRef.current = hydrationKey;
     }
-    if (initialData?.categoryId) {
-      setSelectedCategoryId(initialData.categoryId);
+  }, [hydrationKey]);
+
+  // Seed the shared pickers from the ad being edited. Guarded by previous
+  // VALUE so a freshly picked subcategory survives parent re-renders.
+  const prevInitCategoryRef = useRef<string | undefined>(undefined);
+  const prevInitCityRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const initCity = initialData?.cityId;
+    if (initCity && initCity !== prevInitCityRef.current) {
+      const prev = prevInitCityRef.current;
+      prevInitCityRef.current = initCity;
+      if (!selectedCityId || selectedCityId === prev) {
+        setSelectedCityId(initCity);
+      }
     }
-  }, [initialData]);
+    const initCat = initialData?.categoryId;
+    if (initCat && initCat !== prevInitCategoryRef.current) {
+      const prev = prevInitCategoryRef.current;
+      prevInitCategoryRef.current = initCat;
+      if (!selectedCategoryId || selectedCategoryId === prev) {
+        setSelectedCategoryId(initCat);
+      }
+    }
+  }, [initialData, selectedCategoryId, selectedCityId]);
+
+  // Keep dynamic `field_*` keys in sync when the category (and its fields)
+  // changes: add new keys (from saved values when they match), drop keys of
+  // the previous category, and clear their touched state. Other values are
+  // never touched here.
+  useEffect(() => {
+    if (!categoryFields) {
+      return;
+    }
+    const nextKeys = new Set(categoryFields.map((f) => `field_${f.id}`));
+    const values = formik.values as Record<string, any>;
+    const nextValues: Record<string, any> = { ...values };
+    let changed = false;
+    for (const key of Object.keys(values)) {
+      if (key.startsWith("field_") && !nextKeys.has(key)) {
+        delete nextValues[key];
+        changed = true;
+      }
+    }
+    for (const field of categoryFields) {
+      const key = `field_${field.id}`;
+      if (!(key in nextValues)) {
+        const existing = initialData?.fieldValues?.find(
+          (fv) => fv.categoryFieldId === field.id,
+        );
+        nextValues[key] = existing?.value || "";
+        changed = true;
+      }
+    }
+    if (changed) {
+      formik.setValues(nextValues as typeof formik.values, false);
+      const nextTouched: Record<string, boolean> = {};
+      for (const [key, value] of Object.entries(formik.touched)) {
+        if (!key.startsWith("field_") || nextKeys.has(key)) {
+          nextTouched[key] = value as boolean;
+        }
+      }
+      formik.setTouched(nextTouched, false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryFields]);
 
   useEffect(() => {
     if (selectedCategoryId) {
@@ -305,6 +379,18 @@ export default function AdForm({
       formik.setFieldValue("cityId", selectedCityId);
     }
   }, [selectedCategoryId, selectedCityId]);
+
+  // Submit stays tappable even when invalid: surface every error inline
+  // and explain via toast instead of silently swallowing the press.
+  const handleSubmitPress = async () => {
+    const errors = await formik.validateForm();
+    if (Object.keys(errors).length > 0) {
+      formik.setTouched(setNestedObjectValues(errors, true));
+      toast.error("Please fill in the required fields for this category");
+      return;
+    }
+    formik.handleSubmit();
+  };
 
   const handleSaveAsDraft = () => {
     // Set status to DRAFT and submit
@@ -378,6 +464,7 @@ export default function AdForm({
             <PlaceholderField
               label={field.label + (field.isRequired ? " *" : "")}
               placeholder={`Select ${field.label.toLowerCase()}`}
+              error={typeof fieldError === "string" ? fieldError : undefined}
               value={
                 field.options?.find((opt: any) => opt.value === fieldValue)
                   ?.label || ""
@@ -444,6 +531,7 @@ export default function AdForm({
             <PlaceholderField
               label={field.label + (field.isRequired ? " *" : "")}
               placeholder={`Select ${field.label.toLowerCase()}`}
+              error={typeof fieldError === "string" ? fieldError : undefined}
               value={
                 field.options?.find((opt: any) => opt.value === fieldValue)
                   ?.label || ""
@@ -512,6 +600,7 @@ export default function AdForm({
             <PlaceholderField
               label={field.label + (field.isRequired ? " *" : "")}
               placeholder={`Select ${field.label.toLowerCase()}`}
+              error={typeof fieldError === "string" ? fieldError : undefined}
               value={
                 checkboxValues.length > 0
                   ? `${checkboxValues.length} selected`
@@ -574,15 +663,20 @@ export default function AdForm({
 
       case CategoryFieldType.BOOLEAN:
         return (
-          <ToggleSwitch
-            key={field.id}
-            label={field.label + (field.isRequired ? " *" : "")}
-            value={fieldValue === "true"}
-            onValueChange={(val) =>
-              handleFieldValueChange(field.id, val ? "true" : "false")
-            }
-            style={{ marginBottom: spacing.md }}
-          />
+          <AppView key={field.id} style={{ marginBottom: spacing.md }}>
+            <ToggleSwitch
+              label={field.label + (field.isRequired ? " *" : "")}
+              value={fieldValue === "true"}
+              onValueChange={(val) =>
+                handleFieldValueChange(field.id, val ? "true" : "false")
+              }
+            />
+            {!!fieldError && typeof fieldError === "string" && (
+              <AppText style={{ color: colors.error, marginTop: spacing.xs }}>
+                {fieldError}
+              </AppText>
+            )}
+          </AppView>
         );
 
       default:
@@ -714,9 +808,9 @@ export default function AdForm({
                 }
                 style={{ marginBottom: spacing.md }}
               />
-              {formik.touched.categoryId && formik.errors.categoryId && (
+              {formik.touched.cityId && formik.errors.cityId && (
                 <AppText style={{ color: colors.error, marginTop: spacing.xs }}>
-                  {formik.errors.categoryId}
+                  {formik.errors.cityId}
                 </AppText>
               )}
             </AppView>
@@ -748,18 +842,20 @@ export default function AdForm({
               )}
             </AppView>
 
-            {/* Dynamic Category Fields */}
-            {formik.values.categoryId &&
-              categoryFields &&
-              categoryFields.length > 0 && (
+            {/* Dynamic Category Fields — keep the section mounted while
+                fields load so new required inputs appear instead of a
+                dead submit */}
+            {formik.values.categoryId ? (
+              loadingFields || fetchingFields || !categoryFields ? (
                 <AppView style={{ marginBottom: spacing.lg }}>
-                  {loadingFields ? (
-                    <ActivityIndicator />
-                  ) : (
-                    categoryFields.map((field) => renderDynamicField(field))
-                  )}
+                  <ActivityIndicator />
                 </AppView>
-              )}
+              ) : categoryFields.length > 0 ? (
+                <AppView style={{ marginBottom: spacing.lg }}>
+                  {categoryFields.map((field) => renderDynamicField(field))}
+                </AppView>
+              ) : null
+            ) : null}
 
             {/* Pricing */}
             <AppView style={{ marginBottom: spacing.lg }}>
@@ -910,7 +1006,7 @@ export default function AdForm({
             >
               <PrimaryButton
                 title={submitButtonText}
-                onPress={() => formik.handleSubmit()}
+                onPress={handleSubmitPress}
                 loading={isLoading}
                 disabled={isLoading}
                 style={{ flex: 1, height: 50, minWidth: "50%" }}

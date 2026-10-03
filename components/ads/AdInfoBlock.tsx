@@ -19,14 +19,19 @@ export function AdInfoBlock({ ad }: { ad?: Ad }) {
           justifyContent: "space-between",
           alignItems: "baseline",
           gap: spacing.md,
+          minWidth: 0,
         }}
       >
-        <AppView style={{ gap: spacing.xs }}>
-          <AppView>
+        {/* Title column takes remaining width and yields on narrow screens */}
+        <AppView
+          style={{ gap: spacing.xs, flex: 1, flexShrink: 1, minWidth: 0 }}
+        >
+          <AppView style={{ minWidth: 0 }}>
             <AppText
               numberOfLines={3}
+              ellipsizeMode="tail"
               variant="xl"
-              style={{ fontWeight: "700" }}
+              style={{ fontWeight: "700", flexShrink: 1 }}
             >
               {ad?.title}
             </AppText>
@@ -34,20 +39,28 @@ export function AdInfoBlock({ ad }: { ad?: Ad }) {
           <AppView
             style={{
               gap: spacing.xs,
-              width: "100%",
               flexDirection: "row",
               alignItems: "flex-start",
               justifyContent: "space-between",
+              minWidth: 0,
             }}
           >
-            <AppText variant="md" style={{ opacity: 0.7 }}>
-              {ad?.address || ad?.city?.name || "Unknown"}
-            </AppText>
+            {/* Location yields to the price block */}
+            <AppView style={{ flex: 1, flexShrink: 1, minWidth: 0 }}>
+              <AppText
+                variant="md"
+                style={{ opacity: 0.7, flexShrink: 1 }}
+              >
+                {ad?.address || ad?.city?.name || "Unknown"}
+              </AppText>
+            </AppView>
 
+            {/* Price keeps its size and right alignment */}
             <AppView
               style={{
                 gap: spacing.xs,
                 alignSelf: "flex-end",
+                flexShrink: 0,
               }}
             >
               <AppText variant="md" style={{ opacity: 0.7 }}>

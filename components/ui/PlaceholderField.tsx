@@ -41,6 +41,7 @@ export default function PlaceholderField({
   rightIcon,
   rightIconStyle,
   leftIconStyle,
+  error,
   style,
   inputStyle,
   rightLabel,
@@ -77,7 +78,7 @@ export default function PlaceholderField({
           styles.container,
           {
             backgroundColor: colors.inputBg,
-            borderColor: colors.border,
+            borderColor: error ? colors.error : colors.border,
             height: inputSizeStyle.height,
             borderRadius: inputSizeStyle.radius,
             paddingHorizontal: inputSizeStyle.paddingHorizontal,
@@ -108,6 +109,12 @@ export default function PlaceholderField({
           </AppView>
         )}
       </Pressable>
+
+      {!!error && (
+        <AppText style={{ color: colors.error, marginTop: spacing.xs }}>
+          {error}
+        </AppText>
+      )}
     </AppView>
   );
 }

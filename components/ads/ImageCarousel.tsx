@@ -1,11 +1,9 @@
 import { Image } from "expo-image";
 import React, { useRef, useState } from "react";
-import { Dimensions, FlatList, TouchableOpacity } from "react-native";
+import { FlatList, TouchableOpacity, useWindowDimensions } from "react-native";
 import { DotPagination } from "../sliders/DotPagination";
 import AppView from "../ui/AppView";
 import { FullScreenImageCarousel } from "./FullScreenImageCarousel";
-
-const { width } = Dimensions.get("window");
 
 const blurhash = "LKO2?U%2Tw=w]~RBVZRi};RPxuwH";
 
@@ -24,6 +22,9 @@ export function ImageCarousel({
   const [fullScreenVisible, setFullScreenVisible] = useState(false);
   const [fullScreenIndex, setFullScreenIndex] = useState(0);
   const ref = useRef<FlatList>(null);
+  // Reactive width so rotation/orientation changes re-layout the pages
+  // instead of overflowing with a stale window width.
+  const { width } = useWindowDimensions();
 
   const handleImagePress = (itemIndex: number) => {
     setFullScreenIndex(itemIndex);

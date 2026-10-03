@@ -35,7 +35,7 @@ export function SignleAttributeCard({ item, style }: SignleAttributeProps) {
 const styles = StyleSheet.create({
   singleCard: {
     flex: 1,
-    minWidth: "48%",
+    minWidth: 0,
     borderWidth: 1,
   },
 });
