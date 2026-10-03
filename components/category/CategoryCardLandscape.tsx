@@ -42,32 +42,44 @@ export default function CategoryCardLandscape({ category, selected, onPress }: P
           borderWidth: 2,
           backgroundColor: colors.backgroundGray,
           borderColor: colors.backgroundPrimary,
+          flexShrink: 0,
         }}
       />
 
-      {/* TEXT CONTENT */}
-      <AppView style={{ flex: 1, marginLeft: spacing.md }}>
+      {/* TEXT CONTENT — minWidth: 0 lets the text yield inside the row on
+          Android instead of overflowing/pushing siblings. */}
+      <AppView
+        style={{
+          flex: 1,
+          flexShrink: 1,
+          minWidth: 0,
+          marginLeft: spacing.md,
+          marginRight: spacing.sm,
+        }}
+      >
         {/* TITLE + COUNT BADGE */}
         <AppView
           style={{
             flexDirection: "row",
             alignItems: "center",
+            gap: spacing.sm,
+            minWidth: 0,
           }}
         >
           {/* TITLE */}
           <AppText
             variant="lg"
-            style={{ fontFamily: "Bold", flex: 1, paddingRight: icons.lg }}
+            style={{ fontFamily: "Bold", flex: 1, flexShrink: 1, minWidth: 0 }}
             numberOfLines={2}
+            ellipsizeMode="tail"
           >
             {category.name || "—"}
           </AppText>
 
           <Badge
             style={{
-              marginStart: spacing.md,
+              flexShrink: 0,
               backgroundColor: colors.primary,
-              right:icons.lg
             }}
             countStyle={{ color: colors.textWhite }}
             count={category._count?.ads || 0}
@@ -76,13 +88,20 @@ export default function CategoryCardLandscape({ category, selected, onPress }: P
         </AppView>
 
         {/* DESCRIPTION */}
-        <AppText variant="sm" numberOfLines={1}>
+        <AppText
+          variant="sm"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={{ flexShrink: 1, minWidth: 0 }}
+        >
           {category.description || ""}
         </AppText>
       </AppView>
 
-      {/* RIGHT ARROW */}
-      <DirectRight size={icons.md} color={colors.accentRed} />
+      {/* RIGHT ARROW — fixed size, never shrinks */}
+      <AppView style={{ flexShrink: 0 }}>
+        <DirectRight size={icons.md} color={colors.accentRed} />
+      </AppView>
     </Pressable>
   );
 }

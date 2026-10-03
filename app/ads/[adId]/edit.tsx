@@ -29,7 +29,8 @@ export default function EditAdScreen() {
   const handleSubmit = async (formData: UpdateAdRequest) => {
     try {
       if (isResubmitMode) {
-        // Resubmission flow
+        // Resubmission flow — pass category/fields through so a category
+        // change is actually persisted (backend now accepts them).
         await resubmitAsync({
           adId,
           data: {
@@ -37,6 +38,10 @@ export default function EditAdScreen() {
             description: formData.description,
             price: formData.price,
             images: formData.images,
+            condition: formData.condition,
+            categoryId: formData.categoryId,
+            cityId: formData.cityId,
+            fieldValues: formData.fieldValues,
           },
         });
         router.back();

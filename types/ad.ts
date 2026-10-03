@@ -261,6 +261,8 @@ export interface ResubmitAdRequest {
   price?: number;
   images?: string[];
   condition?: AdCondition;
+  categoryId?: string;
+  cityId?: string;
   fieldValues?: {
     categoryFieldId: string;
     value: string;
