@@ -13,12 +13,14 @@ import { formatDistanceToNow } from "date-fns";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { FlatList, TextInput, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ThreadsScreen() {
   const { data: threads = [], isLoading } = useThreads();
   const { user } = useAuth();
   const { colors, spacing, icons } = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newThreadTitle, setNewThreadTitle] = useState("");
 
@@ -176,6 +178,7 @@ export default function ThreadsScreen() {
           data={threads}
           keyExtractor={(item) => item.id}
           renderItem={renderThreadItem}
+          contentContainerStyle={{ paddingBottom: insets.bottom + spacing.md }}
         />
       )}
     </AppView>

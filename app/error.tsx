@@ -3,9 +3,11 @@ import PrimaryButton from "@/components/ui/PrimaryButton";
 import { useTheme } from "@/hooks/useTheme";
 import { useEffect } from "react";
 import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ErrorPage() {
   const { colors, spacing } = useTheme();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     // Log error for debugging
@@ -20,6 +22,8 @@ export default function ErrorPage() {
         justifyContent: "center",
         alignItems: "center",
         padding: spacing.lg,
+        paddingTop: insets.top + spacing.lg,
+        paddingBottom: insets.bottom + spacing.lg,
       }}
     >
       <AppText

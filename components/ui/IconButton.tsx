@@ -8,21 +8,40 @@ type Props = {
   style?: StyleProp<ViewStyle>;
   icon?: React.ReactNode;
   disabled?: boolean;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 };
 
-export default function IconButton({ onPress, style, icon, disabled }: Props) {
+export default function IconButton({
+  onPress,
+  style,
+  icon,
+  disabled,
+  accessibilityLabel,
+  accessibilityHint,
+}: Props) {
   const { icons, iconButton, colors } = useTheme();
 
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: !!disabled }}
       onPress={onPress}
-      style={[
+      // 40px visual keeps existing layouts intact; hitSlop expands the
+      // tappable area past the 44px minimum.
+      hitSlop={8}
+      android_ripple={{ color: colors.backgroundGray, borderless: true }}
+      style={({ pressed }) => [
         styles.button,
         {
           height: iconButton.size,
           width: iconButton.size,
           borderRadius: iconButton.radius,
-          backgroundColor: colors.background,
+          backgroundColor: pressed
+            ? colors.backgroundGray
+            : colors.background,
           opacity: disabled ? 0.5 : 1,
         },
         style,

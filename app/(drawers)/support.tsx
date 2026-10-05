@@ -6,9 +6,11 @@ import { useTheme } from "@/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import Drawer from "expo-router/drawer";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CategoriesScreen() {
   const { icons, spacing, colors } = useTheme();
+  const insets = useSafeAreaInsets();
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.background }}>
       <Drawer.Screen
@@ -28,6 +30,7 @@ export default function CategoriesScreen() {
           gap: spacing.md,
           paddingHorizontal: spacing.md,
           paddingTop: spacing.md,
+          paddingBottom: insets.bottom + spacing.md,
         }}
       >
         <PlaceholderField

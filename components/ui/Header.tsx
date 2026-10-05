@@ -30,7 +30,7 @@ export const Header: React.FC<Props> = ({
   navRowStyle,
 }) => {
   const insets = useSafeAreaInsets();
-  const { spacing, iconButton, colors } = useTheme();
+  const { spacing, colors } = useTheme();
   return (
     <AppView
       style={[
@@ -55,7 +55,7 @@ export const Header: React.FC<Props> = ({
         <AppView
           style={[
             styles.side,
-            { minWidth: iconButton.size, maxHeight: iconButton.size },
+            { width: 44, height: 44 },
             leftSideStyle,
           ]}
         >
@@ -65,8 +65,9 @@ export const Header: React.FC<Props> = ({
         {typeof title === "string" ? (
           <AppText
             variant="lg"
-            style={{ fontWeight: "bold" }}
+            style={{ fontWeight: "bold", flex: 1, textAlign: "center" }}
             numberOfLines={1}
+            maxFontSizeMultiplier={1.25}
           >
             {title}
           </AppText>
@@ -77,11 +78,7 @@ export const Header: React.FC<Props> = ({
         )}
 
         <AppView
-          style={[
-            styles.side,
-            { minWidth: iconButton.size, maxHeight: iconButton.size },
-            rightSideStyle,
-          ]}
+          style={[styles.side, { width: 44, height: 44 }, rightSideStyle]}
         >
           {right}
         </AppView>
