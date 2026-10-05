@@ -11,6 +11,8 @@ type Props = {
   fontWeight?: FontWeightKey;
   numberOfLines?: number;
   ellipsizeMode?: TextProps["ellipsizeMode"];
+  // Caps system font scaling (large Android font sizes / low-res screens).
+  maxFontSizeMultiplier?: number;
 };
 
 export default function AppText({
@@ -20,6 +22,7 @@ export default function AppText({
   numberOfLines,
   ellipsizeMode,
   fontWeight,
+  maxFontSizeMultiplier,
 }: Props) {
   const { colors, fontSizes } = useTheme();
 
@@ -35,6 +38,7 @@ export default function AppText({
       ]}
       numberOfLines={numberOfLines}
       ellipsizeMode={ellipsizeMode ?? "tail"}
+      maxFontSizeMultiplier={maxFontSizeMultiplier}
     >
       {children}
     </Text>

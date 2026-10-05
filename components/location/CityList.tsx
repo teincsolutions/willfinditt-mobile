@@ -14,6 +14,7 @@ interface Props {
   cities: City[];
   selectedCity?: City;
   onSelectCity: (city: City) => void;
+  onClearLocation?: () => void;
   loading?: boolean;
 }
 
@@ -21,6 +22,7 @@ export default function CityList({
   cities,
   selectedCity,
   onSelectCity,
+  onClearLocation,
   loading,
 }: Props) {
   const { colors, spacing, radius, icons } = useTheme();
@@ -47,6 +49,41 @@ export default function CityList({
           showSearchButton={false}
         />
 
+        {onClearLocation && (
+          <Pressable onPress={onClearLocation}>
+            <AppView
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: spacing.xs,
+                marginTop: spacing.xs,
+              }}
+            >
+              <Feather
+                name="globe"
+                size={icons.sm}
+                color={selectedCity ? colors.text : colors.primary}
+              />
+              <AppText
+                variant="md"
+                fontWeight="bold"
+                style={{
+                  color: selectedCity ? colors.text : colors.primary,
+                }}
+              >
+                Whole country
+              </AppText>
+              {!selectedCity && (
+                <Feather
+                  name="check"
+                  size={icons.sm}
+                  color={colors.primary}
+                />
+              )}
+            </AppView>
+          </Pressable>
+        )}
+
         {selectedCity && (
           <Pressable onPress={() => onSelectCity(selectedCity)}>
             <AppText
@@ -60,7 +97,7 @@ export default function CityList({
         )}
       </AppView>
     );
-  }, [query, selectedCity, spacing, colors, icons]);
+  }, [query, selectedCity, spacing, colors, icons, onClearLocation]);
 
   const emptyState = React.useMemo(() => {
     return loading ? (

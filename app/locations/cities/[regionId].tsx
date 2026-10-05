@@ -1,5 +1,6 @@
 import CityList from "@/components/location/CityList";
 import AppView from "@/components/ui/AppView";
+import { Header } from "@/components/ui/Header";
 import {
   useCitiesByState,
   useCityById,
@@ -7,7 +8,8 @@ import {
 } from "@/hooks/useLocations";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { useTheme } from "@/hooks/useTheme";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams, useNavigation } from "expo-router";
+import { StackActions } from "@react-navigation/native";
 
 export default function CitiesScreen() {
   const { colors } = useTheme();
@@ -19,9 +21,14 @@ export default function CitiesScreen() {
   const { data: cities = [], isLoading } = useCitiesByState(regionId);
   const { setCityId, cityId } = useSearchFilters();
   const { data: selectedCity } = useCityById(cityId!);
+  const navigation = useNavigation();
 
   const handleNavigateNext = () => {
-    router.dismiss(2);
+    // Cities is always exactly two pushes deep (opener -> regions ->
+    // cities), so pop twice to return to the opener (results, filters or
+    // home). router.dismiss() only closes modals and left users stuck now
+    // that these screens push as stack cards.
+    navigation.dispatch(StackActions.pop(2));
   };
 
   // useEffect(() => {
@@ -34,16 +41,17 @@ export default function CitiesScreen() {
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
-      <Stack.Screen
-        options={{
-          title: selectedState?.name || "Cities",
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
+      <Header title={selectedState?.name || "Cities"} />
       <CityList
         cities={cities}
         selectedCity={selectedCity!}
         onSelectCity={(city) => {
           setCityId(city.id);
+          handleNavigateNext();
+        }}
+        onClearLocation={() => {
+          setCityId(undefined);
           handleNavigateNext();
         }}
         loading={isLoading}

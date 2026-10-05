@@ -25,7 +25,13 @@ export const BackButton: React.FC<BackButtonProps> = ({
 }) => {
   const { icons, spacing, colors, radius } = useTheme();
   const handleBack = () => {
-    if (canGoBack) router.dismiss();
+    // router.back() pops whether the current screen is a stack push or a
+    // modal sheet; router.dismiss() only ever closes modals, which left
+    // the back button dead on every pushed screen using this component.
+    if (!canGoBack) return;
+    if (router.canGoBack()) {
+      router.back();
+    }
   };
 
   return (

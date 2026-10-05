@@ -4,7 +4,7 @@ import { Category } from "@/types";
 import { Image } from "expo-image";
 import { DirectRight } from "iconsax-react-nativejs";
 import React from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, useWindowDimensions } from "react-native";
 import AppView from "../ui/AppView";
 import Badge from "../ui/Badge";
 
@@ -16,8 +16,15 @@ interface Props {
   count?: number;
 }
 
+// Below this width (small / low-resolution Android devices) the card
+// renders in compact mode: smaller title and badge.
+const COMPACT_SCREEN_WIDTH = 360;
+
 export default function CategoryCardLandscape({ category, selected, onPress, count }: Props) {
   const { colors, spacing, radius, avatarSize, icons } = useTheme();
+  const { width } = useWindowDimensions();
+  const compact = width < COMPACT_SCREEN_WIDTH;
+  const iconSize = compact ? avatarSize.md : avatarSize.lg;
 
   return (
     <Pressable
@@ -38,9 +45,9 @@ export default function CategoryCardLandscape({ category, selected, onPress, cou
       <Image
         source={{ uri: category.icon || "" }}
         style={{
-          width: avatarSize.lg,
-          height: avatarSize.lg,
-          borderRadius:avatarSize.lg,
+          width: iconSize,
+          height: iconSize,
+          borderRadius: iconSize,
           borderWidth: 2,
           backgroundColor: colors.backgroundGray,
           borderColor: colors.backgroundPrimary,
@@ -70,10 +77,11 @@ export default function CategoryCardLandscape({ category, selected, onPress, cou
         >
           {/* TITLE */}
           <AppText
-            variant="lg"
+            variant={compact ? "md" : "lg"}
             style={{ fontFamily: "Bold", flex: 1, flexShrink: 1, minWidth: 0 }}
             numberOfLines={2}
             ellipsizeMode="tail"
+            maxFontSizeMultiplier={1.25}
           >
             {category.name || "—"}
           </AppText>
@@ -86,14 +94,16 @@ export default function CategoryCardLandscape({ category, selected, onPress, cou
             countStyle={{ color: colors.textWhite }}
             count={count ?? category._count?.ads ?? 0}
             label="Ads"
+            compact={compact}
           />
         </AppView>
 
         {/* DESCRIPTION */}
         <AppText
-          variant="sm"
+          variant={compact ? "xs" : "sm"}
           numberOfLines={1}
           ellipsizeMode="tail"
+          maxFontSizeMultiplier={1.25}
           style={{ flexShrink: 1, minWidth: 0 }}
         >
           {category.description || ""}

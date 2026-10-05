@@ -60,6 +60,7 @@ export default function CategoryList({
               variant="lg"
               fontWeight="bold"
               style={{ color: colors.primary, marginTop: spacing.xs }}
+              maxFontSizeMultiplier={1.25}
             >
               <Feather name="circle" size={icons.xs} /> {selectedCategory.name}
             </AppText>

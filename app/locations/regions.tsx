@@ -1,10 +1,11 @@
 import StateList from "@/components/location/StateList";
 import AppView from "@/components/ui/AppView";
+import { Header } from "@/components/ui/Header";
 import { useCityById, useStatesByCountry } from "@/hooks/useLocations";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { useTheme } from "@/hooks/useTheme";
 import { City, State } from "@/types";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 
 // Default Ghana country ID - adjust if needed
 const GHANA_COUNTRY_ID = "cmg8dfzhk0000pga392vf9568";
@@ -18,6 +19,8 @@ export default function RegionsScreen() {
 
   return (
     <AppView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <Header title="Regions" />
       <StateList
         states={states}
         selectedCity={selectedCity!}
@@ -30,7 +33,11 @@ export default function RegionsScreen() {
         }}
         onSelectCity={(city: City) => {
           setCityId(city.id);
-          router.dismiss();
+          if (router.canGoBack()) router.back();
+        }}
+        onClearLocation={() => {
+          setCityId(undefined);
+          if (router.canGoBack()) router.back();
         }}
         loading={isLoading}
       />

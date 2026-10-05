@@ -17,6 +17,7 @@ export default function Badge({
   textColor,
   countStyle,
   label,
+  compact = false,
 }: {
   count: number;
   style?: StyleProp<ViewStyle>;
@@ -24,6 +25,7 @@ export default function Badge({
   color?: string;
   textColor?: string;
   label?: string;
+  compact?: boolean;
 }) {
   const { colors, spacing, fontSizes } = useTheme();
 
@@ -33,18 +35,24 @@ export default function Badge({
     <View
       style={[
         styles.badge,
+        compact && styles.badgeCompact,
         {
           backgroundColor: color || colors.primary,
-          paddingHorizontal: spacing.sm,
+          paddingHorizontal: compact ? spacing.xs : spacing.sm,
         },
         style,
       ]}
     >
       <AppText
         style={[
-          { color: textColor || colors.textWhite, fontSize: fontSizes.xs },
+          {
+            color: textColor || colors.textWhite,
+            fontSize: compact ? fontSizes.xs * 0.9 : fontSizes.xs,
+          },
           countStyle,
         ]}
+        numberOfLines={1}
+        maxFontSizeMultiplier={1.2}
       >
         {count} {label&& label}
       </AppText>
@@ -58,5 +66,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+  },
+  badgeCompact: {
+    height: 19,
+    borderRadius: 10,
   },
 });
