@@ -118,20 +118,18 @@ export default function RootLayout() {
                 name="locations/regions"
                 options={{
                   headerShown: true,
-                  presentation: "modal",
                   title: "Regions",
                 }}
               />
               <Stack.Screen
                 name="locations/cities/[regionId]"
-                options={{ headerShown: true, presentation: "modal" }}
+                options={{ headerShown: true }}
               />
               <Stack.Screen
                 name="categories/index"
                 options={{
                   title: "Categories",
                   headerShown: true,
-                  presentation: "modal",
                 }}
               />
               <Stack.Screen
@@ -139,7 +137,12 @@ export default function RootLayout() {
                 options={{
                   title: "Categories",
                   headerShown: true,
-                  presentation: "modal",
+                }}
+              />
+              <Stack.Screen
+                name="results"
+                options={{
+                  headerShown: false,
                 }}
               />
               <Stack.Screen name="chats" />

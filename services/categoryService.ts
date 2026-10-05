@@ -36,6 +36,23 @@ export const categoryService = {
     return response.data;
   },
 
+  // Get filter-aware ad counts per category (visible ads only).
+  // Omit filters for global totals.
+  getCounts: async (params?: {
+    cityIds?: string;
+    priceMin?: number;
+    priceMax?: number;
+    conditions?: string;
+    query?: string;
+    promotedOnly?: boolean;
+  }): Promise<Record<string, number>> => {
+    const response = await api.get<{ counts: Record<string, number> }>(
+      '/api/v1/categories/counts',
+      { params }
+    );
+    return response.data.counts || {};
+  },
+
   // Create category (Admin only)
   create: async (data: {
     name: string;

@@ -12,9 +12,11 @@ interface Props {
   category: Category;
   selected?: boolean;
   onPress: () => void;
+  // Filter-aware count override; falls back to the static total.
+  count?: number;
 }
 
-export default function CategoryCardLandscape({ category, selected, onPress }: Props) {
+export default function CategoryCardLandscape({ category, selected, onPress, count }: Props) {
   const { colors, spacing, radius, avatarSize, icons } = useTheme();
 
   return (
@@ -82,7 +84,7 @@ export default function CategoryCardLandscape({ category, selected, onPress }: P
               backgroundColor: colors.primary,
             }}
             countStyle={{ color: colors.textWhite }}
-            count={category._count?.ads || 0}
+            count={count ?? category._count?.ads ?? 0}
             label="Ads"
           />
         </AppView>

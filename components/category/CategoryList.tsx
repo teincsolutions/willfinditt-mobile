@@ -17,6 +17,8 @@ interface Props {
   selectedCategory?: Category;
   onSelect: (category: Category) => void;
   loading?: boolean;
+  // Filter-aware per-category counts (falls back to static totals).
+  counts?: Record<string, number>;
 }
 
 export default function CategoryList({
@@ -25,6 +27,7 @@ export default function CategoryList({
   selectedCategory,
   onSelect,
   loading,
+  counts,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { colors, spacing, radius, icons } = useTheme();
@@ -84,9 +87,10 @@ export default function CategoryList({
         category={item}
         selected={selected?.id === item.id}
         onPress={() => onSelect(item)}
+        count={counts?.[item.id]}
       />
     ),
-    [selected, onSelect]
+    [selected, onSelect, counts]
   );
 
   const keyExtractor = React.useCallback((item: Category) => item.id, []);

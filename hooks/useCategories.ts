@@ -22,7 +22,25 @@ export const useSubcategories = (parentId: string) => {
   });
 };
 
-// Hook for fetching a single category
+// Hook for filter-aware ad counts per category (visible ads only).
+// Re-fetches when filters change so badges reflect what search returns.
+export const useCategoryCounts = (filters: {
+  cityIds?: string;
+  priceMin?: number;
+  priceMax?: number;
+  conditions?: string;
+  query?: string;
+  promotedOnly?: boolean;
+} = {}) => {
+  return useQuery({
+    queryKey: ["category-counts", filters],
+    queryFn: () => categoryService.getCounts(filters),
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+  });
+};
+
+// Hook for a single category
 export const useCategory = (id: string) => {
   return useQuery({
     queryKey: ["category", id],

@@ -1,7 +1,7 @@
 import CategoryList from "@/components/category/CategoryList";
 import AppView from "@/components/ui/AppView";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useCategory, useSubcategories } from "@/hooks/useCategories";
+import { useCategory, useCategoryCounts, useSubcategories } from "@/hooks/useCategories";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 
@@ -13,8 +13,10 @@ export default function SubCategoriesScreen() {
   };
   const { data: parentCategory } = useCategory(parentId);
   const { data: categories = [], isLoading } = useSubcategories(parentId);
-  const { setCategoryId, categoryId } = useSearchFilters();
+  const { setCategoryId, categoryId, cityId } = useSearchFilters();
   const { data: selectedCategory } = useCategory(categoryId || "");
+  // Counts scoped to the selected location (visible ads only).
+  const { data: counts } = useCategoryCounts(cityId ? { cityIds: cityId } : {});
 
   const handleNavigateNext = (selectedCategoryId: string) => {
     if (source === "filters") {
@@ -36,6 +38,7 @@ export default function SubCategoriesScreen() {
         selectedCategory={selectedCategory}
         selected={selectedCategory!}
         data={categories}
+        counts={counts}
         onSelect={(cat) => {
           setCategoryId(cat.id);
           handleNavigateNext(cat.id);
