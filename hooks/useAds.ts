@@ -58,6 +58,7 @@ export const useAd = (id: string, enabled: boolean = true) => {
 export const useInfiniteSearchAds = (
   params: AdSearchRequest,
   enabled: boolean = true,
+  staleTimeMs: number = 5 * 60 * 1000,
 ) => {
   return useInfiniteQuery({
     queryKey: AD_QUERY_KEYS.ADS_SEARCH_INFINITE(params),
@@ -75,7 +76,7 @@ export const useInfiniteSearchAds = (
     },
     initialPageParam: 1,
     enabled,
-    staleTime: 5 * 60 * 1000, // 5 minutes - cached for quick return
+    staleTime: staleTimeMs,
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 };

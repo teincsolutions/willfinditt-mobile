@@ -62,8 +62,9 @@ export default function HomeScreen() {
 
     switch (tab) {
       case "Trending":
+        // Boosted slots + hourly-rotated organic (backend homeFeed sort).
         return {
-          search: { ...baseParams, sortBy: "views", sortOrder: "desc" },
+          search: { ...baseParams, sortBy: "homeFeed", sortOrder: "desc" },
         };
       case "Cheapest":
         return { search: { ...baseParams, sortBy: "price", sortOrder: "asc" } };
@@ -96,6 +97,8 @@ export default function HomeScreen() {
   } = useParentCategories();
 
   // fetch ads based on selected tab
+  // Home trending rotates hourly server-side: keep client cache short so a
+  // fresh order is picked up (persisted cache otherwise freezes the list).
   const {
     data: adsData,
     fetchNextPage,
@@ -104,7 +107,7 @@ export default function HomeScreen() {
     isFetchingNextPage,
     isRefetching: isRefetchingAds,
     refetch: refetchAds,
-  } = useInfiniteSearchAds(searchRequest);
+  } = useInfiniteSearchAds(searchRequest, true, 60 * 1000);
 
   const ads: Ad[] = deduplicateAds(
     adsData?.pages.flatMap((page) => page.data) || []

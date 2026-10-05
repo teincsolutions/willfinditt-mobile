@@ -118,6 +118,26 @@ export default function ProductCard({
           onToggle={(selected) => onSelectToggle?.(selected)}
         />
       )}
+      {ad.isPromoted && (
+        <AppView
+          style={{
+            position: "absolute",
+            top: spacing.sm,
+            left: spacing.sm,
+            backgroundColor: colors.primary,
+            borderRadius: 12,
+            paddingHorizontal: spacing.sm,
+            paddingVertical: 2,
+          }}
+        >
+          <AppText
+            variant="xs"
+            style={{ color: colors.textWhite, fontWeight: "700" }}
+          >
+            Sponsored
+          </AppText>
+        </AppView>
+      )}
 
       {/* CONTENT */}
       <View style={{ padding: spacing.md, gap: spacing.xs }}>
