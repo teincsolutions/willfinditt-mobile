@@ -51,23 +51,17 @@ export function AdSellerProfile({
         onPress={handleProfilePress}
         style={{ flex: 1, flexShrink: 1, minWidth: 0, gap: spacing.xs }}
       >
+        {/* Public seller identity: business name, else the account
+            holder's name. Never username, phone or email. */}
         <AppText
           variant="lg"
           numberOfLines={2}
           ellipsizeMode="tail"
           style={{ fontWeight: "700", color: colors.primary }}
         >
-          {ad.user?.sellerProfile
-            ? `${ad.user.sellerProfile.businessName}`
-            : `${ad.user?.firstName} ${ad.user?.lastName}`}
-        </AppText>
-        <AppText
-          variant="md"
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          style={{ fontWeight: "400" }}
-        >
-          @{ad.user?.username}
+          {ad.user?.sellerProfile?.businessName ||
+            `${ad.user?.firstName || ""} ${ad.user?.lastName || ""}`.trim() ||
+            "Private seller"}
         </AppText>
         <AppText variant="xs" style={{ color: colors.textLightGray }}>
           {ad.user?.createdAt ||

@@ -344,12 +344,14 @@ export const useAdActions = (ad?: Ad, seller?: SellerProfile) => {
   };
 
   const handleProfilePress = () => {
-    if (ad?.userId || seller) {
-      router.push({
-        pathname: "/ads/seller/[sellerId]",
-        params: { sellerId: ad?.user?.sellerProfile?.id || seller?.id || "" },
-      });
-    }
+    // Only business sellers have a public profile page. Private sellers
+    // (no SellerProfile) expose no public identity beyond the display name.
+    const sellerId = ad?.user?.sellerProfile?.id || seller?.id || "";
+    if (!sellerId) return;
+    router.push({
+      pathname: "/ads/seller/[sellerId]",
+      params: { sellerId },
+    });
   };
 
   return {
