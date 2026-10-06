@@ -22,8 +22,10 @@ import {
     TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 import * as Yup from "yup";
+import { sellerService } from "@/services/sellerService";
 
 // -------------------------
 // VALIDATION SCHEMA
@@ -58,6 +60,7 @@ export default function SetupBusinessProfileScreen() {
     isUpdating,
   } = useMySeller();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const sellerProfile = user?.sellerProfile;
   const isEditMode = !!sellerProfile;
@@ -108,8 +111,31 @@ export default function SetupBusinessProfileScreen() {
           });
           toast.success("Business profile updated successfully!");
         } else {
-          await createSellerProfileAsync(requestData);
-          toast.success("Business profile created successfully!");
+          try {
+            await createSellerProfileAsync(requestData);
+            toast.success("Business profile created successfully!");
+          } catch (createError: any) {
+            // Self-heal the exact incident from 2026-10-06: the auth
+            // snapshot had no sellerProfile but the server already holds
+            // one (duplicate POST -> 409). Fetch it and save as an update.
+            if (createError?.response?.status === 409) {
+              const existing =
+                await sellerService.getMySellerProfile();
+              if (existing?.id) {
+                await updateSellerProfileAsync({
+                  sellerId: existing.id,
+                  data: requestData,
+                });
+                await queryClient.invalidateQueries({
+                  queryKey: ["seller", "my-profile"],
+                });
+                toast.success("Business profile updated successfully!");
+                router.push("/account/business");
+                return;
+              }
+            }
+            throw createError;
+          }
         }
         router.push("/account/business");
       } catch (error: any) {
