@@ -1,6 +1,8 @@
 import { emitLogout } from "@/utils/eventEmitter";
 import * as tokenManager from "@/utils/tokenManager";
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import Constants from "expo-constants";
+import { Platform } from "react-native";
 
 // ============================================
 // API Error Code Constants
@@ -64,6 +66,13 @@ api.interceptors.request.use(
     // Add token to headers if it exists
     if (authToken) {
       config.headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
+    // Client identification for server-side diagnostics (which app is calling)
+    config.headers["X-Client"] = Platform.OS === "ios" ? "ios" : "android";
+    const appVersion = Constants.expoConfig?.version;
+    if (appVersion) {
+      config.headers["X-App-Version"] = String(appVersion);
     }
 
     return config;
@@ -141,6 +150,14 @@ api.interceptors.response.use(
     // UNAUTHORIZED - Generic unauthorized (401)
     if (errorCode === API_ERROR_CODES.UNAUTHORIZED) {
       console.warn("Unauthorized access:", error.response?.data);
+      const serverMessage =
+        (error.response?.data as ApiErrorResponse | undefined)?.message || "";
+      // Forced password change must NOT wipe the session — the user needs
+      // their tokens for the exempt change-password/profile endpoints.
+      if (serverMessage.toLowerCase().includes("change your password")) {
+        emitLogout({ reason: "force_password_change" });
+        return Promise.reject(error);
+      }
       const accessToken = tokenManager.getAccessToken();
       // Only clear auth state if user was actually authenticated
       if (accessToken) {
@@ -212,6 +229,7 @@ api.interceptors.response.use(
             headers: {
               "X-Api-Key": process.env.APP_API_KEY || "",
               "Authorization": `Bearer ${refreshToken}`,
+              "X-Client": Platform.OS === "ios" ? "ios" : "android",
             },
           }
         );

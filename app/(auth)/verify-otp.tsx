@@ -100,6 +100,10 @@ export default function VerifyOTPScreen() {
       }
     } catch (error: any) {
       console.log("OTP verification error:", error);
+      toast.error(
+        error?.message ||
+          "Verification failed. Check the code and try again."
+      );
     }
   };
 
@@ -117,7 +121,7 @@ export default function VerifyOTPScreen() {
       }
       else if (params.type === "password-reset" && params.phone) {
         await forgotPasswordAsync({ phone: params.phone });
-        toast.success("OTP has been resent to your phone");
+        toast.success("A new code was sent — the previous code no longer works.");
       } else {
         // Generic resend for other types
         toast.success("OTP has been resent to your device");

@@ -62,6 +62,8 @@ export function useAuth() {
           no_refresh_token: "Session expired. Please login again.",
           refresh_failed: "Session expired. Please login again.",
           unauthorized: "Please login to continue.",
+          force_password_change:
+            "Please change your password to continue using the app.",
           manual: "Logged out successfully.",
         };
 

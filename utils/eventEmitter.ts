@@ -9,6 +9,7 @@ export interface LogoutEventPayload {
     | "no_refresh_token"
     | "refresh_failed"
     | "unauthorized"
+    | "force_password_change"
     | "manual";
   message?: string;
 }
