@@ -5,10 +5,18 @@ import { useCreateAd } from "@/hooks/useAds";
 import { useAuth } from "@/hooks/useAuth";
 import { useMySeller } from "@/hooks/useSeller";
 import { useTheme } from "@/hooks/useTheme";
+import {
+  clearAdDraft,
+  loadAdDraft,
+  type AdCreateDraft,
+} from "@/hooks/useAdDraft";
+import { useCategorySelection } from "@/hooks/useCategorySelection";
+import { useLocationSelection } from "@/hooks/useLocationSelection";
 import { CreateAdRequest } from "@/types";
 import { router, Stack } from "expo-router";
-import React from "react";
-import { View } from "react-native";
+import React, { useState } from "react";
+import { Pressable, View } from "react-native";
+import AppText from "@/components/ui/AppText";
 import { toast } from "sonner-native";
 
 export default function CreateAdScreen() {
@@ -16,9 +24,25 @@ export default function CreateAdScreen() {
   const { user } = useAuth();
   const { sellerProfile, isLoading: isLoadingSeller } = useMySeller();
   const createMutation = useCreateAd();
+  const { clearCategorySelection } = useCategorySelection();
+  const { clearLocationSelection } = useLocationSelection();
+
+  // Load any unfinished listing once per mount (MMKV survives restarts).
+  const [draft, setDraft] = useState<AdCreateDraft | null>(() => loadAdDraft());
+  // Bump to remount the form blank after "Discard draft".
+  const [formKey, setFormKey] = useState(0);
 
   const showBanner =
     !!user && !isLoadingSeller && !sellerProfile;
+
+  const discardDraft = () => {
+    clearAdDraft();
+    clearCategorySelection();
+    clearLocationSelection();
+    setDraft(null);
+    setFormKey((k) => k + 1);
+    toast.success("Draft discarded");
+  };
 
   const handleSubmit = async (formData: CreateAdRequest) => {
     try {
@@ -40,6 +64,12 @@ export default function CreateAdScreen() {
       };
 
       const newAd = await createMutation.mutateAsync(adData);
+
+      // Listing published — the autosaved draft has served its purpose.
+      clearAdDraft();
+      clearCategorySelection();
+      clearLocationSelection();
+      setDraft(null);
 
       toast.success("Product created successfully!");
 
@@ -86,7 +116,23 @@ export default function CreateAdScreen() {
         }}
       />
       <BecomeSellerBanner visible={showBanner} />
+      {draft && (
+        <Pressable
+          onPress={discardDraft}
+          style={{
+            paddingHorizontal: spacing.md,
+            paddingVertical: spacing.sm,
+          }}
+        >
+          <AppText style={{ color: "#D92D20", fontSize: 14 }}>
+            Discard restored draft
+          </AppText>
+        </Pressable>
+      )}
       <AdForm
+        key={formKey}
+        draft={draft}
+        autosaveDraft
         onSubmit={(data) => handleSubmit(data as CreateAdRequest)}
         isLoading={createMutation.isPending}
         submitButtonText="Create & Submit"

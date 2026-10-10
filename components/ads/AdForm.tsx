@@ -43,6 +43,12 @@ import SheetRadioOptionItem from "../bottom-sheet/SheetRadioOptionItem";
 import SearchableSelectModal from "../ui/SearchableSelectModal";
 import { TextButton } from "../ui/TextButton";
 import { toast } from "sonner-native";
+import {
+  clearAdDraft,
+  isDraftWorthy,
+  saveAdDraft,
+  type AdCreateDraft,
+} from "@/hooks/useAdDraft";
 
 interface AdFormProps {
   initialData?: UpdateAdRequest;
@@ -50,6 +56,12 @@ interface AdFormProps {
   onSubmit: (data: UpdateAdRequest) => void;
   isLoading?: boolean;
   submitButtonText?: string;
+  /**
+   * Local draft autosave for the create flow. Restores `draft` into a fresh
+   * form and persists edits (debounced) until a successful submit clears it.
+   */
+  autosaveDraft?: boolean;
+  draft?: AdCreateDraft | null;
 }
 
 const conditionOptions = [
@@ -182,6 +194,8 @@ export default function AdForm({
   onSubmit,
   isLoading,
   submitButtonText = "Submit",
+  autosaveDraft = false,
+  draft = null,
 }: AdFormProps) {
   const insets = useSafeAreaInsets();
   const { colors, spacing, radius, icons } = useTheme();
@@ -191,6 +205,35 @@ export default function AdForm({
     businessProfilePhone || initialData?.contactPhone || user?.phone || "";
   const { selectedCategoryId, setSelectedCategoryId } = useCategorySelection();
   const { selectedCityId, setSelectedCityId } = useLocationSelection();
+
+  // Draft restore (create flow only): draft values seed a fresh form.
+  // Edit flow (initialData) always wins — server data is source of truth.
+  const draftValues = (!initialData ? draft?.values : undefined) as
+    | Record<string, any>
+    | undefined;
+  const dv: Record<string, any> = draftValues ?? {};
+  // Boundary casts: keep every seeded value concretely typed so formik's
+  // inferred value/error types don't degrade to `any`.
+  const draftStr = (v: unknown): string => (typeof v === "string" ? v : "");
+  const draftUrls = (v: unknown): string[] =>
+    Array.isArray(v) ? v.filter((i): i is string => typeof i === "string") : [];
+  const draftFieldValues = (
+    v: unknown,
+  ): { categoryFieldId: string; value: string }[] =>
+    Array.isArray(v)
+      ? v.filter(
+          (
+            i,
+          ): i is { categoryFieldId: string; value: string } =>
+            typeof i === "object" &&
+            i !== null &&
+            typeof (i as any).categoryFieldId === "string",
+        )
+      : [];
+  const draftPrice =
+    Number.isFinite(Number(dv.price)) && dv.price !== "" && dv.price !== null
+      ? Number(dv.price)
+      : NaN;
 
   // Condition selection sheet ref
   const conditionSheetRef = useRef<BottomSheet>(null);
@@ -234,29 +277,46 @@ export default function AdForm({
   // Initialize formik with dynamic validation schema
   const formik = useFormik({
     initialValues: {
-      title: initialData?.title || "",
-      description: initialData?.description || "",
-      price: Number(initialData?.price),
-      currency: initialData?.currency || "GHS",
-      condition: initialData?.condition || undefined,
-      categoryId: initialData?.categoryId || "",
-      cityId: initialData?.cityId || "",
-      images: initialData?.images || [],
+      title: initialData?.title || draftStr(dv.title),
+      description: initialData?.description || draftStr(dv.description),
+      price: initialData
+        ? Number(initialData?.price)
+        : Number.isFinite(draftPrice)
+          ? draftPrice
+          : NaN,
+      currency: initialData?.currency || draftStr(dv.currency) || "GHS",
+      condition:
+        initialData?.condition ||
+        (dv.condition as AdCondition | undefined) ||
+        undefined,
+      categoryId: initialData?.categoryId || draftStr(dv.categoryId),
+      cityId: initialData?.cityId || draftStr(dv.cityId),
+      images: initialData?.images || draftUrls(dv.images),
       status: initialData?.status || undefined,
       address:
         initialData?.address ||
+        draftStr(dv.address) ||
         user?.sellerProfile?.verification?.address ||
         "",
-      contactPhone: defaultContactPhone,
-      contactEmail: initialData?.contactEmail || user?.email || "",
-      isNegotiable: initialData?.isNegotiable || false,
-      fieldValues: initialData?.fieldValues || [],
+      contactPhone: initialData
+        ? defaultContactPhone
+        : draftStr(dv.contactPhone) || defaultContactPhone,
+      contactEmail:
+        initialData?.contactEmail ||
+        draftStr(dv.contactEmail) ||
+        user?.email ||
+        "",
+      isNegotiable:
+        initialData?.isNegotiable ??
+        (typeof dv.isNegotiable === "boolean" ? dv.isNegotiable : false),
+      fieldValues:
+        initialData?.fieldValues || draftFieldValues(dv.fieldValues),
       // Dynamic field values
       ...(categoryFields?.reduce(
         (acc, field) => {
-          const existingValue = initialData?.fieldValues?.find(
-            (fv) => fv.categoryFieldId === field.id,
-          );
+          const existingValue = (
+            initialData?.fieldValues || draftFieldValues(dv.fieldValues)
+          ).find((fv) => fv.categoryFieldId === field.id);
           acc[`field_${field.id}`] = existingValue?.value || "";
           return acc;
         },
@@ -379,6 +439,37 @@ export default function AdForm({
       formik.setFieldValue("cityId", selectedCityId);
     }
   }, [selectedCategoryId, selectedCityId]);
+
+  // Draft restore: seed the shared pickers once on mount (create flow).
+  // Guarded so a fresh user pick is never overwritten by the draft.
+  const draftRestoredRef = useRef(false);
+  useEffect(() => {
+    if (!autosaveDraft || initialData || draftRestoredRef.current) return;
+    draftRestoredRef.current = true;
+    if (draft?.categoryId && !selectedCategoryId) {
+      setSelectedCategoryId(draft.categoryId);
+    }
+    if (draft?.cityId && !selectedCityId) {
+      setSelectedCityId(draft.cityId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Draft autosave: persist (debounced) as the user edits. Clears the draft
+  // when the form goes back to pristine so stale drafts never resurrect.
+  useEffect(() => {
+    if (!autosaveDraft || initialData) return;
+    const timer = setTimeout(() => {
+      const values = formik.values as Record<string, any>;
+      if (isDraftWorthy(values)) {
+        saveAdDraft(values, selectedCategoryId, selectedCityId);
+      } else {
+        clearAdDraft();
+      }
+    }, 750);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formik.values, selectedCategoryId, selectedCityId]);
 
   // Submit stays tappable even when invalid: surface every error inline
   // and explain via toast instead of silently swallowing the press.
